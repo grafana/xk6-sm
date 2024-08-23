@@ -1,0 +1,42 @@
+name: Push/PR
+
+on:
+  pull_request: {}
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        goos: [ linux ]
+        goarch: [ amd64, arm64 ]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Extract k6 version from go.mod
+        id: version
+        run: |-
+          k6version=$(grep -e go.k6.io go.mod | cut -d' ' -f 2)
+          echo "Detected k6 version: ${k6version}"
+          echo "k6=${k6version}" >> $GITHUB_OUTPUT
+      - name: Build with xk6
+        run: |-
+          docker run --rm -i -u "$(id -u):$(id -g)" -v "${PWD}:/xk6" \
+            -e "GOOS=${{ matrix.goos }}" -e "GOARCH=${{ matrix.goarch }}" \
+            grafana/xk6 build ${{ steps.version.outputs.k6 }} \
+            --output "dist/sm-k6-${{ matrix.goos }}-${{ matrix.goarch }}" \
+            --with sm=. \
+
+  golangci:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v6
+        with:
+          only-new-issues: true
+          args: --timeout=5m # 1m is not enough, experimentally.
