@@ -1,0 +1,16 @@
+name: Lint
+
+on:
+  pull_request: {}
+
+jobs:
+  golangci:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v6
+        with:
+          only-new-issues: true
+          args: --timeout=5m # 1m is not enough, experimentally.
