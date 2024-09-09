@@ -1,4 +1,4 @@
-module github.com/grafana/sm-k6-runner/xk6/sm
+module github.com/grafana/xk6-sm
 
 go 1.19
 
