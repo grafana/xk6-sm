@@ -384,8 +384,10 @@ func (c targetMetricsCollection) Write(w io.Writer) {
 		// timings might be missing. This means that we might skew the
 		// results towards 0 if we try to do over-time aggregations.
 
-		out.Name(`probe_http_status_code`)
-		out.Value(ti.status[0])
+		if len(ti.status) > 0 {
+			out.Name(`probe_http_status_code`)
+			out.Value(ti.status[0])
+		}
 
 		if protoVersion := strings.TrimPrefix(strings.ToLower(ti.proto), "http/"); len(protoVersion) > 0 {
 			out.Name(`probe_http_version`)
@@ -640,42 +642,44 @@ func (o *bufferedMetricTextOutput) Stats(v []float64) {
 		o.buf.WriteRune('"')
 	}
 
-	stats := getStats(v)
+	if len(v) > 0 {
+		stats := getStats(v)
 
-	fmt.Fprint(o.dest, o.name)
-	fmt.Fprint(o.dest, "_min")
-	fmt.Fprint(o.dest, "{")
-	fmt.Fprint(o.dest, o.buf.String())
-	fmt.Fprint(o.dest, "} ")
-	fmt.Fprintln(o.dest, stats.min)
+		fmt.Fprint(o.dest, o.name)
+		fmt.Fprint(o.dest, "_min")
+		fmt.Fprint(o.dest, "{")
+		fmt.Fprint(o.dest, o.buf.String())
+		fmt.Fprint(o.dest, "} ")
+		fmt.Fprintln(o.dest, stats.min)
 
-	fmt.Fprint(o.dest, o.name)
-	fmt.Fprint(o.dest, "_max")
-	fmt.Fprint(o.dest, "{")
-	fmt.Fprint(o.dest, o.buf.String())
-	fmt.Fprint(o.dest, "} ")
-	fmt.Fprintln(o.dest, stats.max)
+		fmt.Fprint(o.dest, o.name)
+		fmt.Fprint(o.dest, "_max")
+		fmt.Fprint(o.dest, "{")
+		fmt.Fprint(o.dest, o.buf.String())
+		fmt.Fprint(o.dest, "} ")
+		fmt.Fprintln(o.dest, stats.max)
 
-	fmt.Fprint(o.dest, o.name)
-	// fmt.Fprint(o.dest, "_mean")
-	fmt.Fprint(o.dest, "{")
-	fmt.Fprint(o.dest, o.buf.String())
-	fmt.Fprint(o.dest, "} ")
-	fmt.Fprintln(o.dest, stats.med)
+		fmt.Fprint(o.dest, o.name)
+		// fmt.Fprint(o.dest, "_mean")
+		fmt.Fprint(o.dest, "{")
+		fmt.Fprint(o.dest, o.buf.String())
+		fmt.Fprint(o.dest, "} ")
+		fmt.Fprintln(o.dest, stats.med)
 
-	fmt.Fprint(o.dest, o.name)
-	fmt.Fprint(o.dest, "_count")
-	fmt.Fprint(o.dest, "{")
-	fmt.Fprint(o.dest, o.buf.String())
-	fmt.Fprint(o.dest, "} ")
-	fmt.Fprintln(o.dest, stats.n)
+		fmt.Fprint(o.dest, o.name)
+		fmt.Fprint(o.dest, "_count")
+		fmt.Fprint(o.dest, "{")
+		fmt.Fprint(o.dest, o.buf.String())
+		fmt.Fprint(o.dest, "} ")
+		fmt.Fprintln(o.dest, stats.n)
 
-	fmt.Fprint(o.dest, o.name)
-	fmt.Fprint(o.dest, "_sum")
-	fmt.Fprint(o.dest, "{")
-	fmt.Fprint(o.dest, o.buf.String())
-	fmt.Fprint(o.dest, "} ")
-	fmt.Fprintln(o.dest, stats.sum)
+		fmt.Fprint(o.dest, o.name)
+		fmt.Fprint(o.dest, "_sum")
+		fmt.Fprint(o.dest, "{")
+		fmt.Fprint(o.dest, o.buf.String())
+		fmt.Fprint(o.dest, "} ")
+		fmt.Fprintln(o.dest, stats.sum)
+	}
 }
 
 type stats struct {
