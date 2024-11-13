@@ -2,7 +2,7 @@ module github.com/grafana/xk6-sm
 
 go 1.21
 
-toolchain go1.21.13
+toolchain go1.23.3
 
 require (
 	github.com/sirupsen/logrus v1.9.3
