@@ -568,8 +568,6 @@ func TestTargetMetricsCollectionWriteOne(t *testing.T) {
 }
 
 func TestTargetMetricsCollectionWriteMany(t *testing.T) {
-	t.Skip("Skiping broken test")
-
 	t.Parallel()
 
 	c := newTargetMetricsCollection()
@@ -605,6 +603,8 @@ func TestTargetMetricsCollectionWriteMany(t *testing.T) {
 	c.Write(&buf)
 
 	expected := joinNewline(
+		`probe_http_got_expected_response{url="http://example.com",method="GET",scenario="s",group="g"} 1`,
+		`probe_http_error_code{url="http://example.com",method="GET",scenario="s",group="g"} 0`,
 		`probe_http_info{tls_version="1.3",proto="1.1",k="v",url="http://example.com",method="GET",scenario="s",group="g"} 1`,
 		`probe_http_requests_total{url="http://example.com",method="GET",scenario="s",group="g"} 2`,
 		`probe_http_requests_failed_total{url="http://example.com",method="GET",scenario="s",group="g"} 1`,
@@ -636,6 +636,11 @@ func TestTargetMetricsCollectionWriteMany(t *testing.T) {
 		`probe_http_duration_seconds{phase="transfer",url="http://example.com",method="GET",scenario="s",group="g"} 0.001`,
 		`probe_http_duration_seconds_count{phase="transfer",url="http://example.com",method="GET",scenario="s",group="g"} 2`,
 		`probe_http_duration_seconds_sum{phase="transfer",url="http://example.com",method="GET",scenario="s",group="g"} 0.002`,
+		`probe_http_total_duration_seconds_min{url="http://example.com",method="GET",scenario="s",group="g"} 0.001`,
+		`probe_http_total_duration_seconds_max{url="http://example.com",method="GET",scenario="s",group="g"} 0.001`,
+		`probe_http_total_duration_seconds{url="http://example.com",method="GET",scenario="s",group="g"} 0.001`,
+		`probe_http_total_duration_seconds_count{url="http://example.com",method="GET",scenario="s",group="g"} 2`,
+		`probe_http_total_duration_seconds_sum{url="http://example.com",method="GET",scenario="s",group="g"} 0.002`,
 	)
 
 	require.Equal(t, expected, buf.String())
