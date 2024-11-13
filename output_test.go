@@ -12,6 +12,8 @@ import (
 )
 
 func TestOutputNew(t *testing.T) {
+	t.Parallel()
+
 	testcases := map[string]struct {
 		input       output.Params
 		expectError bool
@@ -45,11 +47,15 @@ func TestOutputNew(t *testing.T) {
 }
 
 func TestOutputDescription(t *testing.T) {
+	t.Parallel()
+
 	var out Output
 	require.NotEmpty(t, out.Description())
 }
 
 func TestOutputStart(t *testing.T) {
+	t.Parallel()
+
 	fs := afero.NewMemMapFs()
 
 	out, err := New(output.Params{ConfigArgument: "test.out", FS: fs})
@@ -69,6 +75,8 @@ func TestOutputStart(t *testing.T) {
 
 // TestOutputStop tests that the metrics are correctly collected and written to the file.
 func TestOutputStop(t *testing.T) {
+	t.Parallel()
+
 	fs := afero.NewMemMapFs()
 
 	out, err := New(output.Params{ConfigArgument: "test.out", FS: fs})
@@ -99,6 +107,7 @@ func makeSample(name string, value float64) metrics.Sample {
 }
 
 func TestDeriveMetricNameAndValue(t *testing.T) {
+	t.Parallel()
 
 	testcases := map[string]struct {
 		input         metrics.Sample
@@ -138,7 +147,11 @@ func TestDeriveMetricNameAndValue(t *testing.T) {
 	}
 
 	for name, tc := range testcases {
+		tc := tc
+
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
 			actualName, actualValue := deriveMetricNameAndValue(tc.input)
 			require.Equal(t, tc.expectedName, actualName)
 			require.Equal(t, tc.expectedValue, actualValue)
@@ -147,6 +160,8 @@ func TestDeriveMetricNameAndValue(t *testing.T) {
 }
 
 func TestGetStats(t *testing.T) {
+	t.Parallel()
+
 	testcases := map[string]struct {
 		input    []float64
 		expected stats
@@ -174,7 +189,11 @@ func TestGetStats(t *testing.T) {
 	}
 
 	for name, tc := range testcases {
+		tc := tc
+
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
 			actual := getStats(tc.input)
 			if tc.expected != actual {
 				t.Log("expected:", tc.expected, "actual:", actual)
@@ -185,6 +204,8 @@ func TestGetStats(t *testing.T) {
 }
 
 func TestIsValidMetricName(t *testing.T) {
+	t.Parallel()
+
 	testcases := map[string]struct {
 		input    string
 		expected bool
@@ -208,7 +229,11 @@ func TestIsValidMetricName(t *testing.T) {
 	}
 
 	for name, tc := range testcases {
+		tc := tc
+
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
 			actual := isValidMetricNameRe(tc.input)
 			if actual != tc.expected {
 				t.Log("expected:", tc.expected, "actual:", actual, "input:", tc.input)
@@ -225,6 +250,8 @@ func TestIsValidMetricName(t *testing.T) {
 }
 
 func TestSanitizeLabelName(t *testing.T) {
+	t.Parallel()
+
 	testcases := map[string]struct {
 		input    string
 		expected string
@@ -258,6 +285,8 @@ func TestSanitizeLabelName(t *testing.T) {
 }
 
 func TestBufferedMetricTextOutputValue(t *testing.T) {
+	t.Parallel()
+
 	type metricData struct {
 		name  string
 		kvs   []string
@@ -338,7 +367,11 @@ func TestBufferedMetricTextOutputValue(t *testing.T) {
 	}
 
 	for name, tc := range testcases {
+		tc := tc
+
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
 			var buf bytes.Buffer
 			to := newBufferedMetricTextOutput(&buf, tc.kvs...)
 			for _, d := range tc.data {
@@ -358,6 +391,8 @@ func joinNewline(s ...string) string {
 }
 
 func TestBufferedMetricTextOutputStats(t *testing.T) {
+	t.Parallel()
+
 	type metricData struct {
 		name   string
 		kvs    []string
@@ -495,6 +530,8 @@ func TestBufferedMetricTextOutputStats(t *testing.T) {
 }
 
 func TestTargetMetricsCollectionWriteOne(t *testing.T) {
+	t.Parallel()
+
 	c := newTargetMetricsCollection()
 
 	require.Len(t, c, 0)
@@ -545,6 +582,8 @@ func TestTargetMetricsCollectionWriteOne(t *testing.T) {
 }
 
 func TestTargetMetricsCollectionWriteMany(t *testing.T) {
+	t.Parallel()
+
 	c := newTargetMetricsCollection()
 
 	require.Len(t, c, 0)
