@@ -513,8 +513,6 @@ func TestBufferedMetricTextOutputStats(t *testing.T) {
 }
 
 func TestTargetMetricsCollectionWriteOne(t *testing.T) {
-	t.Skip("Skipping broken test")
-
 	t.Parallel()
 
 	c := newTargetMetricsCollection()
@@ -550,6 +548,8 @@ func TestTargetMetricsCollectionWriteOne(t *testing.T) {
 	c.Write(&buf)
 
 	expected := joinNewline(
+		`probe_http_got_expected_response{url="http://example.com",method="GET",scenario="s",group="g"} 1`,
+		`probe_http_error_code{url="http://example.com",method="GET",scenario="s",group="g"} 0`,
 		`probe_http_info{tls_version="1.3",proto="1.1",k="v",url="http://example.com",method="GET",scenario="s",group="g"} 1`,
 		`probe_http_requests_total{url="http://example.com",method="GET",scenario="s",group="g"} 1`,
 		`probe_http_requests_failed_total{url="http://example.com",method="GET",scenario="s",group="g"} 0`,
@@ -561,6 +561,7 @@ func TestTargetMetricsCollectionWriteOne(t *testing.T) {
 		`probe_http_duration_seconds{phase="tls",url="http://example.com",method="GET",scenario="s",group="g"} 0.001`,
 		`probe_http_duration_seconds{phase="processing",url="http://example.com",method="GET",scenario="s",group="g"} 0.001`,
 		`probe_http_duration_seconds{phase="transfer",url="http://example.com",method="GET",scenario="s",group="g"} 0.001`,
+		`probe_http_total_duration_seconds{url="http://example.com",method="GET",scenario="s",group="g"} 0.001`,
 	)
 
 	require.Equal(t, expected, buf.String())
