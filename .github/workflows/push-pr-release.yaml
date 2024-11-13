@@ -45,8 +45,7 @@ jobs:
         # No point in running tests for foreign architectures we cannot run.
         if: steps.runner-info.outputs.native == 'true'
         run: |-
-          # TODO: Run also unit tests. They are currently broken and need fixing.
-          go test ./integration/...
+          go test ./...
 
       - name: Upload artifact to release
         if: github.event_name == 'release'
