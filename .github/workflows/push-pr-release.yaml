@@ -3,7 +3,7 @@ name: Build
 on:
   pull_request: {}
   release:
-    types: [ published ]
+    types: [published]
 
 # Needed to upload assets to releases.
 permissions:
@@ -15,10 +15,11 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        goos: [ linux, darwin ]
-        goarch: [ amd64, arm64 ]
+        goos: [linux, darwin]
+        goarch: [amd64, arm64]
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
       - name: Extract k6 version from go.mod
         id: version
         run: |-
@@ -32,6 +33,20 @@ jobs:
             grafana/xk6 build ${{ steps.version.outputs.k6 }} \
             --output "dist/sm-k6-${{ matrix.goos }}-${{ matrix.goarch }}" \
             --with sm=.
+      - name: Check runner architecture
+        id: runner-info
+        run: |-
+          native="false" runner_arch="${{runner.arch}}" runner_os="${{runner.os}}" goos="${{matrix.goos}}" goarch="${{matrix.goarch}}"
+          if [[ "${runner_arch/X/amd}" = "$goarch" ]] && [[ "${runner_os,,}" = "$goos" ]]; then
+            native="true"
+          fi
+          echo "native=$native" >> $GITHUB_OUTPUT
+      - name: Test
+        # No point in running tests for foreign architectures we cannot run.
+        if: steps.runner-info.outputs.native == 'true'
+        run: |-
+          # TODO: Run also unit tests. They are currently broken and need fixing.
+          go test ./integration/...
 
       - name: Upload artifact to release
         if: github.event_name == 'release'
