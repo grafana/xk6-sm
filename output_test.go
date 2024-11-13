@@ -2,9 +2,11 @@ package sm
 
 import (
 	"bytes"
+	"io"
 	"strings"
 	"testing"
 
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/require"
 	"go.k6.io/k6/metrics"
@@ -53,14 +55,12 @@ func TestOutputDescription(t *testing.T) {
 	require.NotEmpty(t, out.Description())
 }
 
-func TestOutputStart(t *testing.T) {
-	t.Skip("Skipping broken test")
-
+func TestOutputStartStop(t *testing.T) {
 	t.Parallel()
 
 	fs := afero.NewMemMapFs()
 
-	out, err := New(output.Params{ConfigArgument: "test.out", FS: fs})
+	out, err := New(output.Params{ConfigArgument: "test.out", FS: fs, Logger: nopLogger()})
 	require.NoError(t, err)
 
 	err = out.Start()
@@ -69,34 +69,13 @@ func TestOutputStart(t *testing.T) {
 	err = out.Stop()
 	require.NoError(t, err)
 
-	// At this point we should have an empty file.
-	fi, err := fs.Stat("test.out")
-	require.NoError(t, err)
-	require.Equal(t, int64(0), fi.Size())
-}
-
-// TestOutputStop tests that the metrics are correctly collected and written to the file.
-func TestOutputStop(t *testing.T) {
-	t.Skip("Skipping broken test")
-
-	t.Parallel()
-
-	fs := afero.NewMemMapFs()
-
-	out, err := New(output.Params{ConfigArgument: "test.out", FS: fs})
+	fileOut, err := fs.Open("test.out")
 	require.NoError(t, err)
 
-	err = out.Start()
+	output, err := io.ReadAll(fileOut)
 	require.NoError(t, err)
 
-	// TODO(mem): add samples
-
-	err = out.Stop()
-	require.NoError(t, err)
-
-	fi, err := fs.Stat("test.out")
-	require.NoError(t, err)
-	require.Equal(t, int64(0), fi.Size())
+	require.Contains(t, string(output), "probe_script_duration_seconds")
 }
 
 func makeSample(name string, value float64) metrics.Sample {
@@ -659,4 +638,11 @@ func TestTargetMetricsCollectionWriteMany(t *testing.T) {
 	)
 
 	require.Equal(t, expected, buf.String())
+}
+
+func nopLogger() *logrus.Logger {
+	l := logrus.New()
+	l.SetOutput(io.Discard)
+
+	return l
 }
