@@ -476,6 +476,15 @@ func TestBufferedMetricTextOutputStats(t *testing.T) {
 				`b_sum{key_4="4",key5="5",key_1="1",key_2="2"} 12`,
 			),
 		},
+		"grpc only tests give us no stats": {
+			data: []metricData{
+				{
+					name:   "test",
+					values: []float64{},
+				},
+			},
+			expected: "",
+		},
 	}
 
 	for name, tc := range testcases {
@@ -610,6 +619,35 @@ func TestTargetMetricsCollectionWriteMany(t *testing.T) {
 		`probe_http_duration_seconds_count{phase="transfer",url="http://example.com",method="GET",scenario="s",group="g"} 2`,
 		`probe_http_duration_seconds_sum{phase="transfer",url="http://example.com",method="GET",scenario="s",group="g"} 0.002`,
 	)
+
+	require.Equal(t, expected, buf.String())
+}
+
+func TestTargetMetricsCollectionWriteOneGrpcOnly(t *testing.T) {
+	c := newTargetMetricsCollection()
+
+	require.Len(t, c, 0)
+
+	c[targetId{
+		url:      "http://example.com",
+		method:   "GET",
+		scenario: "s",
+		group:    "g",
+	}] = targetMetrics{
+		status: []string{}, // status is empty for grpc only tests.
+	}
+
+	var buf bytes.Buffer
+
+	c.Write(&buf)
+
+	expected := joinNewline(
+		`probe_http_got_expected_response{url="http://example.com",method="GET",scenario="s",group="g"} 1`,
+		`probe_http_error_code{url="http://example.com",method="GET",scenario="s",group="g"} 0`,
+		`probe_http_info{url="http://example.com",method="GET",scenario="s",group="g"} 1`,
+		`probe_http_requests_total{url="http://example.com",method="GET",scenario="s",group="g"} 0`,
+		`probe_http_requests_failed_total{url="http://example.com",method="GET",scenario="s",group="g"} 0`,
+		`probe_http_ssl{url="http://example.com",method="GET",scenario="s",group="g"} 0`)
 
 	require.Equal(t, expected, buf.String())
 }
