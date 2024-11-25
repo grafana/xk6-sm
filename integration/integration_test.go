@@ -65,6 +65,13 @@ func TestSMK6(t *testing.T) {
 				wanted: wantedMetricsHttp,
 				script: scriptSingleRequest,
 			},
+			{
+				name:    "simpleBrowser",
+				wanted:  wantedMetricsBrowser,
+				script:  scriptSimpleBrowser,
+				browser: true,
+				timeout: time.Minute,
+			},
 		} {
 			tc := tc
 
@@ -197,3 +204,54 @@ export const options = {
 export default function () {
   const response = http.get('https://test-api.k6.io/public/crocodiles/');
 }`)
+
+var wantedMetricsBrowser = []string{
+	"probe_browser_web_vital_fcp",
+	"probe_browser_web_vital_cls",
+	"probe_browser_web_vital_lcp",
+	"probe_data_received_bytes",
+}
+
+var scriptSimpleBrowser = []byte(`
+import { browser } from 'k6/browser';
+import { check } from 'https://jslib.k6.io/k6-utils/1.5.0/index.js';
+
+export const options = {
+  scenarios: {
+    ui: {
+      executor: 'shared-iterations',
+      options: {
+        browser: {
+          type: 'chromium',
+        },
+      },
+    },
+  },
+  thresholds: {
+    checks: ['rate==1.0'],
+  },
+};
+
+export default async function () {
+  const context = await browser.newContext();
+  const page = await context.newPage();
+
+  try {
+    await page.goto('https://test.k6.io/');
+
+    await page.locator('input[name="login"]').type("admin");
+    await page.locator('input[name="password"]').type("123");
+
+    await Promise.all([
+      page.waitForNavigation(),
+      page.locator('input[type="submit"]').click(),
+    ]);
+
+    await check(page.locator("h2"), {
+      'header': async h2 => await h2.textContent() == "Welcome, admin!"
+    });
+  } finally {
+    await page.close();
+  }
+}
+`)
