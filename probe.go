@@ -9,9 +9,10 @@ import (
 	"go.k6.io/k6/metrics"
 )
 
-func init() {
-	modules.Register("k6/x/sm", NewRootModule())
-}
+// registration disabled due to: https://github.com/grafana/xk6-sm/issues/30
+// func init() {
+// 	 modules.Register("k6/x/sm", NewRootModule())
+// }
 
 type RootModule struct{}
 
