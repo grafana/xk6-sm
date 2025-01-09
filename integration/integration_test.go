@@ -206,10 +206,20 @@ export default function () {
 }`)
 
 var wantedMetricsBrowser = []string{
-	"probe_browser_web_vital_fcp",
+	"probe_browser_data_received",
+	"probe_browser_data_sent",
+	"probe_browser_http_req_duration",
+	"probe_browser_http_req_failed",
 	"probe_browser_web_vital_cls",
+	"probe_browser_web_vital_fcp",
 	"probe_browser_web_vital_lcp",
+	"probe_browser_web_vital_ttfb",
 	"probe_data_received_bytes",
+	"probe_data_sent_bytes",
+	"probe_iteration_duration_seconds",
+	"probe_script_duration_seconds",
+	"probe_vus",
+	"probe_vus_max",
 }
 
 var scriptSimpleBrowser = []byte(`
