@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"math"
 	"slices"
 	"strconv"
 	"strings"
@@ -141,7 +142,7 @@ func (ms *metricStore) Record(sample metrics.Sample) {
 // metrics in a 1:N fashion, where one existing metric produces N derived metrics. DeriveMetrics cannot aggregate
 // multiple metrics into one.
 func (ms *metricStore) DeriveMetrics() {
-	log := ms.logger.WithField("step", "derive")
+	log := ms.logger.WithField("step", "deriveMetrics")
 
 	for ts, v := range ms.store {
 		// Range over the existing metrics and create new ones, adding them to the map on the fly. This is safe as per
@@ -253,6 +254,61 @@ func (ms *metricStore) DeriveMetrics() {
 			v.value /= 1000 // convert from ms.
 			ms.store[newTS] = v
 			log.Debugf("Created %s{phase=%q} from %q", newTS.name, phase, ts.name)
+
+		// Split checks metric into two: check_rate and check_total.
+		// TODO: We used to remove the "check" label due to it being high cardinality. However, we are reporting
+		// metrics for URLs which are also high cardinality, so it does not make a lot of sense to remove one but not
+		// others. For now, we're keeping the check metric.
+		case "checks":
+			func() {
+				newTS := ts
+				newTS.name = "check_success_rate"
+				ms.store[newTS] = v
+				log.Debugf("Created %q from %q", newTS.name, ts.name)
+			}()
+
+			// Create counters for the times a check failed and succeeded.
+			// This is done by multiplying success rate by # of samples and rounding.
+			func() {
+				newTS := ts
+				newTS.name = "checks_total"
+				newTS.tags = newTS.tags.With("result", "pass")
+				ms.store[newTS] = value{value: math.Round(v.value * v.seenSamples), seenSamples: 1}
+				log.Debugf("check: %v", v)
+				log.Debugf("Created %q from %q", newTS.name, ts.name)
+			}()
+			func() {
+				newTS := ts
+				newTS.name = "checks_total"
+				newTS.tags = newTS.tags.With("result", "fail")
+				ms.store[newTS] = value{value: math.Round((1 - v.value) * v.seenSamples), seenSamples: 1}
+				log.Debugf("Created %q from %q", newTS.name, ts.name)
+			}()
+		}
+	}
+}
+
+// DeriveLogs produces logs from metrics.
+func (ms *metricStore) DeriveLogs(logger logrus.FieldLogger) {
+	for ts, v := range ms.store {
+		switch ts.name {
+		// Checks contains the number of checks performed and the rate of them that succeeded.
+		case "checks":
+			tags := ts.tags.Map()
+			if tags["group"] == "" {
+				// Be consistent with metrics, and ignore "group" tag if empty.
+				delete(tags, "group")
+			}
+
+			checkLogger := logger
+			for k, v := range tags {
+				checkLogger = checkLogger.WithField(k, v)
+			}
+			checkLogger.
+				WithField("value", v.value).
+				WithField("count", v.seenSamples).
+				WithField("metric", "checks_total").
+				Info("check result")
 		}
 	}
 }
@@ -321,6 +377,8 @@ func (ms *metricStore) RemoveMetrics() {
 		// Renamed to http_requests(_failed)_total.
 		"http_reqs":       true,
 		"http_req_failed": true,
+		// Replaced by check_rate and checks_total
+		"checks": true,
 	}
 
 	for ts := range ms.store {
@@ -422,6 +480,7 @@ func (o *Output) Stop() error {
 	})
 
 	o.store.DeriveMetrics()
+	o.store.DeriveLogs(o.logger)
 	o.store.RemoveMetrics()
 	o.store.RemoveLabels()
 
