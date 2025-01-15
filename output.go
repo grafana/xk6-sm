@@ -345,8 +345,8 @@ func (ms *metricStore) RemoveLabels() {
 			ts.tags = ts.tags.Without("proto")
 		}
 
-		if ts.name != "http_status_code" {
-			// Moved to a dedicated metric.
+		if ts.name != "http_requests_total" {
+			// Keep status label only on total requests.
 			log.Debugf("Removing status label from %q", ts.name)
 			ts.tags = ts.tags.Without("status")
 		}
