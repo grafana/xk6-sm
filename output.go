@@ -368,6 +368,9 @@ func (ms *metricStore) RemoveLabels() {
 		ts.tags = ts.tags.Without("error_code")
 		ts.tags = ts.tags.Without("expected_response")
 
+		// High cardinality label. This is already present in logs.
+		ts.tags = ts.tags.Without("error")
+
 		newStore[ts] = v
 	}
 
