@@ -223,6 +223,20 @@ func (ms *metricStore) DeriveMetrics() {
 				log.Tracef("Created %q from %q", errorCodeTS.name, ts.name)
 			}()
 
+			// TODO: We should revisit this. This keeps the old behavior, but I'm not sure having the status code as the
+			// value of a gauge is actually useful.
+			func() {
+				strCode, _ := ts.tags.Get("status")
+				newValue, _ := strconv.ParseFloat(strCode, 32)
+				statusCodeTS := timeseries{
+					name:       "http_status_code",
+					metricType: metrics.Gauge,
+					tags:       ts.tags,
+				}
+				ms.store[statusCodeTS] = value{newValue, 1}
+				log.Tracef("Created %q from %q", statusCodeTS.name, ts.name)
+			}()
+
 		// Rename to http_requests_failed_total
 		case "http_req_failed":
 			newTS := ts
