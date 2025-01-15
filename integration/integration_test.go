@@ -101,6 +101,26 @@ func TestSMK6(t *testing.T) {
 		}
 	})
 
+	t.Run("unwanted metrics are not present", func(t *testing.T) {
+		t.Parallel()
+
+		// probe_ prefix is automatically checked.
+		unwantedMetrics := []string{
+			"probe_checks",
+			"probe_http_reqs", "probe_http_req_failed",
+			"probe_data_sent", "probe_data_received",
+			"http_req_duration", "iteration_duration",
+			"http_req_blocked", "http_req_connecting", "http_req_receiving", "http_req_sending", "http_req_tls_handshaking", "http_req_waiting",
+			"vus", "vus_max", "iterations",
+		}
+
+		for _, wanted := range unwantedMetrics {
+			if slices.ContainsFunc(mfs, func(m *prometheus.MetricFamily) bool { return *m.Name == wanted }) {
+				t.Fatalf("Metric %q not found in output", wanted)
+			}
+		}
+	})
+
 	t.Run("labels are not present", func(t *testing.T) {
 		t.Parallel()
 
