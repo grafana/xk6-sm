@@ -369,8 +369,9 @@ func (ms *metricStore) RemoveMetrics() {
 	// the full slice does not fit on a cache line.
 	deletable := map[string]bool{
 		// Not useful in SM context:
-		"vus":     true,
-		"vus_max": true,
+		"vus":        true,
+		"vus_max":    true,
+		"iterations": true,
 		// Replaced by version with _bytes suffix:
 		"data_sent":     true,
 		"data_received": true,
