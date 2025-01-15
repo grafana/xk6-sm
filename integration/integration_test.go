@@ -3,6 +3,7 @@ package integration_test
 import (
 	"bytes"
 	"context"
+	_ "embed"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -10,6 +11,9 @@ import (
 	"testing"
 	"time"
 )
+
+//go:embed test-script.js
+var testScript []byte
 
 func TestSMK6(t *testing.T) {
 	t.Parallel()
@@ -19,14 +23,19 @@ func TestSMK6(t *testing.T) {
 		smk6 = filepath.Join("..", "dist", "sm-k6-"+runtime.GOOS+"-"+runtime.GOARCH)
 	}
 
+	_, err := os.Stat(smk6)
+	if err != nil {
+		t.Fatalf("sm-k6 binary does not seem to exist, must be compiled before running this test: %v", err)
+	}
+
 	t.Run("metrics", func(t *testing.T) {
 		for _, tc := range []struct {
 			name   string
 			script []byte
 		}{
 			{
-				name:   "singleRequest",
-				script: scriptSingleRequest,
+				name:   "testScript",
+				script: testScript,
 			},
 		} {
 			tc := tc
@@ -77,14 +86,3 @@ var wantedMetrics = []string{
 	"probe_iteration_duration_seconds",
 	"probe_script_duration_seconds",
 }
-
-var scriptSingleRequest = []byte(`
-import http from 'k6/http';
-
-export const options = {
-  iterations: 1,
-};
-
-export default function () {
-  const response = http.get('https://test-api.k6.io/public/crocodiles/');
-}`)
