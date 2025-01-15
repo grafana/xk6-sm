@@ -101,6 +101,24 @@ func TestSMK6(t *testing.T) {
 		}
 	})
 
+	t.Run("unwanted metrics are not present", func(t *testing.T) {
+		t.Parallel()
+
+		unwantedMetrics := []string{
+			"probe_checks",
+			"probe_http_reqs", "probe_http_req_failed",
+			"probe_data_sent", "probe_data_received",
+			"probe_http_req_duration", "probe_iteration_duration",
+			"probe_http_req_blocked", "probe_http_req_connecting", "probe_http_req_receiving", "probe_http_req_sending", "probe_http_req_tls_handshaking", "probe_http_req_waiting",
+		}
+
+		for _, wanted := range unwantedMetrics {
+			if slices.ContainsFunc(mfs, func(m *prometheus.MetricFamily) bool { return *m.Name == wanted }) {
+				t.Fatalf("Metric %q not found in output", wanted)
+			}
+		}
+	})
+
 	t.Run("labels are not present", func(t *testing.T) {
 		t.Parallel()
 
