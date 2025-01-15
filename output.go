@@ -237,6 +237,18 @@ func (ms *metricStore) DeriveMetrics() {
 				log.Tracef("Created %q from %q", statusCodeTS.name, ts.name)
 			}()
 
+			func() {
+				strCode, _ := ts.tags.Get("proto")
+				newValue, _ := strconv.ParseFloat(strings.TrimPrefix(strCode, "HTTP/"), 32)
+				httpVersionTS := timeseries{
+					name:       "http_version",
+					metricType: metrics.Gauge,
+					tags:       ts.tags,
+				}
+				ms.store[httpVersionTS] = value{newValue, 1}
+				log.Tracef("Created %q from %q", httpVersionTS.name, ts.name)
+			}()
+
 		// Rename to http_requests_failed_total
 		case "http_req_failed":
 			newTS := ts
