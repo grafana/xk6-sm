@@ -119,6 +119,30 @@ func TestSMK6(t *testing.T) {
 		}
 	})
 
+	t.Run("labels are present", func(t *testing.T) {
+		t.Parallel()
+
+		// requiredLabels maps metric names to label names that are required to be present on that metric.
+		requiredLabels := map[string][]string{
+			// FIXME: probe_http_info will not contain these labels if the request failed, so an instance of this metric
+			// fails this test.
+			//"probe_http_info":             {"tls_version", "proto"},
+			"probe_http_duration_seconds": {"phase"},
+			"probe_checks_total":          {"result"},
+		}
+
+		for _, mf := range mfs {
+			for _, m := range mf.Metric {
+				requiredLabelsForMetric := requiredLabels[*mf.Name]
+				for _, req := range requiredLabelsForMetric {
+					if !slices.ContainsFunc(m.Label, func(lp *prometheus.LabelPair) bool { return *lp.Name == req }) {
+						t.Fatalf("metric %q does not contain label %q", *mf.Name, req)
+					}
+				}
+			}
+		}
+	})
+
 	t.Run("labels are not present", func(t *testing.T) {
 		t.Parallel()
 
