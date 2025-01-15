@@ -33,7 +33,7 @@ type value struct {
 	value float64
 	// seenSamples stores the number of samples seen from the metric. This is used to perform averages without storing
 	// the full list of seen samples.
-	seenSamples float64
+	seenSamples int
 }
 
 // timeseries is a simplified version of k6 [metrics.TimeSeries].
@@ -122,7 +122,7 @@ func (ms *metricStore) Record(sample metrics.Sample) {
 
 	case metrics.Trend, metrics.Rate:
 		// Compute the average.
-		updated.value = ((old.value * old.seenSamples) + sample.Value) / (old.seenSamples + 1)
+		updated.value = ((old.value * float64(old.seenSamples)) + sample.Value) / (float64(old.seenSamples) + 1)
 
 	case metrics.Gauge:
 		// Replace with newest.
@@ -273,7 +273,7 @@ func (ms *metricStore) DeriveMetrics() {
 				newTS := ts
 				newTS.name = "checks_total"
 				newTS.tags = newTS.tags.With("result", "pass")
-				ms.store[newTS] = value{value: math.Round(v.value * v.seenSamples), seenSamples: 1}
+				ms.store[newTS] = value{value: math.Round(v.value * float64(v.seenSamples)), seenSamples: 1}
 				log.Debugf("check: %v", v)
 				log.Debugf("Created %q from %q", newTS.name, ts.name)
 			}()
@@ -281,7 +281,7 @@ func (ms *metricStore) DeriveMetrics() {
 				newTS := ts
 				newTS.name = "checks_total"
 				newTS.tags = newTS.tags.With("result", "fail")
-				ms.store[newTS] = value{value: math.Round((1 - v.value) * v.seenSamples), seenSamples: 1}
+				ms.store[newTS] = value{value: math.Round((1 - v.value) * float64(v.seenSamples)), seenSamples: 1}
 				log.Debugf("Created %q from %q", newTS.name, ts.name)
 			}()
 		}
