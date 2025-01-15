@@ -75,6 +75,7 @@ func TestSMK6(t *testing.T) {
 		t.Parallel()
 
 		wantedMetrics := []string{
+			"probe_checks_total",
 			"probe_data_received_bytes",
 			"probe_data_sent_bytes",
 			"probe_http_duration_seconds",
@@ -89,6 +90,8 @@ func TestSMK6(t *testing.T) {
 			"probe_http_version",
 			"probe_iteration_duration_seconds",
 			"probe_script_duration_seconds",
+			// Custom metrics:
+			"probe_waiting_time", "probe_my_counter", "probe_my_gauge",
 		}
 
 		for _, wanted := range wantedMetrics {
