@@ -438,6 +438,7 @@ func (o *Output) Start() error {
 		"output": o.Description(),
 		"ts":     o.start.UnixMilli(),
 	}).Debug("starting output")
+
 	return nil
 }
 
