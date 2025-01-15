@@ -65,8 +65,8 @@ func TestSMK6(t *testing.T) {
 		}
 
 		mfs = append(mfs, mf)
-
 	}
+
 	if len(mfs) == 0 {
 		t.Fatalf("no metrics decoded")
 	}
