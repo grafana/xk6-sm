@@ -1,8 +1,8 @@
 module github.com/grafana/xk6-sm
 
-go 1.21
+go 1.23
 
-toolchain go1.23.4
+toolchain go1.23.5
 
 require (
 	github.com/sirupsen/logrus v1.9.3
@@ -13,6 +13,7 @@ require (
 
 require (
 	github.com/cenkalti/backoff/v4 v4.3.0 // indirect
+	github.com/cenkalti/backoff/v5 v5.0.1 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fatih/color v1.18.0 // indirect
 	github.com/go-logr/logr v1.4.2 // indirect
