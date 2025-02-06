@@ -33,7 +33,7 @@ jobs:
             -e "GOOS=${{ matrix.goos }}" -e "GOARCH=${{ matrix.goarch }}" \
             grafana/xk6 build ${{ steps.version.outputs.k6 }} \
             --output "dist/sm-k6-${{ matrix.goos }}-${{ matrix.goarch }}" \
-            --with sm=.
+            --with github.com/grafana/xk6-sm=.
       - name: Check runner architecture
         id: runner-info
         run: |-
