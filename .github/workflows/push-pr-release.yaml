@@ -28,6 +28,7 @@ jobs:
           echo "k6=${k6version}" >> $GITHUB_OUTPUT
       - name: Build with xk6
         run: |-
+          mkdir -p dist
           docker run --rm -i -u "$(id -u):$(id -g)" -v "${PWD}:/xk6" \
             -e "GOOS=${{ matrix.goos }}" -e "GOARCH=${{ matrix.goarch }}" \
             grafana/xk6 build ${{ steps.version.outputs.k6 }} \
