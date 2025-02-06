@@ -173,4 +173,150 @@ func TestSMK6(t *testing.T) {
 			}
 		}
 	})
+
+	t.Run("metrics have expected values", func(t *testing.T) {
+		t.Parallel()
+
+		type testCase struct {
+			name         string
+			metricName   string // Metric name to assert.
+			metricLabels map[string]string
+			assertValue  func(float64) bool
+		}
+
+		for _, tc := range []testCase{
+			// Some global metrics.
+			{
+				name:        "Script duration seconds",
+				metricName:  "probe_script_duration_seconds",
+				assertValue: nonZero,
+			},
+			{
+				name:        "Sent bytes",
+				metricName:  "probe_data_sent_bytes",
+				assertValue: nonZero,
+			},
+			{
+				name:        "Received bytes",
+				metricName:  "probe_data_received_bytes",
+				assertValue: nonZero,
+			},
+			// Check-related metrics.
+			{
+				name:         "Passed checks metric",
+				metricName:   "probe_checks_total",
+				metricLabels: map[string]string{"result": "pass"},
+				assertValue:  equals(1),
+			},
+			{
+				name:         "Failed checks metric",
+				metricName:   "probe_checks_total",
+				metricLabels: map[string]string{"result": "fail"},
+				assertValue:  equals(2),
+			},
+			// Misc http metrics.
+			{
+				name:         "HTTP duration second has a duration-ish value",
+				metricName:   "probe_http_duration_seconds",
+				metricLabels: map[string]string{"phase": "processing", "url": "https://test-api.k6.io/public/crocodiles/"},
+				assertValue:  nonZero,
+			},
+			{
+				name:         "HTTP duration seconds has custom 'resolve' phase",
+				metricName:   "probe_http_duration_seconds",
+				metricLabels: map[string]string{"phase": "resolve", "url": "https://test-api.k6.io/public/crocodiles/"},
+				assertValue:  any, // Just fail if not present.
+			},
+			{
+				name:         "Error code for request that should succeed",
+				metricName:   "probe_http_error_code",
+				metricLabels: map[string]string{"url": "https://test-api.k6.io/public/crocodiles/"},
+				assertValue:  equals(0),
+			},
+			{
+				name:         "Error code for request that should fail",
+				metricName:   "probe_http_error_code",
+				metricLabels: map[string]string{"url": "http://fail.internal/public/crocodiles4/"},
+				assertValue:  equals(1101),
+			},
+			{
+				name:         "HTTP status code for a request that should succeed",
+				metricName:   "probe_http_status_code",
+				metricLabels: map[string]string{"url": "https://test-api.k6.io/public/crocodiles/"},
+				assertValue:  equals(200),
+			},
+			{
+				name:         "Expected response for a request that should succeed",
+				metricName:   "probe_http_got_expected_response",
+				metricLabels: map[string]string{"url": "https://test-api.k6.io/public/crocodiles/"},
+				assertValue:  equals(1),
+			},
+			{
+				name:         "Expected response for a request that should fail",
+				metricName:   "probe_http_got_expected_response",
+				metricLabels: map[string]string{"url": "https://test-api.k6.io/public/crocodiles2/"},
+				assertValue:  equals(0),
+			},
+			{
+				name:        "Total requests for each url",
+				metricName:  "probe_http_requests_total",
+				assertValue: equals(1),
+			},
+			{
+				name:         "HTTP version",
+				metricName:   "probe_http_version",
+				metricLabels: map[string]string{"url": "https://test-api.k6.io/public/crocodiles/"},
+				assertValue:  func(f float64) bool { return f >= 1.1 },
+			},
+		} {
+			tc := tc
+			t.Run(tc.name, func(t *testing.T) {
+				matchedMetrics := 0
+				for _, mf := range mfs {
+					if *mf.Name != tc.metricName {
+						// This is not the metric we are asserting on
+						continue
+					}
+
+				metric:
+					for _, m := range mf.Metric {
+						for _, labelPair := range m.Label {
+							// Check each label of this particular metric against the test case labels.
+							// If the metric has a label we're not matching for, that's okay, but it we are matching
+							// it then the value should match as well.
+							if actual, present := tc.metricLabels[*labelPair.Name]; present && actual != *labelPair.Value {
+								continue metric
+							}
+						}
+
+						matchedMetrics++
+						// Hack. Instead of check which type this metric has, and then use that one, rely on GetValue
+						// that does this check for us and return 0 if the type is not correct.
+						metricValue := m.Gauge.GetValue() + m.Counter.GetValue() + m.Untyped.GetValue()
+						if !tc.assertValue(metricValue) {
+							t.Fatalf("Metric value for %q got unexpected value %v (did not satisfy assert function)", *mf.Name, metricValue)
+						}
+					}
+				}
+
+				if matchedMetrics == 0 {
+					t.Fatalf("Test case for %q with specified labels matched no metric in extension output", tc.metricName)
+				}
+			})
+		}
+	})
+}
+
+func equals(expected float64) func(float64) bool {
+	return func(v float64) bool {
+		return v == expected
+	}
+}
+
+func nonZero(v float64) bool {
+	return v > 0
+}
+
+func any(float64) bool {
+	return true
 }
