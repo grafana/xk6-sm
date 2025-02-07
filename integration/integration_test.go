@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"slices"
+	"strings"
 	"testing"
 	"time"
 
@@ -303,6 +304,16 @@ func TestSMK6(t *testing.T) {
 					t.Fatalf("Test case for %q with specified labels matched no metric in extension output", tc.metricName)
 				}
 			})
+		}
+	})
+
+	t.Run("metrics have required prefix", func(t *testing.T) {
+		t.Parallel()
+
+		for _, m := range mfs {
+			if !strings.HasPrefix(*m.Name, "probe_") {
+				t.Fatalf("Metric %q not have the required prefix", *m.Name)
+			}
 		}
 	})
 }
