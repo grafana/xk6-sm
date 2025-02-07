@@ -24,6 +24,10 @@ export default function () {
   myCounter.add(2);
 
   check({}, {
+      'something': () => true,
+    }
+  );
+  check({}, {
       'something': () => false,
     }
   );
