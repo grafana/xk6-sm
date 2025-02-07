@@ -8,4 +8,4 @@ Use [xk6](https://github.com/grafana/xk6). See the CI/CD pipelines for a full ex
 
 ## Release process
 
-Create a release using the GitHub UI or `gh create release`. A CI/CD pipeline will build the artifacts and attach them to the release.
+Merge the release PR created by release-please. Once a release is created in github, a CI/CD pipeline will build the artifacts and attach them to the release.
