@@ -289,13 +289,25 @@ func (ms *metricStore) DeriveMetrics() {
 			ms.store[newTS] = v
 			log.Tracef("Created %q from %q", newTS.name, ts.name)
 
-		// Squash multiple duration metrics into one with a "phase" label.
+		// Squash multiple duration metrics into one with a "phase" label, which for historical reasons have slightly
+		// different names to k6 phases.
 		// Note that SM also outputs a http_duration_seconds{phase="resolve"} metric, but this one is hardcoded to zero
 		// and generated from http_requ_duration.
 		case "http_req_blocked", "http_req_connecting", "http_req_receiving", "http_req_sending", "http_req_tls_handshaking", "http_req_waiting":
+			phase := strings.TrimPrefix(ts.name, "http_req_")
+			switch phase {
+			case "connecting":
+				phase = "connect"
+			case "tls_handshaking":
+				phase = "tls"
+			case "waiting":
+				phase = "processing"
+			case "receiving":
+				phase = "transfer"
+			}
+
 			newTS := ts
 			newTS.name = "http_duration_seconds"
-			phase := strings.TrimPrefix(ts.name, "http_req_")
 			newTS.tags = newTS.tags.With("phase", phase)
 			v.value /= 1000 // convert from ms.
 			ms.store[newTS] = v
