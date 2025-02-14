@@ -263,13 +263,25 @@ func (ms *metricStore) DeriveMetrics() {
 			ms.store[wihtSuffixTS] = v
 			log.Tracef("Created %q from %q", wihtSuffixTS.name, ts.name)
 
-		// Tweak name and units.
 		case "http_req_duration":
-			newTS := ts
-			newTS.name = "http_total_duration_seconds"
-			v.value /= 1000 // convert from ms.
-			ms.store[newTS] = v
-			log.Tracef("Created %q from %q", newTS.name, ts.name)
+			// Tweak name and units.
+			func() {
+				newTS := ts
+				newTS.name = "http_total_duration_seconds"
+				v.value /= 1000 // convert from ms.
+				ms.store[newTS] = v
+				log.Tracef("Created %q from %q", newTS.name, ts.name)
+			}()
+			// Additionally, use the labels of this metric to create a made up "resolve" phase with value of zero.
+			func() {
+				newTS := ts
+				newTS.name = "http_duration_seconds"
+				newTS.tags = newTS.tags.With("phase", "resolve")
+				v.value = 0
+				ms.store[newTS] = v
+				log.Tracef("Created %s{phase=%q} from %q", newTS.name, "resolve", ts.name)
+			}()
+
 		case "iteration_duration":
 			newTS := ts
 			newTS.name = "iteration_duration_seconds"
@@ -278,6 +290,8 @@ func (ms *metricStore) DeriveMetrics() {
 			log.Tracef("Created %q from %q", newTS.name, ts.name)
 
 		// Squash multiple duration metrics into one with a "phase" label.
+		// Note that SM also outputs a http_duration_seconds{phase="resolve"} metric, but this one is hardcoded to zero
+		// and generated from http_requ_duration.
 		case "http_req_blocked", "http_req_connecting", "http_req_receiving", "http_req_sending", "http_req_tls_handshaking", "http_req_waiting":
 			newTS := ts
 			newTS.name = "http_duration_seconds"
