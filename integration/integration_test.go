@@ -222,10 +222,35 @@ func TestSMK6(t *testing.T) {
 				metricLabels: map[string]string{"phase": "processing", "url": "https://test-api.k6.io/public/crocodiles/"},
 				assertValue:  nonZero,
 			},
+			// Custom http phases. Check for each one individually as we use slightly different names than k6 uses.
 			{
-				name:         "HTTP duration seconds has custom 'resolve' phase",
+				name:         "HTTP duration seconds has phase=resolve",
 				metricName:   "probe_http_duration_seconds",
 				metricLabels: map[string]string{"phase": "resolve", "url": "https://test-api.k6.io/public/crocodiles/"},
+				assertValue:  any, // Just fail if not present.
+			},
+			{
+				name:         "HTTP duration seconds has phase=connect",
+				metricName:   "probe_http_duration_seconds",
+				metricLabels: map[string]string{"phase": "connect", "url": "https://test-api.k6.io/public/crocodiles/"},
+				assertValue:  any, // Just fail if not present.
+			},
+			{
+				name:         "HTTP duration seconds has phase=tls",
+				metricName:   "probe_http_duration_seconds",
+				metricLabels: map[string]string{"phase": "tls", "url": "https://test-api.k6.io/public/crocodiles/"},
+				assertValue:  any, // Just fail if not present.
+			},
+			{
+				name:         "HTTP duration seconds has phase=processing",
+				metricName:   "probe_http_duration_seconds",
+				metricLabels: map[string]string{"phase": "processing", "url": "https://test-api.k6.io/public/crocodiles/"},
+				assertValue:  any, // Just fail if not present.
+			},
+			{
+				name:         "HTTP duration seconds has phase=transfer",
+				metricName:   "probe_http_duration_seconds",
+				metricLabels: map[string]string{"phase": "transfer", "url": "https://test-api.k6.io/public/crocodiles/"},
 				assertValue:  any, // Just fail if not present.
 			},
 			{
