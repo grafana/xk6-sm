@@ -172,10 +172,14 @@ func (ms *metricStore) DeriveMetrics() {
 			}()
 
 			func() {
+				tags := ts.tags
+				if tlsVersion, found := ts.tags.Get("tls_version"); found {
+					tags = ts.tags.Without("tls_version").With("tls_version", strings.TrimPrefix(tlsVersion, "tls"))
+				}
 				infoTS := timeseries{
 					name:       "http_info",
 					metricType: metrics.Gauge,
-					tags:       ts.tags,
+					tags:       tags,
 				}
 				ms.store[infoTS] = value{1, 1}
 				log.Tracef("Created %q from %q", infoTS.name, ts.name)
