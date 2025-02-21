@@ -294,6 +294,13 @@ func TestSMK6(t *testing.T) {
 				metricLabels: map[string]string{"url": "https://test-api.k6.io/public/crocodiles/"},
 				assertValue:  func(f float64) bool { return f >= 1.1 },
 			},
+			{
+				name:       "TLS version label value",
+				metricName: "probe_http_info",
+				// Test for a paticular URL to avoid matching a failed request, which has no TLS version.
+				metricLabels: map[string]string{"tls_version": "1.3", "url": "https://test-api.k6.io/public/crocodiles/"},
+				assertValue:  any, // Just fail if not present.
+			},
 		} {
 			tc := tc
 			t.Run(tc.name, func(t *testing.T) {
