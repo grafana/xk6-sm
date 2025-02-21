@@ -304,6 +304,8 @@ func TestSMK6(t *testing.T) {
 		} {
 			tc := tc
 			t.Run(tc.name, func(t *testing.T) {
+				t.Parallel()
+
 				matchedMetrics := 0
 				for _, mf := range mfs {
 					if *mf.Name != tc.metricName {
