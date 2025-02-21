@@ -538,7 +538,7 @@ func (o *Output) Stop() error {
 			},
 			Tags: (*metrics.TagSet)(atlas.New()),
 		},
-		Value: float64(duration.Milliseconds()),
+		Value: float64(duration.Seconds()),
 	})
 
 	o.store.DeriveMetrics()
