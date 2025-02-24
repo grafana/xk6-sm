@@ -110,7 +110,7 @@ func TestMetricStore(t *testing.T) {
 		}
 		gaugeB := metrics.TimeSeries{
 			Metric: &metrics.Metric{
-				Name: "im_gaguge_b",
+				Name: "im_gauge_b",
 				Type: metrics.Gauge,
 			},
 			Tags: nil,
