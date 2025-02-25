@@ -385,13 +385,6 @@ func (ms *metricStore) RemoveLabels() {
 	newStore := make(map[timeseries]value, len(ms.store))
 
 	for ts, v := range ms.store {
-		if ts.name != "http_info" {
-			// We derived this metric earlier. Now we remove these tags from every other.
-			log.Tracef("Removing http info labels from %q", ts.name)
-			ts.tags = ts.tags.Without("tls_version")
-			ts.tags = ts.tags.Without("proto")
-		}
-
 		// The documentation at https://k6.io/docs/using-k6/tags-and-groups/ seems to suggest that
 		// "group" should not be empty (it shouldn't be there if there's a single group), but I keep
 		// seeing instances of an empty group name.

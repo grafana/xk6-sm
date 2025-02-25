@@ -152,8 +152,6 @@ func TestSMK6(t *testing.T) {
 		// If a metric contains a label (key), and that metric is not in the list (value), the test fails.
 		type exceptForMetrics []string
 		forbiddenLabels := map[string]exceptForMetrics{
-			"tls_version":       {"probe_http_info"},
-			"proto":             {"probe_http_info"},
 			"error":             {"probe_http_info"},
 			"expected_response": {"probe_http_got_expected_response"},
 			"group":             {},
