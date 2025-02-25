@@ -3,7 +3,7 @@ name: Build
 on:
   pull_request: {}
   release:
-    types: [ published ]
+    types: [published]
 
 # Needed to upload assets to releases.
 permissions:
@@ -15,10 +15,11 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        goos: [ linux ]
-        goarch: [ amd64, arm64 ]
+        goos: [linux, darwin]
+        goarch: [amd64, arm64]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: actions/setup-go@f111f3307d8850f501ac008e886eec1fd1932a34 # v5
       - name: Extract k6 version from go.mod
         id: version
         run: |-
@@ -27,11 +28,12 @@ jobs:
           echo "k6=${k6version}" >> $GITHUB_OUTPUT
       - name: Build with xk6
         run: |-
+          mkdir -p dist
           docker run --rm -i -u "$(id -u):$(id -g)" -v "${PWD}:/xk6" \
             -e "GOOS=${{ matrix.goos }}" -e "GOARCH=${{ matrix.goarch }}" \
             grafana/xk6 build ${{ steps.version.outputs.k6 }} \
             --output "dist/sm-k6-${{ matrix.goos }}-${{ matrix.goarch }}" \
-            --with sm=.
+            --with github.com/grafana/xk6-sm=.
 
       - name: Upload artifact to release
         if: github.event_name == 'release'
