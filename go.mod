@@ -9,6 +9,12 @@ require (
 	go.k6.io/k6 v0.53.0
 )
 
+// Hotfix for CVE-2024-45337
+replace golang.org/x/crypto v0.25.0 => golang.org/x/crypto v0.33.0
+
+// Hotfix for CVE-2024-45338
+replace golang.org/x/net v0.25.0 => golang.org/x/crypto v0.33.0
+
 require (
 	github.com/cenkalti/backoff/v4 v4.3.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
