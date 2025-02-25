@@ -253,12 +253,27 @@ func (ms *metricStore) DeriveMetrics() {
 				log.Tracef("Created %q from %q", httpVersionTS.name, ts.name)
 			}()
 
-		// Rename to http_requests_failed_total
+		// http_req_failed is a rate, and traditionally we have reported http_requests_failed_total (as a counter)
+		// Here we derive the total from the rate.
 		case "http_req_failed":
-			newTS := ts
-			newTS.name = "http_requests_failed_total"
-			ms.store[newTS] = v
-			log.Tracef("Created %q from %q", newTS.name, ts.name)
+			// Derive the counter
+			func() {
+				failedTotal := ts
+				failedTotal.name = "http_requests_failed_total"
+				ms.store[failedTotal] = value{
+					// Number of failures is the (computed) avg failure rate times the number of samples.
+					value:       math.Round(float64(v.seenSamples) * v.value),
+					seenSamples: 1,
+				}
+				log.Tracef("Created %q from %q", failedTotal.name, ts.name)
+			}()
+			// Also rename it to s/req/requests.
+			func() {
+				newTS := ts
+				newTS.name = "http_requests_failed"
+				ms.store[newTS] = v
+				log.Tracef("Created %q from %q", newTS.name, ts.name)
+			}()
 
 		// Add _bytes suffix to data_sent and data_received.
 		case "data_sent", "data_received":
@@ -426,7 +441,7 @@ func (ms *metricStore) RemoveMetrics() {
 		"iteration_duration": true,
 		// Squashed into a single metric with a phase label.
 		"http_req_blocked": true, "http_req_connecting": true, "http_req_receiving": true, "http_req_sending": true, "http_req_tls_handshaking": true, "http_req_waiting": true,
-		// Renamed to http_requests(_failed)_total.
+		// Renamed s/reqs/requests.
 		"http_reqs":       true,
 		"http_req_failed": true,
 		// Replaced by check_rate and checks_total
