@@ -553,7 +553,7 @@ func (o *Output) Stop() error {
 	o.store.RemoveLabels()
 
 	for ts, value := range o.store.store {
-		fmt.Fprintf(o.out, "probe_%s%s %f\n", sanitizeLabelName(ts.name), marshalPrometheus(ts.tags.Map()), value.value)
+		fmt.Fprintf(o.out, "probe_%s%s %s\n", sanitizeLabelName(ts.name), marshalPrometheus(ts.tags.Map()), strconv.FormatFloat(value.value, 'G', 12, 64))
 	}
 
 	return nil
