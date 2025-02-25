@@ -33,6 +33,8 @@ jobs:
             -e "GOOS=${{ matrix.goos }}" -e "GOARCH=${{ matrix.goarch }}" \
             grafana/xk6 build ${{ steps.version.outputs.k6 }} \
             --output "dist/sm-k6-${{ matrix.goos }}-${{ matrix.goarch }}" \
+            --replace golang.org/x/crypto=golang.org/x/crypto@v0.33.0 \
+            --replace golang.org/x/net=golang.org/x/net@v0.33.0 \
             --with github.com/grafana/xk6-sm=.
 
       - name: Upload artifact to release
