@@ -41,5 +41,6 @@ export default function () {
   http.get(`https://${testHost}/public/crocodiles2/`); // 404
   http.get(`https://${testHost}/public/crocodiles3/`); // 404
   http.get(`https://${testHost}/public/crocodiles4/`); // 404
+  http.get(`https://${testHost}/public/crocodiles4/`); // Second 404, to assert differences between failure rate and counter.
   http.get(`http://fail.internal/public/crocodiles4/`); // failed
 }
