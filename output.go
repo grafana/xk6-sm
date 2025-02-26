@@ -5,12 +5,13 @@ import (
 	"fmt"
 	"io"
 	"math"
-	"regexp"
-	"sort"
+	"slices"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
+	"github.com/mstoykov/atlas"
 	"github.com/sirupsen/logrus"
 	"go.k6.io/k6/metrics"
 	"go.k6.io/k6/output"
@@ -18,18 +19,448 @@ import (
 
 const (
 	ExtensionName = "sm"
-	RawURLTagName = "__raw_url__"
 )
 
 func init() {
 	output.RegisterExtension(ExtensionName, New)
 }
 
+// Value stores the value of a timeseries, after aggregation.
+// Samples are aggregated into a single value as they arrive, as in SM context we are not interested in keeping more
+// than one datapoint per timeseries.
+type value struct {
+	// value contains the numeric value of the metric, after aggregation.
+	value float64
+	// seenSamples stores the number of samples seen from the metric. This is used to perform averages in constant
+	// space, that is, without storing the full list of seen samples.
+	seenSamples int
+}
+
+// timeseries is a simplified version of k6 [metrics.TimeSeries].
+// It can be used as a map key for the same reason [metrics.TimeSeries] can: [metrics.TagSet] is immutable (modifying it
+// clones it and returns a new pointer), and k6 promises to always reuse the same TagSet instance instance for each
+// given timeseries whose TagSet contents are the same.
+type timeseries struct {
+	name       string
+	metricType metrics.MetricType
+	tags       *metrics.TagSet
+}
+
+// timeseriesFromK6 simplifies k6's [metrics.TimeSeries] into timeseries.
+//
+// Equality of the arguments is preserved: If t1 t2 are of type [metrics.TimeSeries], and t1 == t2, then
+// timeseriesFromK6(t1) == timeseriesFromK6(t2).
+func timeseriesFromK6(k6Ts metrics.TimeSeries) timeseries {
+	return timeseries{
+		name:       k6Ts.Metric.Name,
+		metricType: k6Ts.Metric.Type,
+		tags:       k6Ts.Tags,
+	}
+}
+
+// metricStore stores and processes k6 samples according to SM needs. It can aggregate samples as they arrive in
+// constant memory, and peform post-processing (metric renaming and manipulation) when k6 is done executing and all
+// samples have been aggregated.
+//
+// Post-processing does four things:
+// - Derive new timeseries from existing ones, in a 1:N mapping. This includes cloning timeseries under new names,
+// changing units, or creating new metrics from labels, for example.
+// - Derive logs from timeseries.
+// - Remove specific timeseries.
+// - Remove specific labels from specific timeseries.
+//
+// Post-processing implemented here cannot do:
+// - Promql-like aggregations, e.g. aggregate multiple timeseries into one
+// - N:M or N:1 metric mappings
+//
+// TODO: We need to store samples on a map in order to perform the aggregation efficiently, but for the post-processing
+// step, where the map of metrics is simply walked through, a slice would be faster. Converting the map to slice before
+// post-processing would be a good performance optimization to make here.
+type metricStore struct {
+	logger logrus.FieldLogger
+	mtx    sync.Mutex
+	store  map[timeseries]value
+}
+
+func newMetricStore(size int) *metricStore {
+	logger := logrus.New()
+	logger.Out = io.Discard
+
+	return &metricStore{
+		store:  make(map[timeseries]value, size),
+		logger: logger,
+	}
+}
+
+func (ms *metricStore) Len() int {
+	return len(ms.store)
+}
+
+// Record inserts a new sample into the store in a thread-safe way, aggregating it if the timeseries was already present
+// in the metricStore.
+// Record locks a mutex, and thus should be as fast as k6's SampleBuffer.
+func (ms *metricStore) Record(sample metrics.Sample) {
+	log := ms.logger.WithField("step", "record")
+
+	ts := timeseriesFromK6(sample.TimeSeries)
+
+	ms.mtx.Lock()
+	defer ms.mtx.Unlock()
+
+	old, found := ms.store[ts]
+	if !found {
+		// Timeseries not already in store, just add it.
+		ms.store[ts] = value{
+			value:       sample.Value,
+			seenSamples: 1,
+		}
+
+		return
+	}
+
+	log.Tracef("Aggregating sample (%f) for %q into existing (%f) value", sample.Value, ts.name, old.value)
+
+	updated := old
+	switch ts.metricType {
+	case metrics.Counter:
+		// Sum values.
+		updated.value += sample.Value
+
+	case metrics.Trend, metrics.Rate:
+		// Compute the average.
+		updated.value = ((old.value * float64(old.seenSamples)) + sample.Value) / (float64(old.seenSamples) + 1)
+
+	case metrics.Gauge:
+		// Replace with newest.
+		updated.value = sample.Value
+	default:
+		log.Tracef("Unknown metric type %q for %q, keeping previous sample without aggregating", ts.metricType, ts.name)
+		return
+	}
+
+	updated.seenSamples++
+	ms.store[ts] = updated
+}
+
+// DeriveMetrics creates new metrics from existing ones. These metrics are created either to have some consistency with
+// other SM checks, or as a preparation step to set labels on them that will then be removed from others.
+// Metrics are derived sequentially, on a single pass. This means that DeriveMetrics can only be extended to derive
+// metrics in a 1:N fashion, where one existing metric produces N derived metrics. DeriveMetrics cannot aggregate
+// multiple metrics into one.
+func (ms *metricStore) DeriveMetrics() {
+	log := ms.logger.WithField("step", "deriveMetrics")
+
+	for ts, v := range ms.store {
+		// Range over the existing metrics and create new ones, adding them to the map on the fly. This is safe as per
+		// the go spec, with the only caveat that whether new values will be iterated over is undefined. We do not care
+		// about that.
+		// We need to range over the map instead of fetching these metrics directly, as each metric may appear multiple
+		// time with different labels (e.g. different URLs).
+		// Inline funcs are used to scope variables and avoid copy-paste bugs.
+		switch ts.name {
+		// Create specific metrics containing info about http calls.
+		// Additionally, clone this metric as http_requests_total.
+		case "http_reqs":
+			func() {
+				renamedTS := timeseries{
+					name:       "http_requests_total",
+					metricType: metrics.Counter,
+					tags:       ts.tags,
+				}
+				ms.store[renamedTS] = v
+				log.Tracef("Created %q from %q", renamedTS.name, ts.name)
+			}()
+
+			func() {
+				tags := ts.tags
+				if tlsVersion, found := ts.tags.Get("tls_version"); found {
+					tags = ts.tags.Without("tls_version").With("tls_version", strings.TrimPrefix(tlsVersion, "tls"))
+				}
+				infoTS := timeseries{
+					name:       "http_info",
+					metricType: metrics.Gauge,
+					tags:       tags,
+				}
+				ms.store[infoTS] = value{1, 1}
+				log.Tracef("Created %q from %q", infoTS.name, ts.name)
+			}()
+
+			func() {
+				newValue := 0.0
+				if _, found := ts.tags.Get("tls_version"); found {
+					newValue = 1.0
+				}
+
+				sslTS := timeseries{
+					name:       "http_ssl",
+					metricType: metrics.Gauge,
+					tags:       ts.tags,
+				}
+				ms.store[sslTS] = value{newValue, 1}
+				log.Tracef("Created %q from %q", sslTS.name, ts.name)
+			}()
+
+			func() {
+				newValue := 0.0
+				if expected, _ := ts.tags.Get("expected_response"); expected == "true" {
+					newValue = 1.0
+				}
+
+				responseTS := timeseries{
+					name:       "http_got_expected_response",
+					metricType: metrics.Gauge,
+					tags:       ts.tags,
+				}
+				ms.store[responseTS] = value{newValue, 1}
+				log.Tracef("Created %q from %q", responseTS.name, ts.name)
+			}()
+
+			func() {
+				strCode, _ := ts.tags.Get("error_code")
+				newValue, _ := strconv.ParseFloat(strCode, 32)
+				errorCodeTS := timeseries{
+					name:       "http_error_code",
+					metricType: metrics.Gauge,
+					tags:       ts.tags,
+				}
+				ms.store[errorCodeTS] = value{newValue, 1}
+				log.Tracef("Created %q from %q", errorCodeTS.name, ts.name)
+			}()
+
+			// TODO: We should revisit this. This keeps the old behavior, but I'm not sure having the status code as the
+			// value of a gauge is actually useful.
+			func() {
+				strCode, _ := ts.tags.Get("status")
+				newValue, _ := strconv.ParseFloat(strCode, 32)
+				statusCodeTS := timeseries{
+					name:       "http_status_code",
+					metricType: metrics.Gauge,
+					tags:       ts.tags,
+				}
+				ms.store[statusCodeTS] = value{newValue, 1}
+				log.Tracef("Created %q from %q", statusCodeTS.name, ts.name)
+			}()
+
+			func() {
+				strCode, _ := ts.tags.Get("proto")
+				newValue, _ := strconv.ParseFloat(strings.TrimPrefix(strCode, "HTTP/"), 32)
+				httpVersionTS := timeseries{
+					name:       "http_version",
+					metricType: metrics.Gauge,
+					tags:       ts.tags,
+				}
+				ms.store[httpVersionTS] = value{newValue, 1}
+				log.Tracef("Created %q from %q", httpVersionTS.name, ts.name)
+			}()
+
+		// http_req_failed is a rate, and traditionally we have reported http_requests_failed_total (as a counter)
+		// Here we derive the total from the rate.
+		case "http_req_failed":
+			// Derive the counter
+			func() {
+				failedTotal := ts
+				failedTotal.name = "http_requests_failed_total"
+				ms.store[failedTotal] = value{
+					// Number of failures is the (computed) avg failure rate times the number of samples.
+					value:       math.Round(float64(v.seenSamples) * v.value),
+					seenSamples: 1,
+				}
+				log.Tracef("Created %q from %q", failedTotal.name, ts.name)
+			}()
+			// Also rename it to s/req/requests.
+			func() {
+				newTS := ts
+				newTS.name = "http_requests_failed"
+				ms.store[newTS] = v
+				log.Tracef("Created %q from %q", newTS.name, ts.name)
+			}()
+
+		// Add _bytes suffix to data_sent and data_received.
+		case "data_sent", "data_received":
+			wihtSuffixTS := ts
+			wihtSuffixTS.name = wihtSuffixTS.name + "_bytes"
+			ms.store[wihtSuffixTS] = v
+			log.Tracef("Created %q from %q", wihtSuffixTS.name, ts.name)
+
+		case "http_req_duration":
+			// Tweak name and units.
+			func() {
+				newTS := ts
+				newTS.name = "http_total_duration_seconds"
+				v.value /= 1000 // convert from ms.
+				ms.store[newTS] = v
+				log.Tracef("Created %q from %q", newTS.name, ts.name)
+			}()
+			// Additionally, use the labels of this metric to create a made up "resolve" phase with value of zero.
+			func() {
+				newTS := ts
+				newTS.name = "http_duration_seconds"
+				newTS.tags = newTS.tags.With("phase", "resolve")
+				v.value = 0
+				ms.store[newTS] = v
+				log.Tracef("Created %s{phase=%q} from %q", newTS.name, "resolve", ts.name)
+			}()
+
+		case "iteration_duration":
+			newTS := ts
+			newTS.name = "iteration_duration_seconds"
+			v.value /= 1000 // convert from ms.
+			ms.store[newTS] = v
+			log.Tracef("Created %q from %q", newTS.name, ts.name)
+
+		// Squash multiple duration metrics into one with a "phase" label, which for historical reasons have slightly
+		// different names to k6 phases.
+		// Note that SM also outputs a http_duration_seconds{phase="resolve"} metric, but this one is hardcoded to zero
+		// and generated from http_requ_duration.
+		case "http_req_blocked", "http_req_connecting", "http_req_receiving", "http_req_sending", "http_req_tls_handshaking", "http_req_waiting":
+			phase := strings.TrimPrefix(ts.name, "http_req_")
+			switch phase {
+			case "connecting":
+				phase = "connect"
+			case "tls_handshaking":
+				phase = "tls"
+			case "waiting":
+				phase = "processing"
+			case "receiving":
+				phase = "transfer"
+			}
+
+			newTS := ts
+			newTS.name = "http_duration_seconds"
+			newTS.tags = newTS.tags.With("phase", phase)
+			v.value /= 1000 // convert from ms.
+			ms.store[newTS] = v
+			log.Tracef("Created %s{phase=%q} from %q", newTS.name, phase, ts.name)
+
+		// Split checks metric into two: check_rate and check_total.
+		// TODO: We used to remove the "check" label due to it being high cardinality. However, we are reporting
+		// metrics for URLs which are also high cardinality, so it does not make a lot of sense to remove one but not
+		// others. For now, we're keeping the check metric.
+		case "checks":
+			func() {
+				newTS := ts
+				newTS.name = "check_success_rate"
+				ms.store[newTS] = v
+				log.Tracef("Created %q from %q", newTS.name, ts.name)
+			}()
+
+			// Create counters for the times a check failed and succeeded.
+			// This is done by multiplying success rate by # of samples and rounding.
+			func() {
+				newTS := ts
+				newTS.name = "checks_total"
+				newTS.tags = newTS.tags.With("result", "pass")
+				ms.store[newTS] = value{value: math.Round(v.value * float64(v.seenSamples)), seenSamples: 1}
+				log.Tracef("Created %q from %q", newTS.name, ts.name)
+			}()
+			func() {
+				newTS := ts
+				newTS.name = "checks_total"
+				newTS.tags = newTS.tags.With("result", "fail")
+				ms.store[newTS] = value{value: math.Round((1 - v.value) * float64(v.seenSamples)), seenSamples: 1}
+				log.Tracef("Created %q from %q", newTS.name, ts.name)
+			}()
+		}
+	}
+}
+
+// DeriveLogs produces logs from metrics.
+func (ms *metricStore) DeriveLogs(logger logrus.FieldLogger) {
+	for ts, v := range ms.store {
+		switch ts.name {
+		// Checks contains the number of checks performed and the rate of them that succeeded.
+		case "checks":
+			tags := ts.tags.Map()
+			if tags["group"] == "" {
+				// Be consistent with metrics, and ignore "group" tag if empty.
+				delete(tags, "group")
+			}
+
+			checkLogger := logger
+			for k, v := range tags {
+				checkLogger = checkLogger.WithField(k, v)
+			}
+			checkLogger.
+				WithField("value", v.value).
+				WithField("count", v.seenSamples).
+				WithField("metric", "checks_total").
+				Info("check result")
+		}
+	}
+}
+
+// RemoveLabels returns a new metricStore after removing labels not interesting for SM from all, or some metrics in the
+// store.
+func (ms *metricStore) RemoveLabels() {
+	log := ms.logger.WithField("step", "removeLabels")
+
+	// When we remove labels, we create a new TS without the label and store it on the map. As the new TS would have the
+	// same name, we cannot store it on the same map we're iterating over, or we could risk iterating over the newly
+	// added key. We need to duplicate the map for this.
+	newStore := make(map[timeseries]value, len(ms.store))
+
+	for ts, v := range ms.store {
+		// The documentation at https://k6.io/docs/using-k6/tags-and-groups/ seems to suggest that
+		// "group" should not be empty (it shouldn't be there if there's a single group), but I keep
+		// seeing instances of an empty group name.
+		if group, found := ts.tags.Get("group"); found && group == "" {
+			log.Tracef("Removing empty group label from %q", ts.name)
+			ts.tags = ts.tags.Without("group")
+		}
+
+		// Moved to dedicated metrics as values instead of tags.
+		ts.tags = ts.tags.Without("error_code")
+		ts.tags = ts.tags.Without("expected_response")
+
+		// High cardinality label. This is already present in logs.
+		ts.tags = ts.tags.Without("error")
+
+		newStore[ts] = v
+	}
+
+	ms.store = newStore
+}
+
+// RemoveMetrics removes metrics that are not interesting in SM context.
+func (ms *metricStore) RemoveMetrics() {
+	log := ms.logger.WithField("step", "removeMetrics")
+
+	// As per BenchmarkRemove, it is better to store needles on a map. Experimentally, 8 needles or less are faster to
+	// store and check against in a slice, but 16 or more are faster on a map. Slices likely stop being worth it when
+	// the full slice does not fit on a cache line.
+	deletable := map[string]bool{
+		// Not useful in SM context:
+		"vus":        true,
+		"vus_max":    true,
+		"iterations": true,
+		// Replaced by version with _bytes suffix:
+		"data_sent":     true,
+		"data_received": true,
+		// Renamed to _seconds.
+		"http_req_duration":  true,
+		"iteration_duration": true,
+		// Squashed into a single metric with a phase label.
+		"http_req_blocked": true, "http_req_connecting": true, "http_req_receiving": true, "http_req_sending": true, "http_req_tls_handshaking": true, "http_req_waiting": true,
+		// Renamed s/reqs/requests.
+		"http_reqs":       true,
+		"http_req_failed": true,
+		// Replaced by check_rate and checks_total
+		"checks": true,
+	}
+
+	for ts := range ms.store {
+		if deletable[ts.name] {
+			delete(ms.store, ts)
+			log.Tracef("Dropping %q", ts.name)
+		}
+	}
+}
+
 // Output is a k6 output plugin that writes metrics to an io.Writer in
 // Prometheus text exposition format.
 type Output struct {
 	logger logrus.FieldLogger
-	buffer output.SampleBuffer
+	store  *metricStore
 	out    io.WriteCloser
 	start  time.Time
 }
@@ -46,7 +477,16 @@ func New(p output.Params) (output.Output, error) {
 		return nil, err
 	}
 
-	return &Output{logger: p.Logger, out: fh}, nil
+	logger := p.Logger.WithField("output", "sm")
+
+	store := newMetricStore(32) // Reasonable size assumption.
+	store.logger = logger.WithField("component", "store")
+
+	return &Output{
+		logger: logger,
+		out:    fh,
+		store:  store,
+	}, nil
 }
 
 // Description returns a human-readable description of the output that will be
@@ -65,16 +505,25 @@ func (o *Output) Start() error {
 		"output": o.Description(),
 		"ts":     o.start.UnixMilli(),
 	}).Debug("starting output")
+
 	return nil
 }
 
 // AddMetricSamples receives the latest metric samples from the Engine.
-//
+// k6 docs say:
 // This method is called synchronously, so do not do anything blocking here
 // that might take a long time. Preferably, just use the SampleBuffer or
 // something like it to buffer metrics until they are flushed.
-func (o *Output) AddMetricSamples(samples []metrics.SampleContainer) {
-	o.buffer.AddMetricSamples(samples)
+//
+// Instead of using a SampleBuffer we, record samples in our metricStore directly. We estimate this is just as fast as
+// SampleBuffer, which also has a lock, while using less memory as we aggregate as we go instead of storing all samples
+// in memory.
+func (o *Output) AddMetricSamples(containers []metrics.SampleContainer) {
+	for _, samples := range containers {
+		for _, sample := range samples.GetSamples() {
+			o.store.Record(sample)
+		}
+	}
 }
 
 // Stop flushes all remaining metrics and finalize the test run.
@@ -87,661 +536,46 @@ func (o *Output) Stop() error {
 
 	defer o.out.Close()
 
-	genericMetrics := newGenericMetricsCollection()
-	targetMetrics := newTargetMetricsCollection()
+	o.store.Record(metrics.Sample{
+		TimeSeries: metrics.TimeSeries{
+			Metric: &metrics.Metric{
+				Name: "script_duration_seconds",
+				Type: metrics.Gauge,
+			},
+			Tags: (*metrics.TagSet)(atlas.New()),
+		},
+		Value: float64(duration.Seconds()),
+	})
 
-	genericMetrics.Update("script_duration_seconds", "Returns how long the script took to complete in seconds", "", "", duration.Seconds(), nil)
+	o.store.DeriveMetrics()
+	o.store.DeriveLogs(o.logger)
+	o.store.RemoveMetrics()
+	o.store.RemoveLabels()
 
-	for _, samples := range o.buffer.GetBufferedSamples() {
-		for _, sample := range samples.GetSamples() {
-			tags := getTags(sample)
-
-			scenario := tags["scenario"]
-			group := tags["group"]
-
-			if _, found := tags["name"]; found {
-				targetMetrics.Update(sample, scenario, group, tags)
-				continue
-			}
-
-			// The samples that don't have "name" in their tags seem to be generic metrics about various
-			// things.
-			//
-			// Seen so far:
-			//
-			// * checks -- this seems to be the number of checks performed (the number of times the check
-			//   function is called?) and the "check" tag might be different each time? But it seems to emit
-			//   one instance of "check" each time the function is called, even if it's with the same
-			//   "check" tag.
-			// * data_received -- this is the total for all requests in the scenario
-			// * data_sent -- this is the total for all requests in the scenario
-			// * iteration_duration -- the duration for the iteration in ms; with scenarios there seems to
-			//   be one iteration per scenario.
-			// * iterations -- not interesting, how many iterations in each scenario
-
-			metricName, value := deriveMetricNameAndValue(sample)
-			switch metricName {
-			case "":
-				continue
-
-			case "checks_total":
-				// "checks" is a little weird. It seems to be the number of checks performed
-				// (the number of times the check function is called?) and the "check" tag might
-				// be different each time becuase it's the name of the check provided as an
-				// argument to the check function. One of these samples seems to be emitted each
-				// time the check function is called.
-				//
-				// The tag describing the check is called "check", so we end up with a metric
-				// "check" with a label "check".
-				//
-				// The problem with this is that the check name seems to be free-form, so we
-				// might end up with invalid label values. This is probably a job for Loki,
-				// meaning we need an structured way of storing this information in logs.
-				fields := logrus.Fields{
-					"source":   ExtensionName,
-					"metric":   metricName,
-					"scenario": scenario,
-					"value":    value,
-				}
-				if group != "" {
-					fields["group"] = group
-				}
-				for k, v := range tags {
-					fields[k] = v
-				}
-				entry := o.logger.WithFields(fields)
-				entry.Info("check result")
-
-				delete(tags, "check")
-
-				// Now we need to do something weird: because the _value_ of the check metric is 0 if
-				// the check fails. If that's the case, add a tag result="fail" and set the value to 1
-				// (so that the metric is counting failures), otherwise add result="pass".
-				if value == 0 {
-					tags["result"] = "fail"
-					value = 1
-				} else {
-					tags["result"] = "pass"
-				}
-			}
-
-			genericMetrics.Update(metricName, "", scenario, group, value, tags)
-		}
+	for ts, value := range o.store.store {
+		fmt.Fprintf(o.out, "probe_%s%s %f\n", sanitizeLabelName(ts.name), marshalPrometheus(ts.tags.Map()), value.value)
 	}
-
-	// It might be a good idea to remove the tags from each of the metrics and instead create an scenario_info
-	// metric. The problem with this is that 1) there might be no scenario (in which case it might be named
-	// default?); 2) it's technically possible to add tags to invidual requests via request options.
-
-	genericMetrics.Write(o.out)
-
-	targetMetrics.Write(o.out)
 
 	return nil
 }
 
-func getTags(sample metrics.Sample) map[string]string {
-	var tags map[string]string
-	if sample.Tags != nil {
-		tags = sample.Tags.Map()
+func marshalPrometheus(labels map[string]string) string {
+	if len(labels) == 0 {
+		return ""
 	}
 
-	// The documentation at https://k6.io/docs/using-k6/tags-and-groups/ seems to suggest that
-	// "group" should not be empty (it shouldn't be there if there's a single group), but I keep
-	// seeing instances of an empty group name.
-	if group, found := tags["group"]; found && group == "" {
-		delete(tags, "group")
+	labelNames := make([]string, 0, len(labels))
+	for k := range labels {
+		labelNames = append(labelNames, k)
+	}
+	slices.Sort(labelNames)
+
+	pairs := make([]string, 0, len(labelNames))
+	for _, name := range labelNames {
+		pairs = append(pairs, fmt.Sprintf("%s=%q", sanitizeLabelName(name), labels[name]))
 	}
 
-	return tags
-}
-
-func deriveMetricNameAndValue(sample metrics.Sample) (string, float64) {
-	metricName := sample.TimeSeries.Metric.Name
-	value := sample.Value
-
-	switch metricName {
-	case "iterations":
-		metricName = ""
-		value = 0
-
-	case "checks":
-		metricName = "checks_total"
-
-	case "iteration_duration":
-		metricName = "iteration_duration_seconds"
-		value /= 1000
-
-	case "data_sent":
-		metricName = "data_sent_bytes"
-
-	case "data_received":
-		metricName = "data_received_bytes"
-	}
-
-	return metricName, value
-}
-
-type targetId struct {
-	url      string
-	method   string
-	scenario string
-	group    string
-	name     string
-}
-
-type targetMetrics struct {
-	requests         int
-	failed           int
-	expectedResponse bool
-	group            string
-	scenario         string
-
-	// HTTP info
-	proto      string
-	tlsVersion string
-	status     []string
-
-	// timings
-	duration       []float64
-	blocked        []float64
-	connecting     []float64
-	sending        []float64
-	waiting        []float64
-	receiving      []float64
-	tlsHandshaking []float64
-
-	tags map[string]string
-}
-
-type targetMetricsCollection map[targetId]targetMetrics
-
-func newTargetMetricsCollection() targetMetricsCollection {
-	return make(targetMetricsCollection)
-}
-
-func (collection targetMetricsCollection) Update(sample metrics.Sample, scenario, group string, tags map[string]string) {
-	key := targetId{
-		url:      getURL(tags),
-		method:   tags["method"],
-		scenario: scenario,
-		group:    group,
-		name:     tags["name"],
-	}
-
-	// the metrics for this target
-	tm := collection[key]
-
-	tm.scenario = scenario
-	tm.group = group
-
-	switch sample.TimeSeries.Metric.Name {
-	case "http_reqs":
-		tm.requests += int(sample.Value)
-		tm.proto = tags["proto"]
-		tm.tlsVersion = tags["tls_version"]
-		tm.status = append(tm.status, tags["status"])
-	case "http_req_duration":
-		tm.duration = append(tm.duration, sample.Value/1000) // ms
-	case "http_req_blocked":
-		tm.blocked = append(tm.blocked, sample.Value/1000) // ms
-	case "http_req_connecting":
-		tm.connecting = append(tm.connecting, sample.Value/1000) // ms
-	case "http_req_tls_handshaking":
-		tm.tlsHandshaking = append(tm.tlsHandshaking, sample.Value/1000) // ms
-	case "http_req_sending":
-		tm.sending = append(tm.sending, sample.Value/1000) // ms
-	case "http_req_waiting":
-		tm.waiting = append(tm.waiting, sample.Value/1000) // ms
-	case "http_req_receiving":
-		tm.receiving = append(tm.receiving, sample.Value/1000) // ms
-	case "http_req_failed":
-		tm.failed += int(sample.Value)
-	}
-
-	// Remove elements from tags because the following are stored in dedicated fields.
-
-	delete(tags, "url")
-	delete(tags, RawURLTagName)
-	delete(tags, "method")
-	delete(tags, "scenario")
-	delete(tags, "group")
-	delete(tags, "name")
-
-	delete(tags, "proto")
-	delete(tags, "tls_version")
-	delete(tags, "status")
-
-	tm.tags = tags
-
-	collection[key] = tm
-}
-
-func (c targetMetricsCollection) Write(w io.Writer) {
-	for key, ti := range c {
-		out := newBufferedMetricTextOutput(w, "url", key.url, "method", key.method)
-		if key.scenario != "" {
-			out.Tags("scenario", key.scenario)
-		}
-		if key.group != "" {
-			out.Tags("group", key.group)
-		}
-		if key.name != "" {
-			out.Tags("name", key.name)
-		}
-
-		// Remove expected_reponse from tags and write it as a separate
-		// metric. It reads weirdly as a label, specially one that is
-		// applied to all the metrics.
-		expectedResponse := ti.tags["expected_response"]
-		delete(ti.tags, "expected_response")
-
-		out.Name("probe_http_got_expected_response")
-		if expectedResponse == "false" {
-			out.Value(0)
-		} else {
-			out.Value(1)
-		}
-
-		// Remove error code from tags and write it as a separate
-		// metric because the possible values span ~ 700 values.
-		errorCode := ti.tags["error_code"]
-		delete(ti.tags, "error_code")
-
-		out.Name("probe_http_error_code")
-		if errorCode == "" || errorCode == "0" {
-			out.Value(0)
-		} else if v, err := strconv.Atoi(errorCode); err != nil {
-			out.Value(-1)
-		} else {
-			out.Value(v)
-		}
-
-		out.Name("probe_http_info")
-		if ti.tlsVersion != "" {
-			out.KeyValue(`tls_version`, strings.TrimPrefix(ti.tlsVersion, "tls"))
-		}
-		// If the request failed, proto might be empty because there
-		// was no response.
-		if len(ti.proto) > 0 {
-			out.KeyValue("proto", ti.proto)
-		}
-
-		for k, v := range ti.tags {
-			out.KeyValue(k, v)
-		}
-		out.Value(1)
-
-		out.Name("probe_http_requests_total")
-		out.Value(ti.requests)
-
-		out.Name("probe_http_requests_failed_total")
-		out.Value(ti.failed)
-
-		// TODO(mem): decide what to do with failed requests.
-		//
-		// If a request fails, depending on the reason, some of the
-		// timings might be missing. This means that we might skew the
-		// results towards 0 if we try to do over-time aggregations.
-
-		out.Name(`probe_http_status_code`)
-		out.Value(ti.status[0])
-
-		if protoVersion := strings.TrimPrefix(strings.ToLower(ti.proto), "http/"); len(protoVersion) > 0 {
-			out.Name(`probe_http_version`)
-			out.Value(protoVersion) // XXX
-		}
-
-		out.Name(`probe_http_ssl`)
-		if ti.tlsVersion == "" {
-			out.Value(0)
-		} else {
-			out.Value(1)
-		}
-
-		if ti.requests == 1 {
-			out.Name("probe_http_duration_seconds")
-			out.KeyValue("phase", "resolve")
-			out.Value(0)
-
-			out.Name("probe_http_duration_seconds")
-			out.KeyValue("phase", "connect")
-			out.Value(ti.connecting[0])
-
-			out.Name("probe_http_duration_seconds")
-			out.KeyValue("phase", "tls")
-			out.Value(ti.tlsHandshaking[0])
-
-			out.Name("probe_http_duration_seconds")
-			out.KeyValue("phase", "processing")
-			out.Value(ti.waiting[0])
-
-			out.Name("probe_http_duration_seconds")
-			out.KeyValue("phase", "transfer")
-			out.Value(ti.receiving[0])
-
-			out.Name("probe_http_total_duration_seconds")
-			out.Value(ti.duration[0])
-
-			// ti.sending: writing the request
-			// ti.blocked: waiting for the connection to be available
-		} else {
-			out.Name("probe_http_duration_seconds")
-			out.KeyValue("phase", "resolve")
-			out.Stats(make([]float64, ti.requests))
-
-			out.Name("probe_http_duration_seconds")
-			out.KeyValue("phase", "connect")
-			out.Stats(ti.connecting)
-
-			out.Name("probe_http_duration_seconds")
-			out.KeyValue("phase", "tls")
-			out.Stats(ti.tlsHandshaking)
-
-			out.Name("probe_http_duration_seconds")
-			out.KeyValue("phase", "processing")
-			out.Stats(ti.waiting)
-
-			out.Name("probe_http_duration_seconds")
-			out.KeyValue("phase", "transfer")
-			out.Stats(ti.receiving)
-
-			out.Name("probe_http_total_duration_seconds")
-			out.Stats(ti.duration)
-		}
-	}
-}
-
-type genericMetric struct {
-	name  string
-	value float64
-	tags  map[string]string
-	help  string
-}
-
-type genericMetricsCollection map[string]genericMetric
-
-func newGenericMetricsCollection() genericMetricsCollection {
-	return make(genericMetricsCollection)
-}
-
-func (c genericMetricsCollection) Update(metric, help, scenario, group string, delta float64, tags map[string]string) {
-	var key strings.Builder
-
-	key.WriteString(metric)
-	key.WriteString(scenario)
-	key.WriteString(group)
-
-	keys := make([]string, 0, len(tags))
-	for k := range tags {
-		keys = append(keys, k)
-	}
-	sort.Strings(keys)
-	for _, k := range keys {
-		key.WriteString(k)
-		key.WriteString(tags[k])
-	}
-
-	keyStr := key.String()
-
-	m := c[keyStr]
-	m.name = metric
-	m.help = help
-	m.value += delta
-	if len(tags) > 0 {
-		m.tags = tags
-	}
-	c[keyStr] = m
-}
-
-func (c genericMetricsCollection) Write(w io.Writer) {
-	for _, metric := range c {
-		out := newBufferedMetricTextOutput(w)
-		out.Name("probe_" + metric.name)
-		out.Help(metric.help)
-		for key, value := range metric.tags {
-			out.Tags(key, value)
-		}
-		// output stats instead?
-		out.Value(metric.value)
-	}
-}
-
-type immediateMetricTextOutput struct {
-	dest                io.Writer
-	commonKeysAndValues []string
-	count               int
-}
-
-func newMetricTextOutput(dest io.Writer, keysAndValues ...string) *immediateMetricTextOutput {
-	return &immediateMetricTextOutput{dest: dest, commonKeysAndValues: keysAndValues}
-}
-
-func (o *immediateMetricTextOutput) Name(name string) {
-	fmt.Fprint(o.dest, name)
-	fmt.Fprint(o.dest, "{")
-	o.count = 0
-}
-
-func (o *immediateMetricTextOutput) KeyValue(key, value string) {
-	if o.count > 0 {
-		fmt.Fprint(o.dest, ",")
-	}
-
-	if !isValidMetricName(key) {
-		key = sanitizeLabelName(key)
-	}
-
-	fmt.Fprint(o.dest, key)
-	fmt.Fprint(o.dest, `="`)
-	fmt.Fprint(o.dest, value)
-	fmt.Fprint(o.dest, `"`)
-
-	o.count++
-}
-
-func (o *immediateMetricTextOutput) Value(v any) {
-	for i := 0; i < len(o.commonKeysAndValues); i += 2 {
-		key := o.commonKeysAndValues[i]
-		if !isValidMetricName(key) {
-			key = sanitizeLabelName(key)
-		}
-		o.KeyValue(key, o.commonKeysAndValues[i+1])
-	}
-	fmt.Fprint(o.dest, "} ")
-	fmt.Fprintln(o.dest, v)
-}
-
-type bufferedMetricTextOutput struct {
-	dest                io.Writer
-	commonKeysAndValues []string
-	name                string
-	help                string
-	buf                 strings.Builder
-}
-
-func newBufferedMetricTextOutput(dest io.Writer, keysAndValues ...string) *bufferedMetricTextOutput {
-	return &bufferedMetricTextOutput{dest: dest, commonKeysAndValues: keysAndValues}
-}
-
-func (o *bufferedMetricTextOutput) Name(name string) {
-	o.name = name
-	o.buf.Reset()
-}
-
-func (o *bufferedMetricTextOutput) Help(str string) {
-	o.help = str
-}
-
-func (o *bufferedMetricTextOutput) Tags(keysAndValues ...string) {
-	o.commonKeysAndValues = append(o.commonKeysAndValues, keysAndValues...)
-}
-
-func (o *bufferedMetricTextOutput) KeyValue(key, value string) {
-	if o.buf.Len() > 0 {
-		o.buf.WriteRune(',')
-	}
-
-	if !isValidMetricName(key) {
-		key = sanitizeLabelName(key)
-	}
-
-	o.buf.WriteString(key)
-	o.buf.WriteRune('=')
-	o.buf.WriteRune('"')
-	o.buf.WriteString(value)
-	o.buf.WriteRune('"')
-}
-
-func (o *bufferedMetricTextOutput) Value(v any) {
-	for i := 0; i < len(o.commonKeysAndValues); i += 2 {
-		if o.buf.Len() > 0 {
-			o.buf.WriteRune(',')
-		}
-
-		key := o.commonKeysAndValues[i]
-		if !isValidMetricName(key) {
-			key = sanitizeLabelName(key)
-		}
-
-		o.buf.WriteString(key)
-		o.buf.WriteRune('=')
-		o.buf.WriteRune('"')
-		o.buf.WriteString(o.commonKeysAndValues[i+1])
-		o.buf.WriteRune('"')
-	}
-
-	if o.help != "" {
-		fmt.Fprintf(o.dest, "# HELP %s %s\n", o.name, o.help)
-	}
-
-	fmt.Fprint(o.dest, o.name)
-	fmt.Fprint(o.dest, "{")
-	fmt.Fprint(o.dest, o.buf.String())
-	fmt.Fprint(o.dest, "} ")
-	fmt.Fprintln(o.dest, v)
-}
-
-func (o *bufferedMetricTextOutput) Stats(v []float64) {
-	for i := 0; i < len(o.commonKeysAndValues); i += 2 {
-		if o.buf.Len() > 0 {
-			o.buf.WriteRune(',')
-		}
-
-		key := o.commonKeysAndValues[i]
-		if !isValidMetricName(key) {
-			key = sanitizeLabelName(key)
-		}
-
-		o.buf.WriteString(key)
-		o.buf.WriteRune('=')
-		o.buf.WriteRune('"')
-		o.buf.WriteString(o.commonKeysAndValues[i+1])
-		o.buf.WriteRune('"')
-	}
-
-	stats := getStats(v)
-
-	fmt.Fprint(o.dest, o.name)
-	fmt.Fprint(o.dest, "_min")
-	fmt.Fprint(o.dest, "{")
-	fmt.Fprint(o.dest, o.buf.String())
-	fmt.Fprint(o.dest, "} ")
-	fmt.Fprintln(o.dest, stats.min)
-
-	fmt.Fprint(o.dest, o.name)
-	fmt.Fprint(o.dest, "_max")
-	fmt.Fprint(o.dest, "{")
-	fmt.Fprint(o.dest, o.buf.String())
-	fmt.Fprint(o.dest, "} ")
-	fmt.Fprintln(o.dest, stats.max)
-
-	fmt.Fprint(o.dest, o.name)
-	// fmt.Fprint(o.dest, "_mean")
-	fmt.Fprint(o.dest, "{")
-	fmt.Fprint(o.dest, o.buf.String())
-	fmt.Fprint(o.dest, "} ")
-	fmt.Fprintln(o.dest, stats.med)
-
-	fmt.Fprint(o.dest, o.name)
-	fmt.Fprint(o.dest, "_count")
-	fmt.Fprint(o.dest, "{")
-	fmt.Fprint(o.dest, o.buf.String())
-	fmt.Fprint(o.dest, "} ")
-	fmt.Fprintln(o.dest, stats.n)
-
-	fmt.Fprint(o.dest, o.name)
-	fmt.Fprint(o.dest, "_sum")
-	fmt.Fprint(o.dest, "{")
-	fmt.Fprint(o.dest, o.buf.String())
-	fmt.Fprint(o.dest, "} ")
-	fmt.Fprintln(o.dest, stats.sum)
-}
-
-type stats struct {
-	n   int
-	min float64
-	max float64
-	med float64
-	sum float64
-}
-
-func getStats(a []float64) stats {
-	sort.Float64s(a)
-
-	out := stats{
-		n:   len(a),
-		min: a[0],
-		max: a[len(a)-1],
-	}
-
-	for _, v := range a {
-		out.sum += v
-	}
-
-	if out.n > 1 {
-		p, f := modf(float64(out.n-1) * 0.5)
-		out.med = lerp(a[p], a[p+1], f)
-	} else {
-		out.med = out.min
-	}
-
-	return out
-}
-
-// lerp returns the linear interpolation between a and b at t.
-func lerp(a, b, t float64) float64 {
-	return (1-t)*a + t*b
-}
-
-// modf returns the integer and fractional parts of n.
-func modf(n float64) (int, float64) {
-	i, f := math.Modf(n)
-	return int(i), f
-}
-
-var validMetricNameRe = regexp.MustCompile(`^[a-zA-Z_:][a-zA-Z0-9_:]*$`)
-
-// isValidMetricNameRe returns true iff s is a valid metric name.
-func isValidMetricNameRe(s string) bool {
-	return validMetricNameRe.MatchString(s)
-}
-
-// isValidMetricName returns true iff s is a valid metric name.
-//
-// This function is a faster hardcoded implementation wrt to the regular expression.
-func isValidMetricName(s string) bool {
-	if len(s) == 0 {
-		return false
-	}
-
-	for i, r := range s {
-		if !((r >= 'a' && r <= 'z') || (r >= 'A' && r <= 'Z') || r == '_' || r == ':' || (r >= '0' && r <= '9' && i > 0)) {
-			return false
-		}
-	}
-
-	return true
+	return "{" + strings.Join(pairs, ",") + "}"
 }
 
 // sanitizeLabelName replaces all invalid characters in s with '_'.
@@ -757,12 +591,4 @@ func sanitizeLabelName(s string) string {
 	}
 
 	return builder.String()
-}
-
-func getURL(m map[string]string) string {
-	if u := m[RawURLTagName]; u != "" {
-		return u
-	}
-
-	return m["url"]
 }

@@ -83,7 +83,8 @@ func TestSMK6(t *testing.T) {
 			"probe_http_error_code",
 			"probe_http_got_expected_response",
 			"probe_http_info",
-			"probe_http_requests_failed_total",
+			"probe_http_requests_failed",       // Original rate.
+			"probe_http_requests_failed_total", // Computed counter.
 			"probe_http_requests_total",
 			"probe_http_ssl",
 			"probe_http_status_code",
@@ -107,7 +108,7 @@ func TestSMK6(t *testing.T) {
 
 		unwantedMetrics := []string{
 			"probe_checks",
-			"probe_http_reqs", "probe_http_req_failed",
+			"probe_http_reqs", "probe_http_req_failed", // Renamed s/req/requests.
 			"probe_data_sent", "probe_data_received",
 			"probe_http_req_duration", "probe_iteration_duration",
 			"probe_http_req_blocked", "probe_http_req_connecting", "probe_http_req_receiving", "probe_http_req_sending", "probe_http_req_tls_handshaking", "probe_http_req_waiting",
@@ -152,8 +153,6 @@ func TestSMK6(t *testing.T) {
 		// If a metric contains a label (key), and that metric is not in the list (value), the test fails.
 		type exceptForMetrics []string
 		forbiddenLabels := map[string]exceptForMetrics{
-			"tls_version":       {"probe_http_info"},
-			"proto":             {"probe_http_info"},
 			"error":             {"probe_http_info"},
 			"expected_response": {"probe_http_got_expected_response"},
 			"group":             {},
@@ -284,9 +283,28 @@ func TestSMK6(t *testing.T) {
 				assertValue:  equals(0),
 			},
 			{
-				name:        "Total requests for each url",
-				metricName:  "probe_http_requests_total",
-				assertValue: equals(1),
+				name:         "Total requests for a URL accessed once",
+				metricName:   "probe_http_requests_total",
+				metricLabels: map[string]string{"url": "https://test-api.k6.io/public/crocodiles/"},
+				assertValue:  equals(1),
+			},
+			{
+				name:         "Total requests for a URL accessed twice",
+				metricName:   "probe_http_requests_total",
+				metricLabels: map[string]string{"url": "https://test-api.k6.io/public/crocodiles4/"},
+				assertValue:  equals(2),
+			},
+			{
+				name:         "HTTP requests failed rate",
+				metricName:   "probe_http_requests_failed",
+				metricLabels: map[string]string{"url": "https://test-api.k6.io/public/crocodiles4/"},
+				assertValue:  equals(1),
+			},
+			{
+				name:         "HTTP requests failed ttoal",
+				metricName:   "probe_http_requests_failed_total",
+				metricLabels: map[string]string{"url": "https://test-api.k6.io/public/crocodiles4/"},
+				assertValue:  equals(2),
 			},
 			{
 				name:         "HTTP version",
@@ -294,9 +312,18 @@ func TestSMK6(t *testing.T) {
 				metricLabels: map[string]string{"url": "https://test-api.k6.io/public/crocodiles/"},
 				assertValue:  func(f float64) bool { return f >= 1.1 },
 			},
+			{
+				name:       "TLS version label value",
+				metricName: "probe_http_info",
+				// Test for a paticular URL to avoid matching a failed request, which has no TLS version.
+				metricLabels: map[string]string{"tls_version": "1.3", "url": "https://test-api.k6.io/public/crocodiles/"},
+				assertValue:  any, // Just fail if not present.
+			},
 		} {
 			tc := tc
 			t.Run(tc.name, func(t *testing.T) {
+				t.Parallel()
+
 				matchedMetrics := 0
 				for _, mf := range mfs {
 					if *mf.Name != tc.metricName {
