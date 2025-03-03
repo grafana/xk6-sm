@@ -1,7 +1,7 @@
 # xk6-sm
 
 > [!WARNING]
-> Heads up, Synthetic Monitoring end user: You do not need to build or download this. A k6 binary compiled with this extension is already shipped in our [agent](https://github.com/grafana/synthetic-monitoring-agent) packages.
+> Heads up, Synthetic Monitoring users: You do not need to build or download this. A k6 binary compiled with this extension is already shipped in our [agent](https://github.com/grafana/synthetic-monitoring-agent) packages.
 
 Output k6 extension used by the [synthetic monitoring agent](https://github.com/grafana/synthetic-monitoring-agent).
 
