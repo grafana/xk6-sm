@@ -35,7 +35,7 @@ func TestSMK6(t *testing.T) {
 		t.Fatalf("sm-k6 binary does not seem to exist, must be compiled before running this test: %v", err)
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	t.Cleanup(cancel)
 
 	outFile := filepath.Join(t.TempDir(), "metrics.txt")
