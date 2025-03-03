@@ -2,7 +2,8 @@ import { check } from 'k6';
 import http from 'k6/http';
 import { Trend, Counter, Gauge } from 'k6/metrics';
 
-const testHost = __ENV.TEST_HOST ? __ENV.TEST_HOST : "test-api.k6.io";
+const httpHost = __ENV.TEST_HTTP_HOST ? __ENV.TEST_HTTP_HOST : "test-api.k6.io";
+const httpsHost = __ENV.TEST_HTTPS_HOST ? __ENV.TEST_HTTPS_HOST : "test-api.k6.io";
 
 const myTrend = new Trend('waiting_time');
 const myCounter = new Counter('my_counter');
@@ -36,11 +37,11 @@ export default function () {
     }
   );
 
-  http.get(`http://${testHost}`); // non-https.
-  http.get(`https://${testHost}/public/crocodiles/`);
-  http.get(`https://${testHost}/public/crocodiles2/`); // 404
-  http.get(`https://${testHost}/public/crocodiles3/`); // 404
-  http.get(`https://${testHost}/public/crocodiles4/`); // 404
-  http.get(`https://${testHost}/public/crocodiles4/`); // Second 404, to assert differences between failure rate and counter.
+  http.get(`${httpHost}`); // non-https.
+  http.get(`${httpsHost}/public/crocodiles/`);
+  http.get(`${httpsHost}/public/crocodiles2/`); // 404
+  http.get(`${httpsHost}/public/crocodiles3/`); // 404
+  http.get(`${httpsHost}/public/crocodiles4/`); // 404
+  http.get(`${httpsHost}/public/crocodiles4/`); // Second 404, to assert differences between failure rate and counter.
   http.get(`http://fail.internal/public/crocodiles4/`); // failed
 }
