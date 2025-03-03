@@ -42,9 +42,8 @@ func TestSMK6(t *testing.T) {
 
 	cmd := exec.CommandContext(ctx, smk6, "run", "-", "-o=sm="+outFile)
 	cmd.Stdin = bytes.NewReader(testScript)
-	err = cmd.Run()
-	if err != nil {
-		t.Fatalf("running sm-k6: %v", err)
+	if k6out, err := cmd.CombinedOutput(); err != nil {
+		t.Fatalf("running sm-k6: %v\n%s", errors.Join(err, ctx.Err()), string(k6out))
 	}
 
 	out, err := os.Open(outFile)
