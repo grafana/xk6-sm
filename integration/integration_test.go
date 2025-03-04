@@ -6,6 +6,8 @@ import (
 	_ "embed"
 	"errors"
 	"io"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -35,17 +37,25 @@ func TestSMK6(t *testing.T) {
 		t.Fatalf("sm-k6 binary does not seem to exist, must be compiled before running this test: %v", err)
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	httpEndpoint, httpsEndpoint := testHTTPServer(t)
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	t.Cleanup(cancel)
 
 	outFile := filepath.Join(t.TempDir(), "metrics.txt")
 
-	cmd := exec.CommandContext(ctx, smk6, "run", "-", "-o=sm="+outFile)
+	cmd := exec.CommandContext(ctx, smk6, "run", "-", "-o=sm="+outFile, "--insecure-skip-tls-verify")
 	cmd.Stdin = bytes.NewReader(testScript)
-	err = cmd.Run()
-	if err != nil {
-		t.Fatalf("running sm-k6: %v", err)
+	cmd.Env = []string{
+		"TEST_HTTP_HOST=" + httpEndpoint,
+		"TEST_HTTPS_HOST=" + httpsEndpoint,
 	}
+	k6out, err := cmd.CombinedOutput()
+	if err != nil {
+		t.Fatalf("running sm-k6: %v\n%s", errors.Join(err, ctx.Err()), string(k6out))
+	}
+
+	t.Log(string(k6out))
 
 	out, err := os.Open(outFile)
 	if err != nil {
@@ -218,44 +228,44 @@ func TestSMK6(t *testing.T) {
 			{
 				name:         "HTTP duration second has a duration-ish value",
 				metricName:   "probe_http_duration_seconds",
-				metricLabels: map[string]string{"phase": "processing", "url": "https://test-api.k6.io/public/crocodiles/"},
+				metricLabels: map[string]string{"phase": "processing", "url": httpsEndpoint + "/public/crocodiles/"},
 				assertValue:  nonZero,
 			},
 			// Custom http phases. Check for each one individually as we use slightly different names than k6 uses.
 			{
 				name:         "HTTP duration seconds has phase=resolve",
 				metricName:   "probe_http_duration_seconds",
-				metricLabels: map[string]string{"phase": "resolve", "url": "https://test-api.k6.io/public/crocodiles/"},
+				metricLabels: map[string]string{"phase": "resolve", "url": httpsEndpoint + "/public/crocodiles/"},
 				assertValue:  any, // Just fail if not present.
 			},
 			{
 				name:         "HTTP duration seconds has phase=connect",
 				metricName:   "probe_http_duration_seconds",
-				metricLabels: map[string]string{"phase": "connect", "url": "https://test-api.k6.io/public/crocodiles/"},
+				metricLabels: map[string]string{"phase": "connect", "url": httpsEndpoint + "/public/crocodiles/"},
 				assertValue:  any, // Just fail if not present.
 			},
 			{
 				name:         "HTTP duration seconds has phase=tls",
 				metricName:   "probe_http_duration_seconds",
-				metricLabels: map[string]string{"phase": "tls", "url": "https://test-api.k6.io/public/crocodiles/"},
+				metricLabels: map[string]string{"phase": "tls", "url": httpsEndpoint + "/public/crocodiles/"},
 				assertValue:  any, // Just fail if not present.
 			},
 			{
 				name:         "HTTP duration seconds has phase=processing",
 				metricName:   "probe_http_duration_seconds",
-				metricLabels: map[string]string{"phase": "processing", "url": "https://test-api.k6.io/public/crocodiles/"},
+				metricLabels: map[string]string{"phase": "processing", "url": httpsEndpoint + "/public/crocodiles/"},
 				assertValue:  any, // Just fail if not present.
 			},
 			{
 				name:         "HTTP duration seconds has phase=transfer",
 				metricName:   "probe_http_duration_seconds",
-				metricLabels: map[string]string{"phase": "transfer", "url": "https://test-api.k6.io/public/crocodiles/"},
+				metricLabels: map[string]string{"phase": "transfer", "url": httpsEndpoint + "/public/crocodiles/"},
 				assertValue:  any, // Just fail if not present.
 			},
 			{
 				name:         "Error code for request that should succeed",
 				metricName:   "probe_http_error_code",
-				metricLabels: map[string]string{"url": "https://test-api.k6.io/public/crocodiles/"},
+				metricLabels: map[string]string{"url": httpsEndpoint + "/public/crocodiles/"},
 				assertValue:  equals(0),
 			},
 			{
@@ -267,56 +277,56 @@ func TestSMK6(t *testing.T) {
 			{
 				name:         "HTTP status code for a request that should succeed",
 				metricName:   "probe_http_status_code",
-				metricLabels: map[string]string{"url": "https://test-api.k6.io/public/crocodiles/"},
+				metricLabels: map[string]string{"url": httpsEndpoint + "/public/crocodiles/"},
 				assertValue:  equals(200),
 			},
 			{
 				name:         "Expected response for a request that should succeed",
 				metricName:   "probe_http_got_expected_response",
-				metricLabels: map[string]string{"url": "https://test-api.k6.io/public/crocodiles/"},
+				metricLabels: map[string]string{"url": httpsEndpoint + "/public/crocodiles/"},
 				assertValue:  equals(1),
 			},
 			{
 				name:         "Expected response for a request that should fail",
 				metricName:   "probe_http_got_expected_response",
-				metricLabels: map[string]string{"url": "https://test-api.k6.io/public/crocodiles2/"},
+				metricLabels: map[string]string{"url": httpsEndpoint + "/public/crocodiles2/"},
 				assertValue:  equals(0),
 			},
 			{
 				name:         "Total requests for a URL accessed once",
 				metricName:   "probe_http_requests_total",
-				metricLabels: map[string]string{"url": "https://test-api.k6.io/public/crocodiles/"},
+				metricLabels: map[string]string{"url": httpsEndpoint + "/public/crocodiles/"},
 				assertValue:  equals(1),
 			},
 			{
 				name:         "Total requests for a URL accessed twice",
 				metricName:   "probe_http_requests_total",
-				metricLabels: map[string]string{"url": "https://test-api.k6.io/public/crocodiles4/"},
+				metricLabels: map[string]string{"url": httpsEndpoint + "/public/crocodiles4/"},
 				assertValue:  equals(2),
 			},
 			{
 				name:         "HTTP requests failed rate",
 				metricName:   "probe_http_requests_failed",
-				metricLabels: map[string]string{"url": "https://test-api.k6.io/public/crocodiles4/"},
+				metricLabels: map[string]string{"url": httpsEndpoint + "/public/crocodiles4/"},
 				assertValue:  equals(1),
 			},
 			{
 				name:         "HTTP requests failed ttoal",
 				metricName:   "probe_http_requests_failed_total",
-				metricLabels: map[string]string{"url": "https://test-api.k6.io/public/crocodiles4/"},
+				metricLabels: map[string]string{"url": httpsEndpoint + "/public/crocodiles4/"},
 				assertValue:  equals(2),
 			},
 			{
 				name:         "HTTP version",
 				metricName:   "probe_http_version",
-				metricLabels: map[string]string{"url": "https://test-api.k6.io/public/crocodiles/"},
+				metricLabels: map[string]string{"url": httpsEndpoint + "/public/crocodiles/"},
 				assertValue:  func(f float64) bool { return f >= 1.1 },
 			},
 			{
 				name:       "TLS version label value",
 				metricName: "probe_http_info",
 				// Test for a paticular URL to avoid matching a failed request, which has no TLS version.
-				metricLabels: map[string]string{"tls_version": "1.3", "url": "https://test-api.k6.io/public/crocodiles/"},
+				metricLabels: map[string]string{"tls_version": "1.3", "url": httpsEndpoint + "/public/crocodiles/"},
 				assertValue:  any, // Just fail if not present.
 			},
 		} {
@@ -382,4 +392,33 @@ func nonZero(v float64) bool {
 
 func any(float64) bool {
 	return true
+}
+
+// testHTTPServer starts an HTTP and HTTPS servers that can be used to perform requests to.
+// The HTTP server redirects all requests to the HTTPS one.
+func testHTTPServer(t *testing.T) (string, string) {
+	t.Helper()
+
+	mux := http.NewServeMux()
+	mux.HandleFunc("/{$}", func(rw http.ResponseWriter, _ *http.Request) {
+		// `/{$}` matches exactly `/`, and not `/foo`.
+		_, _ = rw.Write([]byte("Hello world!"))
+	})
+	mux.HandleFunc("/public/crocodiles/", func(rw http.ResponseWriter, _ *http.Request) {
+		_, _ = rw.Write([]byte("One, two, three, croc!"))
+	})
+	tlsServer := httptest.NewTLSServer(mux)
+	t.Cleanup(func() {
+		tlsServer.Close()
+	})
+
+	plainServer := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+		rw.Header().Add("Location", tlsServer.URL+"/"+strings.TrimPrefix(r.URL.Path, "/"))
+		rw.WriteHeader(http.StatusPermanentRedirect)
+	}))
+	t.Cleanup(func() {
+		plainServer.Close()
+	})
+
+	return plainServer.URL, tlsServer.URL
 }
