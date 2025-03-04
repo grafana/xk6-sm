@@ -34,6 +34,15 @@ jobs:
             grafana/xk6 build ${{ steps.version.outputs.k6 }} \
             --output "dist/sm-k6-${{ matrix.goos }}-${{ matrix.goarch }}" \
             --with github.com/grafana/xk6-sm=.
+      - name: Build with xk6 and gsm
+        run: |-
+          mkdir -p dist
+          docker run --rm -i -u "$(id -u):$(id -g)" -v "${PWD}:/xk6" \
+            -e "GOOS=${{ matrix.goos }}" -e "GOARCH=${{ matrix.goarch }}" \
+            grafana/xk6 build ${{ steps.version.outputs.k6 }} \
+            --output "dist/sm-k6-${{ matrix.goos }}-${{ matrix.goarch }}-gsm" \
+            --with github.com/grafana/xk6-sm=.
+            --with github.com/grafana/gsm-api-go-client
       - name: Check runner architecture
         id: runner-info
         run: |-
