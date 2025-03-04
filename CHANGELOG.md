@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.3.1](https://github.com/grafana/xk6-sm/compare/v0.3.0...v0.3.1) (2025-03-04)
+
+
+### Miscellaneous Chores
+
+* README: clarify this repo is not to be used by SM end users ([#71](https://github.com/grafana/xk6-sm/issues/71)) ([e456446](https://github.com/grafana/xk6-sm/commit/e4564463db1cdb70fe36b55a2600ed19c59d361b))
+* Update actions/create-github-app-token digest to 21cfef2 ([cc5c756](https://github.com/grafana/xk6-sm/commit/cc5c756172b7b59cfa5b505af989a0ba0ff295e7))
+
 ## [0.3.0](https://github.com/grafana/xk6-sm/compare/v0.2.0...v0.3.0) (2025-02-26)
 
 
