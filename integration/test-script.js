@@ -39,7 +39,12 @@ export default function () {
   http.get(`http://${testHost}`); // non-https.
   http.get(`https://${testHost}/public/crocodiles/`);
   http.get(`https://${testHost}/public/crocodiles2/`); // 404
-  http.get(`https://${testHost}/public/crocodiles3/`); // 404
+  http.get(`https://${testHost}/public/crocodiles3/`, {
+    tags: {
+      // Used by multihttp scripts to store the user-defiend URL before interpolation.
+      '__raw_url__': 'foobar',
+    }
+  }); // 404
   http.get(`https://${testHost}/public/crocodiles4/`); // 404
   http.get(`https://${testHost}/public/crocodiles4/`); // Second 404, to assert differences between failure rate and counter.
   http.get(`http://fail.internal/public/crocodiles4/`); // failed

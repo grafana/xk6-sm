@@ -415,6 +415,13 @@ func (ms *metricStore) RemoveLabels() {
 		// High cardinality label. This is already present in logs.
 		ts.tags = ts.tags.Without("error")
 
+		// Replace url with __raw_url__ if the latter is present. The agent sets this tag on multihttp checks to be the
+		// user-specified URL, before interpolating variables in it.
+		if rawURL, found := ts.tags.Get("__raw_url__"); found && rawURL != "" {
+			log.Tracef("Overwriting url tag with __raw_url__ on %q", ts.name)
+			ts.tags = ts.tags.Without("__raw_url__").With("url", rawURL)
+		}
+
 		newStore[ts] = v
 	}
 

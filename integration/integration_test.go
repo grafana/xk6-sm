@@ -35,16 +35,15 @@ func TestSMK6(t *testing.T) {
 		t.Fatalf("sm-k6 binary does not seem to exist, must be compiled before running this test: %v", err)
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	t.Cleanup(cancel)
 
 	outFile := filepath.Join(t.TempDir(), "metrics.txt")
 
 	cmd := exec.CommandContext(ctx, smk6, "run", "-", "-o=sm="+outFile)
 	cmd.Stdin = bytes.NewReader(testScript)
-	err = cmd.Run()
-	if err != nil {
-		t.Fatalf("running sm-k6: %v", err)
+	if k6out, err := cmd.CombinedOutput(); err != nil {
+		t.Fatalf("running sm-k6: %v\n%s", errors.Join(err, ctx.Err()), string(k6out))
 	}
 
 	out, err := os.Open(outFile)
@@ -156,6 +155,7 @@ func TestSMK6(t *testing.T) {
 			"error":             {"probe_http_info"},
 			"expected_response": {"probe_http_got_expected_response"},
 			"group":             {},
+			"__raw_url__":       {},
 		}
 
 		for _, mf := range mfs {
@@ -318,6 +318,12 @@ func TestSMK6(t *testing.T) {
 				// Test for a paticular URL to avoid matching a failed request, which has no TLS version.
 				metricLabels: map[string]string{"tls_version": "1.3", "url": "https://test-api.k6.io/public/crocodiles/"},
 				assertValue:  any, // Just fail if not present.
+			},
+			{
+				name:         "__raw_url__ overrides url",
+				metricName:   "probe_http_requests_total",
+				metricLabels: map[string]string{"url": "foobar"},
+				assertValue:  equals(1),
 			},
 		} {
 			tc := tc
