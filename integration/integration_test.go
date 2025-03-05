@@ -53,7 +53,7 @@ func TestSMK6(t *testing.T) {
 	}
 
 	mfs := []*prometheus.MetricFamily{}
-	decoder := expfmt.NewDecoder(out, expfmt.FmtText)
+	decoder := expfmt.NewDecoder(out, expfmt.NewFormat(expfmt.TypeTextPlain))
 	for {
 		mf := &prometheus.MetricFamily{}
 		err := decoder.Decode(mf)
