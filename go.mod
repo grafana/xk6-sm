@@ -2,9 +2,10 @@ module github.com/grafana/xk6-sm
 
 go 1.21
 
-toolchain go1.24.0
+toolchain go1.24.1
 
 require (
+	github.com/mstoykov/atlas v0.0.0-20220811071828-388f114305dd
 	github.com/prometheus/client_model v0.6.1
 	github.com/prometheus/common v0.62.0
 	github.com/sirupsen/logrus v1.9.3
@@ -25,7 +26,6 @@ require (
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
-	github.com/mstoykov/atlas v0.0.0-20220811071828-388f114305dd // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	go.opentelemetry.io/otel v1.29.0 // indirect
