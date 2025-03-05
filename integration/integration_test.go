@@ -387,6 +387,41 @@ func TestSMK6(t *testing.T) {
 	})
 }
 
+func TestSMK6Browser(t *testing.T) {
+	t.Parallel()
+
+	runCrocochrome(t)
+
+	t.Run("default settings", func(t *testing.T) {
+		// Do not run this one in parallel, as crocochrome only supports one concurrent script run.
+
+		mfs := runBrowserScript(t, "browser-script.js", nil) // Default allowlist.
+
+		t.Run("includes expected metrics", func(t *testing.T) {
+			t.Parallel()
+
+			wanted := []string{
+				"probe_browser_data_received",
+				"probe_browser_data_sent",
+				"probe_browser_http_req_duration",
+				"probe_browser_http_req_failed",
+				"probe_browser_web_vital_cls",
+				"probe_browser_web_vital_fcp",
+				"probe_browser_web_vital_lcp",
+				"probe_browser_web_vital_ttfb",
+			}
+			for _, w := range wanted {
+				if !slices.ContainsFunc(mfs, func(mf *prometheus.MetricFamily) bool {
+					return *mf.Name == w
+				}) {
+					t.Log(mfs)
+					t.Fatalf("Missing metric %q", w)
+				}
+			}
+		})
+	})
+}
+
 func equals(expected float64) func(float64) bool {
 	return func(v float64) bool {
 		return v == expected
