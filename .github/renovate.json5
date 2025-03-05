@@ -5,4 +5,17 @@
     "github>grafana/sm-renovate//presets/synthetic-monitoring.json5",
     "github>grafana/sm-renovate//presets/go.json5",
   ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "datasourceTemplate": "docker",
+      "depNameTemplate": "ghcr.io/grafana/crocochrome",
+      "fileMatch": [
+        "_test.go$",
+      ],
+      "matchStrings": [
+        "ghcr.io/grafana/crocochrome:(?<currentValue>[\\w.-]+)(?:@(?<currentDigest>[\\w:]+))?",
+      ]
+    },
+  ]
 }
