@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"math"
+	"os"
 	"slices"
 	"strconv"
 	"strings"
@@ -438,9 +439,7 @@ func (ms *metricStore) RemoveLabels() {
 func (ms *metricStore) RemoveMetrics() {
 	log := ms.logger.WithField("step", "removeMetrics")
 
-	// As per BenchmarkRemove, it is better to store needles on a map. Experimentally, 8 needles or less are faster to
-	// store and check against in a slice, but 16 or more are faster on a map. Slices likely stop being worth it when
-	// the full slice does not fit on a cache line.
+	// Timeseries for metrics whose name is in this map will be removed.
 	deletable := map[string]bool{
 		// Not useful in SM context:
 		"vus":        true,
@@ -465,6 +464,33 @@ func (ms *metricStore) RemoveMetrics() {
 		if deletable[ts.name] {
 			delete(ms.store, ts)
 			log.Tracef("Dropping %q", ts.name)
+		}
+	}
+
+	// List of resource types that are worth keeping metrics for. All timeseries with a `resource_type` tag not present
+	// here will be removed.
+	allowedResourceTypes := map[string]bool{"document": true}
+	// If SM_K6_BROWSER_RESOURCE_TYPES is defined, parse it as a comma-separated list of `resource_type`s to allow.
+	if envTypes := os.Getenv("SM_K6_BROWSER_RESOURCE_TYPES"); envTypes != "" {
+		allowedResourceTypes = map[string]bool{}
+		for _, rt := range strings.Split(envTypes, ",") {
+			allowedResourceTypes[strings.ToLower(rt)] = true
+		}
+
+		log.WithField("allowlist", allowedResourceTypes).Debug("Using configured resource_type allowlist")
+	}
+
+	// Treat "*" as a wildcard. If it is present on the allowlist, then there is no point in walking it.
+	if allowedResourceTypes["*"] {
+		return
+	}
+
+	log = log.WithField("allowlist", allowedResourceTypes)
+
+	for ts := range ms.store {
+		if rt, _ := ts.tags.Get("resource_type"); rt != "" && !allowedResourceTypes[strings.ToLower(rt)] {
+			delete(ms.store, ts)
+			log.Debugf("Dropping %q as resource type %q is not in allowlist", ts.name, rt)
 		}
 	}
 }
