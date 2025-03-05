@@ -1,5 +1,28 @@
 # Changelog
 
+## [0.4.0](https://github.com/grafana/xk6-sm/compare/v0.3.0...v0.4.0) (2025-03-05)
+
+
+### Features
+
+* update k6 to 0.57.0 ([0389dce](https://github.com/grafana/xk6-sm/commit/0389dcea4ca707f7b3df46ec193b9e65e9dc7a13))
+
+
+### Fixes
+
+* correctly handle __raw_url__ by replacing url with it if present ([1b9b29d](https://github.com/grafana/xk6-sm/commit/1b9b29d868c5dcda37a25a58aa655c54dcf77122))
+
+
+### Miscellaneous Chores
+
+* integration: add tests for __raw_url__ handling ([67c8086](https://github.com/grafana/xk6-sm/commit/67c80866e38f82902731e8028ff8f93551790e43))
+* integration: increase k6 timeout ([8873a57](https://github.com/grafana/xk6-sm/commit/8873a5743a77c40fdf7ca1972e3cac3fab092be2))
+* integration: log k6 output if it fails to run ([96ff5a5](https://github.com/grafana/xk6-sm/commit/96ff5a59de30d5dbb8d62a01ca6882c3a3aee2aa))
+* README: clarify this repo is not to be used by SM end users ([#71](https://github.com/grafana/xk6-sm/issues/71)) ([e456446](https://github.com/grafana/xk6-sm/commit/e4564463db1cdb70fe36b55a2600ed19c59d361b))
+* Update actions/create-github-app-token digest to 21cfef2 ([cc5c756](https://github.com/grafana/xk6-sm/commit/cc5c756172b7b59cfa5b505af989a0ba0ff295e7))
+* Update dependency go to v1.24.1 ([#76](https://github.com/grafana/xk6-sm/issues/76)) ([9e7b76c](https://github.com/grafana/xk6-sm/commit/9e7b76c8a418fb6f0b35e2ba55e89530ee504d7f))
+* use non-deprecated prometheus format selection ([7c3de2a](https://github.com/grafana/xk6-sm/commit/7c3de2aa9f32538715daab1b8559287415eb67ab))
+
 ## [0.3.0](https://github.com/grafana/xk6-sm/compare/v0.2.0...v0.3.0) (2025-02-26)
 
 
