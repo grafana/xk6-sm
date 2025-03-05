@@ -419,6 +419,77 @@ func TestSMK6Browser(t *testing.T) {
 				}
 			}
 		})
+
+		t.Run("only includes document browser metrics", func(t *testing.T) {
+			t.Parallel()
+
+			for _, mf := range mfs {
+				for _, m := range mf.Metric {
+					for _, lp := range m.Label {
+						if *lp.Name == "resource_type" && *lp.Value != "Document" {
+							t.Fatalf("metric %q should not have %s=%q", *mf.Name, *lp.Name, *lp.Value)
+						}
+					}
+				}
+			}
+		})
+
+		t.Run("number of timeseries is sane", func(t *testing.T) {
+			t.Parallel()
+
+			for _, mf := range mfs {
+				sane := 3
+				if found := len(mf.Metric); found > sane {
+					t.Fatalf("Found suspicioulsy large number of timeseries (%d>%d) for metric %q", found, sane, *mf.Name)
+				}
+			}
+		})
+	})
+
+	t.Run("non-default allowlist", func(t *testing.T) {
+		// Do not run this one in parallel, as crocochrome only supports one concurrent script run.
+
+		// Custom allowlist, mixed case.
+		mfs := runBrowserScript(t, "browser-script.js", []string{"SM_K6_BROWSER_RESOURCE_TYPES=image,script"})
+
+		t.Run("only includes expected browser metrics", func(t *testing.T) {
+			t.Parallel()
+
+			expected := []string{"Image", "Script"}
+			for _, mf := range mfs {
+				for _, m := range mf.Metric {
+					for _, lp := range m.Label {
+						if *lp.Name == "resource_type" && !slices.Contains(expected, *lp.Value) {
+							t.Fatalf("metric %q should not have %s=%q", *mf.Name, *lp.Name, *lp.Value)
+						}
+					}
+				}
+			}
+		})
+	})
+
+	t.Run("allow all the things", func(t *testing.T) {
+		// Do not run this one in parallel, as crocochrome only supports one concurrent script run.
+
+		mfs := runBrowserScript(t, "browser-script.js", []string{"SM_K6_BROWSER_RESOURCE_TYPES=*"}) // All The Things!
+
+		t.Run("only includes expected browser metrics", func(t *testing.T) {
+			t.Parallel()
+
+			for _, mf := range mfs {
+				for _, m := range mf.Metric {
+					for _, lp := range m.Label {
+						if *lp.Name == "resource_type" && *lp.Value == "Script" {
+							// We found a metric with resource_type=Script, which is not in the default allowlist.
+							// Approximating this as the wildcard working, and calling the test good.
+							return
+						}
+					}
+				}
+			}
+
+			t.Fatalf("Did not found any metric with resource_type=Script")
+		})
 	})
 }
 
