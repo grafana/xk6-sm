@@ -19,11 +19,8 @@ import (
 	"github.com/prometheus/common/expfmt"
 )
 
-//go:embed test-script.js
-var testScript []byte
-
-func TestSMK6(t *testing.T) {
-	t.Parallel()
+func runScript(t *testing.T, scriptFileName string, env []string) []*prometheus.MetricFamily {
+	t.Helper()
 
 	smk6 := os.Getenv("TEST_SMK6")
 	if smk6 == "" {
@@ -35,13 +32,19 @@ func TestSMK6(t *testing.T) {
 		t.Fatalf("sm-k6 binary does not seem to exist, must be compiled before running this test: %v", err)
 	}
 
+	script, err := os.ReadFile(scriptFileName)
+	if err != nil {
+		t.Fatalf("reading test script: %v", err)
+	}
+
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	t.Cleanup(cancel)
 
 	outFile := filepath.Join(t.TempDir(), "metrics.txt")
 
 	cmd := exec.CommandContext(ctx, smk6, "run", "-", "-o=sm="+outFile)
-	cmd.Stdin = bytes.NewReader(testScript)
+	cmd.Stdin = bytes.NewReader(script)
+	cmd.Env = env
 	if k6out, err := cmd.CombinedOutput(); err != nil {
 		t.Fatalf("running sm-k6: %v\n%s", errors.Join(err, ctx.Err()), string(k6out))
 	}
@@ -70,6 +73,14 @@ func TestSMK6(t *testing.T) {
 	if len(mfs) == 0 {
 		t.Fatalf("no metrics decoded")
 	}
+
+	return mfs
+}
+
+func TestSMK6(t *testing.T) {
+	t.Parallel()
+
+	mfs := runScript(t, "test-script.js", nil)
 
 	t.Run("wanted metrics are present", func(t *testing.T) {
 		t.Parallel()
