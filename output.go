@@ -243,7 +243,13 @@ func (ms *metricStore) DeriveMetrics() {
 
 			func() {
 				strCode, _ := ts.tags.Get("proto")
-				newValue, _ := strconv.ParseFloat(strings.TrimPrefix(strCode, "HTTP/"), 32)
+				strCode = strings.ToLower(strCode)
+				strCode = strings.TrimPrefix(strCode, "http/") // Leave bare version for "HTTP/1.1"
+				strCode = strings.TrimPrefix(strCode, "h")     // Leave bare version for "h2"
+				newValue, err := strconv.ParseFloat(strCode, 32)
+				if err != nil {
+					return // Invalid protocol, skip timeseries.
+				}
 				httpVersionTS := timeseries{
 					name:       "http_version",
 					metricType: metrics.Gauge,
