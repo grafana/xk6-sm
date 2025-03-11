@@ -1,5 +1,35 @@
 # Changelog
 
+## [0.4.0](https://github.com/grafana/xk6-sm/compare/v0.3.0...v0.4.0) (2025-03-11)
+
+
+### Features
+
+* build a second binary with the Grafana secrets manager client extension ([#75](https://github.com/grafana/xk6-sm/issues/75)) ([31f4734](https://github.com/grafana/xk6-sm/commit/31f4734d1f4b435eed29b811ccc80d66e0a814c5))
+* update k6 to 0.57.0 ([0389dce](https://github.com/grafana/xk6-sm/commit/0389dcea4ca707f7b3df46ec193b9e65e9dc7a13))
+
+
+### Fixes
+
+* correctly handle __raw_url__ by replacing url with it if present ([1b9b29d](https://github.com/grafana/xk6-sm/commit/1b9b29d868c5dcda37a25a58aa655c54dcf77122))
+* handle abbreviated `proto` tags such as `h2` or `h3` ([7a3393e](https://github.com/grafana/xk6-sm/commit/7a3393e00e1e42813a6bc8237e43b4c639fdcba4))
+
+
+### Miscellaneous Chores
+
+* integration: add tests for __raw_url__ handling ([67c8086](https://github.com/grafana/xk6-sm/commit/67c80866e38f82902731e8028ff8f93551790e43))
+* integration: add tests for browser scripts and metrics ([3a9bb2a](https://github.com/grafana/xk6-sm/commit/3a9bb2a4b64b228c6b64df77c03f864ca0f87dd2))
+* integration: extract script run to a helper function ([965928d](https://github.com/grafana/xk6-sm/commit/965928d23c60ac5d3a8a4229b79d85887a21e706))
+* integration: increase k6 timeout ([8873a57](https://github.com/grafana/xk6-sm/commit/8873a5743a77c40fdf7ca1972e3cac3fab092be2))
+* integration: log k6 output if it fails to run ([96ff5a5](https://github.com/grafana/xk6-sm/commit/96ff5a59de30d5dbb8d62a01ca6882c3a3aee2aa))
+* README: clarify this repo is not to be used by SM end users ([#71](https://github.com/grafana/xk6-sm/issues/71)) ([e456446](https://github.com/grafana/xk6-sm/commit/e4564463db1cdb70fe36b55a2600ed19c59d361b))
+* remove unused renovate-app.json ([296c26c](https://github.com/grafana/xk6-sm/commit/296c26c7800b6d739379e433b21cfd3e8f778fd5))
+* renovate: update crocochrome image used for testing ([7d2f8b6](https://github.com/grafana/xk6-sm/commit/7d2f8b6b25984b97868c9cc1e185edd80590fb23))
+* Update actions/create-github-app-token digest to 21cfef2 ([cc5c756](https://github.com/grafana/xk6-sm/commit/cc5c756172b7b59cfa5b505af989a0ba0ff295e7))
+* Update dependency go to v1.24.1 ([#76](https://github.com/grafana/xk6-sm/issues/76)) ([9e7b76c](https://github.com/grafana/xk6-sm/commit/9e7b76c8a418fb6f0b35e2ba55e89530ee504d7f))
+* Update googleapis/release-please-action digest to a02a34c ([#83](https://github.com/grafana/xk6-sm/issues/83)) ([e670179](https://github.com/grafana/xk6-sm/commit/e670179f031e908b1d0d61a29d2c8bcb1a4b2fe2))
+* use non-deprecated prometheus format selection ([7c3de2a](https://github.com/grafana/xk6-sm/commit/7c3de2aa9f32538715daab1b8559287415eb67ab))
+
 ## [0.3.0](https://github.com/grafana/xk6-sm/compare/v0.2.0...v0.3.0) (2025-02-26)
 
 
