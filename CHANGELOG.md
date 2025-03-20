@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.4.1](https://github.com/grafana/xk6-sm/compare/v0.4.0...v0.4.1) (2025-03-20)
+
+
+### Miscellaneous Chores
+
+* Automatically upgrade the gsm-api-go-client ([#88](https://github.com/grafana/xk6-sm/issues/88)) ([60a7457](https://github.com/grafana/xk6-sm/commit/60a74573284c8f29baf9fbdb5f39c1f165557f4d))
+* enable renovate dry run ([#91](https://github.com/grafana/xk6-sm/issues/91)) ([7ccadc4](https://github.com/grafana/xk6-sm/commit/7ccadc440c351ad719845bbf1cae45cf5a8ed5e0))
+* enable renvoate on pull requests ([#92](https://github.com/grafana/xk6-sm/issues/92)) ([e41a51a](https://github.com/grafana/xk6-sm/commit/e41a51a4d1ad62ec6e5bbf1479dd0b67a9b338dc))
+* Update ghcr.io/grafana/crocochrome Docker tag to v0.5.1 ([#87](https://github.com/grafana/xk6-sm/issues/87)) ([c09796c](https://github.com/grafana/xk6-sm/commit/c09796ce182370913bcf8f960c0a51942e4f0241))
+* Update golangci/golangci-lint-action digest to 4696ba8 ([#86](https://github.com/grafana/xk6-sm/issues/86)) ([4e90459](https://github.com/grafana/xk6-sm/commit/4e904599466f26060aa47e29efd8b75def54ac1d))
+* Update gsm-api-go-client digest to bd5bcca ([#93](https://github.com/grafana/xk6-sm/issues/93)) ([5c7bfaf](https://github.com/grafana/xk6-sm/commit/5c7bfaf4fd38c439dcbe7416e715364eaf89731f))
+* Update module github.com/prometheus/common to v0.63.0 ([#89](https://github.com/grafana/xk6-sm/issues/89)) ([7bede59](https://github.com/grafana/xk6-sm/commit/7bede59c720eac9deae883a2f342addb8cf34f33))
+
 ## [0.4.0](https://github.com/grafana/xk6-sm/compare/v0.3.0...v0.4.0) (2025-03-11)
 
 
