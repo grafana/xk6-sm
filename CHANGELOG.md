@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.5.0](https://github.com/grafana/xk6-sm/compare/v0.4.1...v0.5.0) (2025-03-25)
+
+
+### Features
+
+* do not output timeseries whose `resource_type` does not match an allowlist ([a192663](https://github.com/grafana/xk6-sm/commit/a1926630296d975a98b3492949f073528f01be11))
+
+
+### Fixes
+
+* Add a Makefile ([#100](https://github.com/grafana/xk6-sm/issues/100)) ([ed543b4](https://github.com/grafana/xk6-sm/commit/ed543b41ab010b8b0693b5f2d1f2a818ddea3d32))
+
+
+### Miscellaneous Chores
+
+* integration: add tests for browser metric source allowlisting ([01ce7ba](https://github.com/grafana/xk6-sm/commit/01ce7ba96b2638631108206f95b110d5369ee17a))
+* Update ghcr.io/grafana/crocochrome Docker tag to v0.5.2 ([#99](https://github.com/grafana/xk6-sm/issues/99)) ([a92f83c](https://github.com/grafana/xk6-sm/commit/a92f83c4179ab4b6d3c118b6852f80d9554a5e2e))
+
 ## [0.4.1](https://github.com/grafana/xk6-sm/compare/v0.4.0...v0.4.1) (2025-03-20)
 
 
