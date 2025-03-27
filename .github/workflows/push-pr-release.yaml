@@ -43,7 +43,7 @@ jobs:
             grafana/xk6 build ${{ steps.version.outputs.k6 }} \
             --output "dist/sm-k6-${{ matrix.goos }}-${{ matrix.goarch }}-gsm" \
             --with github.com/grafana/xk6-sm=. \
-            --with github.com/grafana/gsm-api-go-client@bd5bcca18e739c6d65d8c5c105b0f70dd7de7bcb
+            --with github.com/grafana/gsm-api-go-client@79d3e7cdc400ddbe3361db7736c06a3c3bfedb9a
       - name: Check runner architecture
         id: runner-info
         run: |-
