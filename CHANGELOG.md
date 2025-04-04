@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.5.2](https://github.com/grafana/xk6-sm/compare/v0.5.1...v0.5.2) (2025-04-04)
+
+
+### Miscellaneous Chores
+
+* Update dependency go to v1.24.2 ([58d21f5](https://github.com/grafana/xk6-sm/commit/58d21f52f75f0c633b68d858bdde0e246263e08e))
+* Update gsm-api-go-client digest to 0505783 ([#110](https://github.com/grafana/xk6-sm/issues/110)) ([681a7b5](https://github.com/grafana/xk6-sm/commit/681a7b5992db51fe3aad2917067c0b42a548691f))
+* Update gsm-api-go-client digest to e75dbea ([#107](https://github.com/grafana/xk6-sm/issues/107)) ([f01a772](https://github.com/grafana/xk6-sm/commit/f01a772ec798564c56b4753726e699a7d0db3735))
+* Update module github.com/spf13/afero to v1.14.0 ([#94](https://github.com/grafana/xk6-sm/issues/94)) ([4c8412e](https://github.com/grafana/xk6-sm/commit/4c8412e4503493e93d7db718a811141b5c4856e7))
+* Upgrade k6 to v0.58.0 and remove gsm binary ([#106](https://github.com/grafana/xk6-sm/issues/106)) ([c87c83a](https://github.com/grafana/xk6-sm/commit/c87c83ab559d31f04bd368b804c81df41fec4eaa))
+
 ## [0.5.1](https://github.com/grafana/xk6-sm/compare/v0.5.0...v0.5.1) (2025-03-28)
 
 
