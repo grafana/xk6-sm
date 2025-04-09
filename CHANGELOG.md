@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.3](https://github.com/grafana/xk6-sm/compare/v0.5.2...v0.5.3) (2025-04-09)
+
+
+### Miscellaneous Chores
+
+* Update gsm-api-go-client digest to 13991b8 ([#113](https://github.com/grafana/xk6-sm/issues/113)) ([ba0c8f0](https://github.com/grafana/xk6-sm/commit/ba0c8f061a90de37f5d7d0a72ffaa58c8fc5407c))
+
 ## [0.5.2](https://github.com/grafana/xk6-sm/compare/v0.5.1...v0.5.2) (2025-04-04)
 
 
