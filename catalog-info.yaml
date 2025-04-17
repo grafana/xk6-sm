@@ -6,7 +6,6 @@ metadata:
   description: |
     Output k6 extension used by the synthetic monitoring agent.
   annotations:
-    backstage.io/techdocs-ref: dir:./doc
     github.com/project-slug: grafana/xk6-sm
 spec:
   type: tool
