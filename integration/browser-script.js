@@ -23,7 +23,13 @@ export default async function () {
 
   try {
     // e-commerce site as a torture test for metric generation.
-    await page.goto('https://www.amazon.com');
+    const response = await page.goto('https://www.amazon.com', {
+      waitUntil: 'networkidle',
+    });
+    // Add a check to ensure we got a response
+    check(response, {
+      'status is 200': (r) => r.status() === 200,
+    });
   } finally {
     await page.close();
   }
