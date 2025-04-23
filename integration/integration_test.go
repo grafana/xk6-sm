@@ -398,7 +398,6 @@ func TestSMK6Browser(t *testing.T) {
 		mfs := runBrowserScript(t, "browser-script.js", nil) // Default allowlist.
 
 		t.Run("includes expected metrics", func(t *testing.T) {
-			t.Skip("Skipping flaky test")
 			t.Parallel()
 
 			wanted := []string{
