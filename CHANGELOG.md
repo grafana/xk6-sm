@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.5.3](https://github.com/grafana/xk6-sm/compare/v0.5.2...v0.5.3) (2025-04-22)
+
+
+### Fixes
+
+* upgrade k6 to include a bug fix ([#117](https://github.com/grafana/xk6-sm/issues/117)) ([4515b23](https://github.com/grafana/xk6-sm/commit/4515b2347b52e26cc14d2a0a60d5666648242d04))
+
+
+### Miscellaneous Chores
+
+* Update actions/create-github-app-token action to v2 ([#111](https://github.com/grafana/xk6-sm/issues/111)) ([6b8702c](https://github.com/grafana/xk6-sm/commit/6b8702c4c0ba72d2be2ce43efdeddabee03f32c9))
+* Update actions/setup-go digest to 0aaccfd ([#96](https://github.com/grafana/xk6-sm/issues/96)) ([379464f](https://github.com/grafana/xk6-sm/commit/379464fea663ce0b8b62f2a2b27365ca1ffe49ce))
+* Update golangci/golangci-lint-action action to v7 ([#105](https://github.com/grafana/xk6-sm/issues/105)) ([147bc11](https://github.com/grafana/xk6-sm/commit/147bc1149e262f5b66f34f71ec7c2a32383f6f24))
+* Update gsm-api-go-client digest to 13991b8 ([#113](https://github.com/grafana/xk6-sm/issues/113)) ([ba0c8f0](https://github.com/grafana/xk6-sm/commit/ba0c8f061a90de37f5d7d0a72ffaa58c8fc5407c))
+
 ## [0.5.2](https://github.com/grafana/xk6-sm/compare/v0.5.1...v0.5.2) (2025-04-04)
 
 
