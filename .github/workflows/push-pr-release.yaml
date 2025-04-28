@@ -5,9 +5,9 @@ on:
   release:
     types: [published]
 
-# Needed to upload assets to releases.
 permissions:
-  contents: write
+  contents: none
+  packages: none
 
 jobs:
   build:
@@ -17,24 +17,34 @@ jobs:
       matrix:
         goos: [linux, darwin]
         goarch: [amd64, arm64]
+    permissions:
+      contents: write # Needed to upload assets to releases.
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          persist-credentials: false
+
       - uses: actions/setup-go@0aaccfd150d50ccaeb58ebd88d36e91967a5f35b # v5
+
       - name: Extract k6 version from go.mod
         id: version
         run: |-
           k6version=$(grep -e go.k6.io go.mod | cut -d' ' -f 2)
           echo "Detected k6 version: ${k6version}"
           echo "k6=${k6version}" >> $GITHUB_OUTPUT
+
       - name: Build with xk6
+        env:
+          K6_VERSION: ${{ steps.version.outputs.k6 }}
         run: |-
           mkdir -p dist
           docker run --rm -i -u "$(id -u):$(id -g)" -v "${PWD}:/xk6" \
             -e "GOOS=${{ matrix.goos }}" -e "GOARCH=${{ matrix.goarch }}" \
-            grafana/xk6 build ${{ steps.version.outputs.k6 }} \
+            grafana/xk6 build "${K6_VERSION}" \
             --output "dist/sm-k6-${{ matrix.goos }}-${{ matrix.goarch }}" \
             --with github.com/grafana/xk6-sm=. \
             --with github.com/grafana/gsm-api-go-client@13991b80a5077d1c302df71960589f326a90ab98
+
       - name: Check runner architecture
         id: runner-info
         run: |-
@@ -43,6 +53,7 @@ jobs:
             native="true"
           fi
           echo "native=$native" >> $GITHUB_OUTPUT
+
       - name: Test
         # No point in running tests for foreign architectures we cannot run.
         if: steps.runner-info.outputs.native == 'true'
@@ -53,5 +64,6 @@ jobs:
         if: github.event_name == 'release'
         env:
           GH_TOKEN: ${{ github.token }}
+          GITHUB_REF_NAME: ${{ github.ref_name }}
         run: |-
-          gh release upload "${{ github.ref_name }}" dist/* --clobber
+          gh release upload "${GITHUB_REF_NAME}" dist/* --clobber
