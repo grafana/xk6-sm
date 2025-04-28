@@ -2,11 +2,12 @@ name: Self-hosted Renovate
 
 on:
   schedule:
-    - cron: "29 */4 * * *"
+    - cron: "10 */4 * * *"
   workflow_dispatch:
-  pull_request:
-    paths:
-      - '**renovate*'
+
+permissions:
+  contents: none
+
 jobs:
   renovate:
     permissions:
@@ -18,8 +19,7 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
       - name: Self-hosted renovate
         uses: grafana/sm-renovate/actions/renovate@main
-        with:
-          dry-run: "${{ github.event_name == 'pull_request' }}"
-          use-current-branch: "${{ github.event_name == 'pull_request' }}"
