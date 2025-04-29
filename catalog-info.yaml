@@ -1,0 +1,13 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: k6-extension-synthetic-monitoring
+  title: k6-extension-synthetic-monitoring
+  description: |
+    Output k6 extension used by the synthetic monitoring agent.
+  annotations:
+    github.com/project-slug: grafana/xk6-sm
+spec:
+  type: tool
+  owner: group:default/synthetic-monitoring-dev
+  lifecycle: production
