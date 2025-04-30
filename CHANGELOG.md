@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.4](https://github.com/grafana/xk6-sm/compare/v0.5.3...v0.5.4) (2025-04-30)
+
+
+### Fixes
+
+* Resolve issues reported by zizmor ([#120](https://github.com/grafana/xk6-sm/issues/120)) ([2b0fa18](https://github.com/grafana/xk6-sm/commit/2b0fa18e5bd85fb4bf9608bf661d34d53a17e768))
+
 ## [0.5.3](https://github.com/grafana/xk6-sm/compare/v0.5.2...v0.5.3) (2025-04-22)
 
 
