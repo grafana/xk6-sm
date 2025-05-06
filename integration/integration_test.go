@@ -45,9 +45,12 @@ func runScript(t *testing.T, scriptFileName string, env []string) []*prometheus.
 	cmd := exec.CommandContext(ctx, smk6, "run", "-", "-o=sm="+outFile)
 	cmd.Stdin = bytes.NewReader(script)
 	cmd.Env = env
-	if k6out, err := cmd.CombinedOutput(); err != nil {
+	k6out, err := cmd.CombinedOutput()
+	if err != nil {
 		t.Fatalf("running sm-k6: %v\n%s", errors.Join(err, ctx.Err()), string(k6out))
 	}
+
+	t.Logf("k6 output:\n%s", string(k6out))
 
 	out, err := os.Open(outFile)
 	if err != nil {
