@@ -40,9 +40,10 @@ func runScript(t *testing.T, scriptFileName string, env []string) []*prometheus.
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	t.Cleanup(cancel)
 
-	outFile := filepath.Join(t.TempDir(), "metrics.txt")
+	smOutFile := filepath.Join(t.TempDir(), "metrics.txt")
+	jsonOutFile := filepath.Join(t.TempDir(), "metrics.json")
 
-	cmd := exec.CommandContext(ctx, smk6, "run", "-", "-o=sm="+outFile)
+	cmd := exec.CommandContext(ctx, smk6, "run", "-", "-o=sm="+smOutFile, "-o=json="+jsonOutFile)
 	cmd.Stdin = bytes.NewReader(script)
 	cmd.Env = env
 	k6out, err := cmd.CombinedOutput()
@@ -52,13 +53,21 @@ func runScript(t *testing.T, scriptFileName string, env []string) []*prometheus.
 
 	t.Logf("k6 output:\n%s", string(k6out))
 
-	out, err := os.Open(outFile)
+	smMetrics, err := os.ReadFile(smOutFile)
 	if err != nil {
 		t.Fatalf("reading output metrics: %v", err)
 	}
 
+	jsonMetrics, err := os.ReadFile(smOutFile)
+	if err != nil {
+		t.Fatalf("reading json metrics: %v", err)
+	}
+
+	t.Logf("sm metrics:\n%s", string(smMetrics))
+	t.Logf("json metrics:\n%s", string(jsonMetrics))
+
 	mfs := []*prometheus.MetricFamily{}
-	decoder := expfmt.NewDecoder(out, expfmt.NewFormat(expfmt.TypeTextPlain))
+	decoder := expfmt.NewDecoder(bytes.NewReader(smMetrics), expfmt.NewFormat(expfmt.TypeTextPlain))
 	for {
 		mf := &prometheus.MetricFamily{}
 		err := decoder.Decode(mf)
