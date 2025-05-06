@@ -229,105 +229,105 @@ func TestSMK6(t *testing.T) {
 			{
 				name:         "HTTP duration second has a duration-ish value",
 				metricName:   "probe_http_duration_seconds",
-				metricLabels: map[string]string{"phase": "processing", "url": "https://test-api.k6.io/public/crocodiles/"},
+				metricLabels: map[string]string{"phase": "processing", "url": "https://quickpizza.grafana.com/login"},
 				assertValue:  nonZero,
 			},
 			// Custom http phases. Check for each one individually as we use slightly different names than k6 uses.
 			{
 				name:         "HTTP duration seconds has phase=resolve",
 				metricName:   "probe_http_duration_seconds",
-				metricLabels: map[string]string{"phase": "resolve", "url": "https://test-api.k6.io/public/crocodiles/"},
+				metricLabels: map[string]string{"phase": "resolve", "url": "https://quickpizza.grafana.com/login"},
 				assertValue:  any, // Just fail if not present.
 			},
 			{
 				name:         "HTTP duration seconds has phase=connect",
 				metricName:   "probe_http_duration_seconds",
-				metricLabels: map[string]string{"phase": "connect", "url": "https://test-api.k6.io/public/crocodiles/"},
+				metricLabels: map[string]string{"phase": "connect", "url": "https://quickpizza.grafana.com/login"},
 				assertValue:  any, // Just fail if not present.
 			},
 			{
 				name:         "HTTP duration seconds has phase=tls",
 				metricName:   "probe_http_duration_seconds",
-				metricLabels: map[string]string{"phase": "tls", "url": "https://test-api.k6.io/public/crocodiles/"},
+				metricLabels: map[string]string{"phase": "tls", "url": "https://quickpizza.grafana.com/login"},
 				assertValue:  any, // Just fail if not present.
 			},
 			{
 				name:         "HTTP duration seconds has phase=processing",
 				metricName:   "probe_http_duration_seconds",
-				metricLabels: map[string]string{"phase": "processing", "url": "https://test-api.k6.io/public/crocodiles/"},
+				metricLabels: map[string]string{"phase": "processing", "url": "https://quickpizza.grafana.com/login"},
 				assertValue:  any, // Just fail if not present.
 			},
 			{
 				name:         "HTTP duration seconds has phase=transfer",
 				metricName:   "probe_http_duration_seconds",
-				metricLabels: map[string]string{"phase": "transfer", "url": "https://test-api.k6.io/public/crocodiles/"},
+				metricLabels: map[string]string{"phase": "transfer", "url": "https://quickpizza.grafana.com/login"},
 				assertValue:  any, // Just fail if not present.
 			},
 			{
 				name:         "Error code for request that should succeed",
 				metricName:   "probe_http_error_code",
-				metricLabels: map[string]string{"url": "https://test-api.k6.io/public/crocodiles/"},
+				metricLabels: map[string]string{"url": "https://quickpizza.grafana.com/login"},
 				assertValue:  equals(0),
 			},
 			{
 				name:         "Error code for request that should fail",
 				metricName:   "probe_http_error_code",
-				metricLabels: map[string]string{"url": "http://fail.internal/public/crocodiles4/"},
+				metricLabels: map[string]string{"url": "http://fail.internal/failure-nxdomain"},
 				assertValue:  equals(1101),
 			},
 			{
 				name:         "HTTP status code for a request that should succeed",
 				metricName:   "probe_http_status_code",
-				metricLabels: map[string]string{"url": "https://test-api.k6.io/public/crocodiles/"},
+				metricLabels: map[string]string{"url": "https://quickpizza.grafana.com/login"},
 				assertValue:  equals(200),
 			},
 			{
 				name:         "Expected response for a request that should succeed",
 				metricName:   "probe_http_got_expected_response",
-				metricLabels: map[string]string{"url": "https://test-api.k6.io/public/crocodiles/"},
+				metricLabels: map[string]string{"url": "https://quickpizza.grafana.com/login"},
 				assertValue:  equals(1),
 			},
 			{
 				name:         "Expected response for a request that should fail",
 				metricName:   "probe_http_got_expected_response",
-				metricLabels: map[string]string{"url": "https://test-api.k6.io/public/crocodiles2/"},
+				metricLabels: map[string]string{"url": "https://quickpizza.grafana.com/thats-a-404"},
 				assertValue:  equals(0),
 			},
 			{
 				name:         "Total requests for a URL accessed once",
 				metricName:   "probe_http_requests_total",
-				metricLabels: map[string]string{"url": "https://test-api.k6.io/public/crocodiles/"},
+				metricLabels: map[string]string{"url": "https://quickpizza.grafana.com/login"},
 				assertValue:  equals(1),
 			},
 			{
 				name:         "Total requests for a URL accessed twice",
 				metricName:   "probe_http_requests_total",
-				metricLabels: map[string]string{"url": "https://test-api.k6.io/public/crocodiles4/"},
+				metricLabels: map[string]string{"url": "https://quickpizza.grafana.com/thats-another-404-accessed-twice"},
 				assertValue:  equals(2),
 			},
 			{
 				name:         "HTTP requests failed rate",
 				metricName:   "probe_http_requests_failed",
-				metricLabels: map[string]string{"url": "https://test-api.k6.io/public/crocodiles4/"},
+				metricLabels: map[string]string{"url": "https://quickpizza.grafana.com/thats-another-404-accessed-twice"},
 				assertValue:  equals(1),
 			},
 			{
-				name:         "HTTP requests failed ttoal",
+				name:         "HTTP requests failed total",
 				metricName:   "probe_http_requests_failed_total",
-				metricLabels: map[string]string{"url": "https://test-api.k6.io/public/crocodiles4/"},
+				metricLabels: map[string]string{"url": "https://quickpizza.grafana.com/thats-another-404-accessed-twice"},
 				assertValue:  equals(2),
 			},
 			{
 				name:         "HTTP version",
 				metricName:   "probe_http_version",
-				metricLabels: map[string]string{"url": "https://test-api.k6.io/public/crocodiles/"},
+				metricLabels: map[string]string{"url": "https://quickpizza.grafana.com/login"},
 				assertValue:  func(f float64) bool { return f >= 1.1 },
 			},
 			{
 				name:       "TLS version label value",
 				metricName: "probe_http_info",
 				// Test for a paticular URL to avoid matching a failed request, which has no TLS version.
-				metricLabels: map[string]string{"tls_version": "1.3", "url": "https://test-api.k6.io/public/crocodiles/"},
+				metricLabels: map[string]string{"tls_version": "1.3", "url": "https://quickpizza.grafana.com/login"},
 				assertValue:  any, // Just fail if not present.
 			},
 			{
