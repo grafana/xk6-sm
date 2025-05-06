@@ -29,6 +29,17 @@
       "matchStrings": [
         "--with github.com/grafana/gsm-api-go-client@(?<currentDigest>[a-f0-9]{7,40})"
       ]
+    },
+    {
+      "customType": "regex",
+      "datasourceTemplate": "github-releases",
+      "depNameTemplate": "grafana/k6-jslib-testing",
+      "fileMatch": [
+        "\\.js$"
+      ],
+      "matchStrings": [
+        "https://jslib.k6.io/k6-utils/(?<currentValue>[^/]+)/"
+      ]
     }
   ]
 }
