@@ -58,7 +58,7 @@ func runScript(t *testing.T, scriptFileName string, env []string) []*prometheus.
 		t.Fatalf("reading output metrics: %v", err)
 	}
 
-	jsonMetrics, err := os.ReadFile(smOutFile)
+	jsonMetrics, err := os.ReadFile(jsonOutFile)
 	if err != nil {
 		t.Fatalf("reading json metrics: %v", err)
 	}
