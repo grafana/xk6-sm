@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"os/exec"
@@ -107,8 +108,11 @@ func createSession(endpoint string) (*sessionInfo, error) {
 		return nil, err
 	}
 
+	defer resp.Body.Close() //nolint:errcheck // Skipping for brevity in test context.
+
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("got unexpected status %d", resp.StatusCode)
+		body, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("got unexpected status %d:\n%s", resp.StatusCode, string(body))
 	}
 
 	session := sessionInfo{}
@@ -132,8 +136,11 @@ func deleteSession(endpoint, sessionID string) error {
 		return err
 	}
 
+	defer resp.Body.Close() //nolint:errcheck // Skipping for brevity in test context.
+
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("got unexpected status %d", resp.StatusCode)
+		body, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("got unexpected status %d:\n%s", resp.StatusCode, string(body))
 	}
 
 	return nil
