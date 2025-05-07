@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -20,6 +21,8 @@ import (
 const (
 	// ChunkSize is the size of each chunk in bytes
 	ChunkSize = 50 * 1024 // 50kb
+	// DebugDir is the directory where screenshots are saved for debugging
+	DebugDir = "debug_screenshots"
 )
 
 // Server handles screenshot uploads and logging
@@ -31,6 +34,11 @@ type Server struct {
 
 // New creates a new screenshot server
 func New(logger logrus.FieldLogger) *Server {
+	// Create debug directory if it doesn't exist
+	if err := os.MkdirAll(DebugDir, 0755); err != nil {
+		logger.WithError(err).Warn("Failed to create debug screenshots directory")
+	}
+
 	return &Server{
 		logger:     logger,
 		seenHashes: make(map[string]bool),
@@ -191,7 +199,6 @@ func (s *Server) handlePresignedURL(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleScreenshot(w http.ResponseWriter, r *http.Request) {
-
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
@@ -207,14 +214,71 @@ func (s *Server) handleScreenshot(w http.ResponseWriter, r *http.Request) {
 	}
 	filename := strings.TrimPrefix(urlPath, prefix)
 
-	// Read the raw body
-	data, err := io.ReadAll(r.Body)
+	// Parse multipart form with a larger size limit
+	err := r.ParseMultipartForm(32 << 20) // 32 MB max
 	if err != nil {
-		s.logger.WithError(err).Error("Failed to read request body")
-		http.Error(w, "Failed to read request body", http.StatusBadRequest)
+		s.logger.WithError(err).Error("Failed to parse multipart form")
+		http.Error(w, "Failed to parse multipart form", http.StatusBadRequest)
 		return
 	}
 
+	// Get the file from the form
+	file, header, err := r.FormFile("file")
+	if err != nil {
+		s.logger.WithError(err).Error("Failed to get file from form")
+		http.Error(w, "Failed to get file from form", http.StatusBadRequest)
+		return
+	}
+	defer file.Close()
+
+	// Log the file details for debugging
+	s.logger.WithFields(logrus.Fields{
+		"filename": header.Filename,
+		"size":     header.Size,
+		"type":     header.Header.Get("Content-Type"),
+	}).Debug("Received file")
+
+	// Read the file data
+	data, err := io.ReadAll(file)
+	if err != nil {
+		s.logger.WithError(err).Error("Failed to read file data")
+		http.Error(w, "Failed to read file data", http.StatusBadRequest)
+		return
+	}
+
+	// Save the raw image data to debug directory
+	debugPath := filepath.Join(DebugDir, filename)
+	if err := os.WriteFile(debugPath, data, 0644); err != nil {
+		s.logger.WithError(err).WithField("path", debugPath).Warn("Failed to save debug screenshot")
+	} else {
+		s.logger.WithField("path", debugPath).Debug("Saved debug screenshot")
+	}
+
+	// Log the data length for debugging
+	s.logger.WithField("data_length", len(data)).Debug("Read file data")
+
+	// Split into chunks
+	chunks := splitIntoChunks(data, ChunkSize)
+	totalChunks := len(chunks)
+
+	// Log chunk details for debugging
+	s.logger.WithFields(logrus.Fields{
+		"total_chunks": totalChunks,
+		"chunk_size":   ChunkSize,
+	}).Debug("Split data into chunks")
+
+	// Base64 encode each chunk
+	encodedChunks := make([]string, totalChunks)
+	for i, chunk := range chunks {
+		encodedChunks[i] = base64.StdEncoding.EncodeToString(chunk)
+		s.logger.WithFields(logrus.Fields{
+			"chunk_index":  i + 1,
+			"chunk_size":   len(chunk),
+			"encoded_size": len(encodedChunks[i]),
+		}).Debug("Encoded chunk")
+	}
+
+	// Calculate SHA of the raw data
 	hash := sha256.Sum256(data)
 	hashStr := hex.EncodeToString(hash[:])
 
@@ -226,13 +290,13 @@ func (s *Server) handleScreenshot(w http.ResponseWriter, r *http.Request) {
 
 	s.seenHashes[hashStr] = true
 
-	chunks := splitIntoChunks(data, ChunkSize)
-	for i, chunk := range chunks {
+	// Log each chunk
+	for i, encodedChunk := range encodedChunks {
 		s.logger.WithFields(logrus.Fields{
 			"sha":      hashStr,
-			"count":    len(chunks),
+			"count":    totalChunks,
 			"index":    i + 1,
-			"content":  base64.StdEncoding.EncodeToString(chunk),
+			"content":  encodedChunk,
 			"filename": filename,
 		}).Info("")
 	}
