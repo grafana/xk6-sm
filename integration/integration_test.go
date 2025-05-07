@@ -43,7 +43,7 @@ func runScript(t *testing.T, scriptFileName string, env []string) []*prometheus.
 	smOutFile := filepath.Join(t.TempDir(), "metrics.txt")
 	jsonOutFile := filepath.Join(t.TempDir(), "metrics.json")
 
-	cmd := exec.CommandContext(ctx, smk6, "run", "-", "-o=sm="+smOutFile, "-o=json="+jsonOutFile)
+	cmd := exec.CommandContext(ctx, smk6, "run", "-", "--log-format", "logfmt", "--log-output", "file=output.log", "-o=sm="+smOutFile, "-o=json="+jsonOutFile)
 	cmd.Stdin = bytes.NewReader(script)
 	cmd.Env = env
 	k6out, err := cmd.CombinedOutput()
@@ -502,6 +502,37 @@ func TestSMK6Browser(t *testing.T) {
 
 			t.Fatalf("Did not found any metric with resource_type=Script")
 		})
+	})
+
+	t.Run("screenshot capture", func(t *testing.T) {
+		// Do not run this one in parallel, as crocochrome only supports one concurrent script run.
+
+		// Set up screenshot output
+		env := []string{
+			"K6_BROWSER_SCREENSHOTS_OUTPUT=url=http://127.0.0.1:8081/screenshots",
+			"K6_LOG_LEVEL=debug",
+		}
+
+		// Run the script that takes a screenshot
+		mfs := runBrowserScript(t, "browser-script.js", env)
+
+		// Verify the screenshot was logged
+		var foundScreenshot bool
+		for _, mf := range mfs {
+			for _, m := range mf.Metric {
+				if *mf.Name == "probe_browser_screenshot_count" {
+					foundScreenshot = true
+					// Verify the log line format
+				if !strings.Contains(line, "sha=") || !strings.Contains(line, "count=") ||
+					!strings.Contains(line, "index=") || !strings.Contains(line, "content=") {
+					t.Errorf("screenshot log line missing required fields: %s", line)
+				}
+			}
+		}
+
+		if !foundScreenshot {
+			t.Fatal("no screenshot chunks found in log output")
+		}
 	})
 }
 

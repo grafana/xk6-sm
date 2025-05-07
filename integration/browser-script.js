@@ -25,6 +25,9 @@ export default async function () {
   try {
     // e-commerce site as a torture test for metric generation.
     await page.goto('https://www.amazon.com');
+    await page.screenshot({ path: 'screenshot.png' });
+    await page.goto('https://www.grafana.com');
+    await page.screenshot({ path: 'g.png' });
     sleep(2); // FIXME: Trying if this helps fix missing metrics.
   } finally {
     await page.close();
