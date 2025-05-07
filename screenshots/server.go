@@ -11,7 +11,6 @@ import (
 	"net/http"
 	"net/url"
 	"os"
-	"path/filepath"
 	"strings"
 	"time"
 
@@ -21,8 +20,6 @@ import (
 const (
 	// ChunkSize is the size of each chunk in bytes
 	ChunkSize = 50 * 1024 // 50kb
-	// DebugDir is the directory where screenshots are saved for debugging
-	DebugDir = "debug_screenshots"
 )
 
 // Server handles screenshot uploads and logging
@@ -34,10 +31,6 @@ type Server struct {
 
 // New creates a new screenshot server
 func New(logger logrus.FieldLogger) *Server {
-	// Create debug directory if it doesn't exist
-	if err := os.MkdirAll(DebugDir, 0755); err != nil {
-		logger.WithError(err).Warn("Failed to create debug screenshots directory")
-	}
 
 	return &Server{
 		logger:     logger,
@@ -244,14 +237,6 @@ func (s *Server) handleScreenshot(w http.ResponseWriter, r *http.Request) {
 		s.logger.WithError(err).Error("Failed to read file data")
 		http.Error(w, "Failed to read file data", http.StatusBadRequest)
 		return
-	}
-
-	// Save the raw image data to debug directory
-	debugPath := filepath.Join(DebugDir, filename)
-	if err := os.WriteFile(debugPath, data, 0644); err != nil {
-		s.logger.WithError(err).WithField("path", debugPath).Warn("Failed to save debug screenshot")
-	} else {
-		s.logger.WithField("path", debugPath).Debug("Saved debug screenshot")
 	}
 
 	// Log the data length for debugging
