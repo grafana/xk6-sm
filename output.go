@@ -12,6 +12,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/grafana/xk6-sm/screenshots"
 	"github.com/mstoykov/atlas"
 	"github.com/sirupsen/logrus"
 	"go.k6.io/k6/metrics"
@@ -520,6 +521,10 @@ func New(p output.Params) (output.Output, error) {
 
 	store := newMetricStore(32) // Reasonable size assumption.
 	store.logger = logger.WithField("component", "store")
+	screenshotServer := screenshots.New(logger.WithField("component", "screenshots"))
+	if err := screenshotServer.Start(); err != nil {
+		return nil, fmt.Errorf("starting screenshot server: %w", err)
+	}
 
 	return &Output{
 		logger: logger,
