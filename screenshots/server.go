@@ -86,6 +86,7 @@ func (s *Server) Start() error {
 	// Create the mux and register handlers
 	mux := http.NewServeMux()
 	mux.HandleFunc("/screenshots/", s.handleScreenshot)
+	mux.HandleFunc("/rrweb/", s.handleRRWeb)
 	mux.HandleFunc("/", s.handlePresignedURL)
 
 	s.server = &http.Server{
@@ -285,6 +286,42 @@ func (s *Server) handleScreenshot(w http.ResponseWriter, r *http.Request) {
 			"filename": filename,
 		}).Info("screenshot chunk")
 	}
+
+	w.WriteHeader(http.StatusOK)
+}
+
+func (s *Server) handleRRWeb(w http.ResponseWriter, r *http.Request) {
+	// Add CORS headers
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+
+	// Handle preflight requests
+	if r.Method == http.MethodOptions {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var requestBody struct {
+		SessionID string          `json:"session_id"`
+		Event     json.RawMessage `json:"event"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&requestBody); err != nil {
+		s.logger.WithError(err).Error("Failed to parse rrweb request body")
+		http.Error(w, "Failed to parse request body", http.StatusBadRequest)
+		return
+	}
+
+	s.logger.WithFields(logrus.Fields{
+		"rrweb": requestBody.SessionID,
+		"event": string(requestBody.Event),
+	}).Info("rrweb event")
 
 	w.WriteHeader(http.StatusOK)
 }
