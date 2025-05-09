@@ -283,7 +283,7 @@ func (s *Server) handleScreenshot(w http.ResponseWriter, r *http.Request) {
 			"index":    i + 1,
 			"content":  encodedChunk,
 			"filename": filename,
-		}).Info("")
+		}).Info("screenshot chunk")
 	}
 
 	w.WriteHeader(http.StatusOK)
