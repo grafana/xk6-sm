@@ -19,7 +19,7 @@ import (
 
 const (
 	// ChunkSize is the size of each chunk in bytes
-	ChunkSize = 50 * 1024 // 50kb
+	ChunkSize = 16 * 1024 // 50kb
 )
 
 // Server handles screenshot uploads and logging
@@ -161,7 +161,7 @@ func (s *Server) handlePresignedURL(w http.ResponseWriter, r *http.Request) {
 		u := &url.URL{
 			Scheme: "http",
 			Host:   net.JoinHostPort(host, port),
-			Path:   fileName,
+			Path:   "/screenshots/" + fileName,
 		}
 
 		urls = append(urls, struct {
