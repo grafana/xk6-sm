@@ -291,6 +291,17 @@ func (s *Server) handleScreenshot(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleRRWeb(w http.ResponseWriter, r *http.Request) {
+	// Add CORS headers
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+
+	// Handle preflight requests
+	if r.Method == http.MethodOptions {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
@@ -309,7 +320,7 @@ func (s *Server) handleRRWeb(w http.ResponseWriter, r *http.Request) {
 
 	s.logger.WithFields(logrus.Fields{
 		"rrweb": requestBody.SessionID,
-		"event": requestBody.Event,
+		"event": string(requestBody.Event),
 	}).Info("rrweb event")
 
 	w.WriteHeader(http.StatusOK)
