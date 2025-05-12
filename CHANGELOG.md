@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.5.5](https://github.com/grafana/xk6-sm/compare/v0.5.4...v0.5.5) (2025-05-12)
+
+
+### Miscellaneous Chores
+
+* integration: fix json debug log ([49d306c](https://github.com/grafana/xk6-sm/commit/49d306c7049bd05fbb64e18e0dc982c729c3b97e))
+* integration/test: add sleep to see if it helps with missing metrics ([73f6721](https://github.com/grafana/xk6-sm/commit/73f6721b82859f8a108b87981a4bae7b9ad4940f))
+* integration/test: log crocochrome response body on failure ([319ee3f](https://github.com/grafana/xk6-sm/commit/319ee3fd5c997149413f524be9c16532516335e1))
+* integration/test: log k6 output ([a3b1cca](https://github.com/grafana/xk6-sm/commit/a3b1cca2bee86415df27c732530b787184d07ccb))
+* integration/test: log raw metrics ([9794c83](https://github.com/grafana/xk6-sm/commit/9794c830668e5516a368a312f7e8c80c10abd803))
+* integration/test: replace test-api with quickpizza ([91a0803](https://github.com/grafana/xk6-sm/commit/91a08033ebee851f3d329adbf734abe6bd34a225))
+* Update actions/create-github-app-token action to v2 ([821d0fc](https://github.com/grafana/xk6-sm/commit/821d0fce6410d11a018d247eac04631edfa1982c))
+* Update dependency go to v1.24.3 ([32c24cf](https://github.com/grafana/xk6-sm/commit/32c24cfbaa75ba7aec4f947f4d9c13c52c4cd8a8))
+* Update ghcr.io/grafana/crocochrome Docker tag to v0.5.6 ([4448d5d](https://github.com/grafana/xk6-sm/commit/4448d5d96423f36fd83ab523db8a5b33e882d283))
+* Update golangci/golangci-lint-action action to v8 ([b3f2f17](https://github.com/grafana/xk6-sm/commit/b3f2f17e3c84f84af3944fb5e5696ea07d1950d1))
+* Update module github.com/prometheus/client_model to v0.6.2 ([88a3907](https://github.com/grafana/xk6-sm/commit/88a39071e3df963b43f28506525bc613b10e8d36))
+* Update module go.k6.io/k6 to v1.0.0 ([d8d702d](https://github.com/grafana/xk6-sm/commit/d8d702d82baa530fad0b405ecc3f11ec415a64c6))
+
 ## [0.5.4](https://github.com/grafana/xk6-sm/compare/v0.5.3...v0.5.4) (2025-04-30)
 
 
