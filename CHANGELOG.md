@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.5.6](https://github.com/grafana/xk6-sm/compare/v0.5.5...v0.5.6) (2025-05-15)
+
+
+### Miscellaneous Chores
+
+* Update actions/setup-go digest to d35c59a ([#132](https://github.com/grafana/xk6-sm/issues/132)) ([830348f](https://github.com/grafana/xk6-sm/commit/830348fb12700649f1ba234519f79e640cf00471))
+* Update ghcr.io/grafana/crocochrome Docker tag to v0.5.7 ([#134](https://github.com/grafana/xk6-sm/issues/134)) ([f939f0d](https://github.com/grafana/xk6-sm/commit/f939f0d2493948b5a6ca1c41d9544673e4013cc7))
+
 ## [0.5.5](https://github.com/grafana/xk6-sm/compare/v0.5.4...v0.5.5) (2025-05-12)
 
 
