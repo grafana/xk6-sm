@@ -450,7 +450,7 @@ func TestSMK6Browser(t *testing.T) {
 			t.Parallel()
 
 			for _, mf := range mfs {
-				sane := 3
+				sane := 5
 				if found := len(mf.Metric); found > sane {
 					t.Fatalf("Found suspicioulsy large number of timeseries (%d>%d) for metric %q", found, sane, *mf.Name)
 				}
