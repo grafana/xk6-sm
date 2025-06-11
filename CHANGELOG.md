@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.5.6](https://github.com/grafana/xk6-sm/compare/v0.5.5...v0.5.6) (2025-06-06)
+
+
+### Miscellaneous Chores
+
+* integration: increase number of tolerable Document-type TS to 5 ([94af3bd](https://github.com/grafana/xk6-sm/commit/94af3bd88f2dc0af906063c8417afb97ced23dff))
+* Update actions/setup-go digest to d35c59a ([#132](https://github.com/grafana/xk6-sm/issues/132)) ([830348f](https://github.com/grafana/xk6-sm/commit/830348fb12700649f1ba234519f79e640cf00471))
+* Update dependency go to v1.24.4 ([4d7621a](https://github.com/grafana/xk6-sm/commit/4d7621a1233386414aa80bf17cefb893c80e290f))
+* Update ghcr.io/grafana/crocochrome Docker tag to v0.5.7 ([#134](https://github.com/grafana/xk6-sm/issues/134)) ([f939f0d](https://github.com/grafana/xk6-sm/commit/f939f0d2493948b5a6ca1c41d9544673e4013cc7))
+* Update gsm-api-go-client digest to 0b6ec59 ([dea0a3a](https://github.com/grafana/xk6-sm/commit/dea0a3ab44785e5662797e84bcb7dab0414a724e))
+* Update module github.com/prometheus/common to v0.64.0 ([#136](https://github.com/grafana/xk6-sm/issues/136)) ([0f80b5a](https://github.com/grafana/xk6-sm/commit/0f80b5a265079b1417dc4f635edb58243fc5c910))
+
 ## [0.5.5](https://github.com/grafana/xk6-sm/compare/v0.5.4...v0.5.5) (2025-05-12)
 
 
