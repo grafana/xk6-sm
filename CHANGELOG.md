@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.5.7](https://github.com/grafana/xk6-sm/compare/v0.5.6...v0.5.7) (2025-06-20)
+
+
+### Miscellaneous Chores
+
+* Update ghcr.io/grafana/crocochrome Docker tag to v0.5.10 ([fca725e](https://github.com/grafana/xk6-sm/commit/fca725e9a1e74321a8cb30e2e4368d309f4d54b6))
+* Update ghcr.io/grafana/crocochrome Docker tag to v0.5.8 ([be5f386](https://github.com/grafana/xk6-sm/commit/be5f3864045f1f14fdce0ff4bf6071dfdef87c41))
+* Update gsm-api-go-client digest to fa22271 ([6b7be95](https://github.com/grafana/xk6-sm/commit/6b7be95aea519fdd9cec0a47ad3f09b26dc7f8eb))
+
 ## [0.5.6](https://github.com/grafana/xk6-sm/compare/v0.5.5...v0.5.6) (2025-06-06)
 
 
