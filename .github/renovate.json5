@@ -10,8 +10,8 @@
       "customType": "regex",
       "datasourceTemplate": "docker",
       "depNameTemplate": "ghcr.io/grafana/crocochrome",
-      "fileMatch": [
-        "_test.go$",
+      "managerFilePatterns": [
+        "**/*_test.go",
       ],
       "matchStrings": [
         "ghcr.io/grafana/crocochrome:(?<currentValue>[\\w.-]+)(?:@(?<currentDigest>[\\w:]+))?",
@@ -23,8 +23,8 @@
       "depNameTemplate": "gsm-api-go-client",
       "packageNameTemplate": "https://github.com/grafana/gsm-api-go-client",
       "currentValueTemplate": "main",
-      "fileMatch": [
-        "^\\.github/workflows/push-pr-release\\.yaml$"
+      "managerFilePatterns": [
+        ".github/workflows/push-pr-release.yaml"
       ],
       "matchStrings": [
         "--with github.com/grafana/gsm-api-go-client@(?<currentDigest>[a-f0-9]{7,40})"
