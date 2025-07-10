@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.5.9](https://github.com/grafana/xk6-sm/compare/v0.5.8...v0.5.9) (2025-07-10)
+
+
+### Miscellaneous Chores
+
+* renovate: replace fileMatch with managerFilePatterns ([5cc7afa](https://github.com/grafana/xk6-sm/commit/5cc7afafd38bc5b42b4aca329a0cc80b1b9b435a))
+* Update ghcr.io/grafana/crocochrome Docker tag to v0.6.2 ([#153](https://github.com/grafana/xk6-sm/issues/153)) ([b1f444a](https://github.com/grafana/xk6-sm/commit/b1f444af5e2071c7c657fb9200016e12647cdda8))
+* Update gsm-api-go-client digest to d36d8e6 ([#151](https://github.com/grafana/xk6-sm/issues/151)) ([6270341](https://github.com/grafana/xk6-sm/commit/6270341ab474342102776dede63150a855dd1929))
+
 ## [0.5.8](https://github.com/grafana/xk6-sm/compare/v0.5.7...v0.5.8) (2025-07-03)
 
 
