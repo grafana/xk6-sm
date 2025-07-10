@@ -2,7 +2,7 @@ module github.com/grafana/xk6-sm
 
 go 1.23.0
 
-toolchain go1.24.4
+toolchain go1.24.5
 
 require (
 	github.com/mstoykov/atlas v0.0.0-20220811071828-388f114305dd
