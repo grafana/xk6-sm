@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.5.10](https://github.com/grafana/xk6-sm/compare/v0.5.9...v0.5.10) (2025-07-15)
+
+
+### Miscellaneous Chores
+
+* Update dependency go to v1.24.5 ([#155](https://github.com/grafana/xk6-sm/issues/155)) ([51416fd](https://github.com/grafana/xk6-sm/commit/51416fd96df568fe81e6ad8f85e8c0fb44afc4d1))
+* Update gsm-api-go-client digest to 9df346f ([#156](https://github.com/grafana/xk6-sm/issues/156)) ([627e608](https://github.com/grafana/xk6-sm/commit/627e608487536d9c78942692e8094c611eab3872))
+
 ## [0.5.9](https://github.com/grafana/xk6-sm/compare/v0.5.8...v0.5.9) (2025-07-10)
 
 
