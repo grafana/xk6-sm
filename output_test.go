@@ -1,3 +1,6 @@
+// Copyright (C) 2025 Grafana Labs.
+// SPDX-License-Identifier: AGPL-3.0-only
+
 package sm
 
 import (
@@ -20,21 +23,34 @@ func TestOutputNew(t *testing.T) {
 		expectError bool
 	}{
 		"happy path": {
-			input:       output.Params{ConfigArgument: "test.out", FS: afero.NewMemMapFs(), Logger: nopLogger()},
+			input: output.Params{
+				ConfigArgument: "test.out",
+				FS:             afero.NewMemMapFs(),
+				Logger:         nopLogger(),
+			},
 			expectError: false,
 		},
 		"no filename": {
-			input:       output.Params{ConfigArgument: "", FS: afero.NewMemMapFs(), Logger: nopLogger()},
+			input: output.Params{
+				ConfigArgument: "",
+				FS:             afero.NewMemMapFs(),
+				Logger:         nopLogger(),
+			},
 			expectError: true,
 		},
 		"cannot create file": {
-			input:       output.Params{ConfigArgument: "test.out", FS: afero.NewReadOnlyFs(afero.NewMemMapFs()), Logger: nopLogger()},
+			input: output.Params{ConfigArgument: "test.out",
+				FS:     afero.NewReadOnlyFs(afero.NewMemMapFs()),
+				Logger: nopLogger(),
+			},
 			expectError: true,
 		},
 	}
 
 	for name, tc := range testcases {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
 			actual, err := New(tc.input)
 			if tc.expectError {
 				require.Error(t, err)
@@ -51,15 +67,16 @@ func TestOutputDescription(t *testing.T) {
 	t.Parallel()
 
 	var out Output
+
 	require.NotEmpty(t, out.Description())
 }
 
 func TestOutputStartStop(t *testing.T) {
 	t.Parallel()
 
-	fs := afero.NewMemMapFs()
+	testFS := afero.NewMemMapFs()
 
-	out, err := New(output.Params{ConfigArgument: "test.out", FS: fs, Logger: nopLogger()})
+	out, err := New(output.Params{ConfigArgument: "test.out", FS: testFS, Logger: nopLogger()})
 	require.NoError(t, err)
 
 	err = out.Start()
@@ -68,7 +85,7 @@ func TestOutputStartStop(t *testing.T) {
 	err = out.Stop()
 	require.NoError(t, err)
 
-	fileOut, err := fs.Open("test.out")
+	fileOut, err := testFS.Open("test.out")
 	require.NoError(t, err)
 
 	output, err := io.ReadAll(fileOut)
@@ -143,20 +160,22 @@ func TestMetricStore(t *testing.T) {
 		store.Record(metrics.Sample{TimeSeries: counterB, Value: 1})
 		store.Record(metrics.Sample{TimeSeries: counterA, Value: 2})
 
-		assert.Equal(t, 1.5, store.store[timeseriesFromK6(trendA)].value)
-		assert.Equal(t, 2, store.store[timeseriesFromK6(trendA)].seenSamples)
-		assert.Equal(t, 1.0, store.store[timeseriesFromK6(trendB)].value)
-		assert.Equal(t, 1, store.store[timeseriesFromK6(trendB)].seenSamples)
+		const delta = 1e-6
 
-		assert.Equal(t, 2.0, store.store[timeseriesFromK6(gaugeA)].value)
-		assert.Equal(t, 2, store.store[timeseriesFromK6(gaugeA)].seenSamples)
-		assert.Equal(t, 1.0, store.store[timeseriesFromK6(gaugeB)].value)
-		assert.Equal(t, 1, store.store[timeseriesFromK6(gaugeB)].seenSamples)
+		assert.InDelta(t, 1.5, store.store[timeseriesFromK6(trendA)].value, delta)
+		assert.InDelta(t, 2, store.store[timeseriesFromK6(trendA)].seenSamples, delta)
+		assert.InDelta(t, 1.0, store.store[timeseriesFromK6(trendB)].value, delta)
+		assert.InDelta(t, 1, store.store[timeseriesFromK6(trendB)].seenSamples, delta)
 
-		assert.Equal(t, 3.0, store.store[timeseriesFromK6(counterA)].value)
-		assert.Equal(t, 2, store.store[timeseriesFromK6(counterA)].seenSamples)
-		assert.Equal(t, 1.0, store.store[timeseriesFromK6(counterB)].value)
-		assert.Equal(t, 1, store.store[timeseriesFromK6(counterB)].seenSamples)
+		assert.InDelta(t, 2.0, store.store[timeseriesFromK6(gaugeA)].value, delta)
+		assert.InDelta(t, 2, store.store[timeseriesFromK6(gaugeA)].seenSamples, delta)
+		assert.InDelta(t, 1.0, store.store[timeseriesFromK6(gaugeB)].value, delta)
+		assert.InDelta(t, 1, store.store[timeseriesFromK6(gaugeB)].seenSamples, delta)
+
+		assert.InDelta(t, 3.0, store.store[timeseriesFromK6(counterA)].value, delta)
+		assert.InDelta(t, 2, store.store[timeseriesFromK6(counterA)].seenSamples, delta)
+		assert.InDelta(t, 1.0, store.store[timeseriesFromK6(counterB)].value, delta)
+		assert.InDelta(t, 1, store.store[timeseriesFromK6(counterB)].seenSamples, delta)
 	})
 }
 
@@ -184,11 +203,13 @@ func TestSanitizeLabelName(t *testing.T) {
 		"utf8":                  {input: "á", expected: "_"},
 	}
 
-	for name, tc := range testcases {
+	for name, testcase := range testcases {
 		t.Run(name, func(t *testing.T) {
-			actual := sanitizeLabelName(tc.input)
-			if actual != tc.expected {
-				t.Log("expected:", tc.expected, "actual:", actual, "input:", tc.input)
+			t.Parallel()
+
+			actual := sanitizeLabelName(testcase.input)
+			if actual != testcase.expected {
+				t.Log("expected:", testcase.expected, "actual:", actual, "input:", testcase.input)
 				t.Fail()
 			}
 		})

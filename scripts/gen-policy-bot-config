@@ -22,5 +22,5 @@ docker run --rm                       \
 	--workdir /work               \
 	"${IMAGE}"                    \
 	--output /work/.policy.yml    \
-	"${mergearg}"                 \
+	${mergearg}                   \
 	.
