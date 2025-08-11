@@ -1,7 +1,9 @@
+// Copyright (C) 2025 Grafana Labs.
+// SPDX-License-Identifier: AGPL-3.0-only
+
 package sm
 
 import (
-	"errors"
 	"fmt"
 	"io"
 	"math"
@@ -11,6 +13,7 @@ import (
 	"strings"
 	"sync"
 	"time"
+	"unicode"
 
 	"github.com/mstoykov/atlas"
 	"github.com/sirupsen/logrus"
@@ -20,9 +23,11 @@ import (
 
 const (
 	ExtensionName = "sm"
+
+	defaultMetricsBufferSize = 32
 )
 
-func init() {
+func init() { //nolint:gochecknoinits // This is the API defined by k6.
 	output.RegisterExtension(ExtensionName, New)
 }
 
@@ -38,8 +43,10 @@ type value struct {
 }
 
 // timeseries is a simplified version of k6 [metrics.TimeSeries].
-// It can be used as a map key for the same reason [metrics.TimeSeries] can: [metrics.TagSet] is immutable (modifying it
-// clones it and returns a new pointer), and k6 promises to always reuse the same TagSet instance instance for each
+//
+// It can be used as a map key for the same reason [metrics.TimeSeries] can:
+// [metrics.TagSet] is immutable (modifying it clones it and returns a new
+// pointer), and k6 promises to always reuse the same TagSet instance for each
 // given timeseries whose TagSet contents are the same.
 type timeseries struct {
 	name       string
@@ -89,6 +96,7 @@ func newMetricStore(size int) *metricStore {
 
 	return &metricStore{
 		store:  make(map[timeseries]value, size),
+		mtx:    sync.Mutex{},
 		logger: logger,
 	}
 }
@@ -103,15 +111,15 @@ func (ms *metricStore) Len() int {
 func (ms *metricStore) Record(sample metrics.Sample) {
 	log := ms.logger.WithField("step", "record")
 
-	ts := timeseriesFromK6(sample.TimeSeries)
+	timeseries := timeseriesFromK6(sample.TimeSeries)
 
 	ms.mtx.Lock()
 	defer ms.mtx.Unlock()
 
-	old, found := ms.store[ts]
+	old, found := ms.store[timeseries]
 	if !found {
 		// Timeseries not already in store, just add it.
-		ms.store[ts] = value{
+		ms.store[timeseries] = value{
 			value:       sample.Value,
 			seenSamples: 1,
 		}
@@ -119,10 +127,11 @@ func (ms *metricStore) Record(sample metrics.Sample) {
 		return
 	}
 
-	log.Tracef("Aggregating sample (%f) for %q into existing (%f) value", sample.Value, ts.name, old.value)
+	log.Tracef("Aggregating sample (%f) for %q into existing (%f) value", sample.Value, timeseries.name, old.value)
 
 	updated := old
-	switch ts.metricType {
+
+	switch timeseries.metricType {
 	case metrics.Counter:
 		// Sum values.
 		updated.value += sample.Value
@@ -134,13 +143,19 @@ func (ms *metricStore) Record(sample metrics.Sample) {
 	case metrics.Gauge:
 		// Replace with newest.
 		updated.value = sample.Value
+
 	default:
-		log.Tracef("Unknown metric type %q for %q, keeping previous sample without aggregating", ts.metricType, ts.name)
+		log.Tracef(
+			"Unknown metric type %q for %q, keeping previous sample without aggregating",
+			timeseries.metricType,
+			timeseries.name,
+		)
+
 		return
 	}
 
 	updated.seenSamples++
-	ms.store[ts] = updated
+	ms.store[timeseries] = updated
 }
 
 // DeriveMetrics creates new metrics from existing ones. These metrics are created either to have some consistency with
@@ -148,45 +163,52 @@ func (ms *metricStore) Record(sample metrics.Sample) {
 // Metrics are derived sequentially, on a single pass. This means that DeriveMetrics can only be extended to derive
 // metrics in a 1:N fashion, where one existing metric produces N derived metrics. DeriveMetrics cannot aggregate
 // multiple metrics into one.
+//
+//nolint:cyclop,funlen,maintidx // This function is handling a lot of different cases.
 func (ms *metricStore) DeriveMetrics() {
 	log := ms.logger.WithField("step", "deriveMetrics")
 
-	for ts, v := range ms.store {
-		// Range over the existing metrics and create new ones, adding them to the map on the fly. This is safe as per
-		// the go spec, with the only caveat that whether new values will be iterated over is undefined. We do not care
-		// about that.
-		// We need to range over the map instead of fetching these metrics directly, as each metric may appear multiple
-		// time with different labels (e.g. different URLs).
+	for ts, val := range ms.store {
+		// Range over the existing metrics and create new ones, adding them to the map on the fly. This is safe
+		// as per the go spec, with the only caveat that whether new values will be iterated over is undefined.
+		// We do not care about that.
+		// We need to range over the map instead of fetching these metrics directly, as each metric may appear
+		// multiple time with different labels (e.g. different URLs).
 		// Inline funcs are used to scope variables and avoid copy-paste bugs.
 		switch ts.name {
 		// Create specific metrics containing info about http calls.
 		// Additionally, clone this metric as http_requests_total.
 		case "http_reqs":
-			func() {
+			{
 				renamedTS := timeseries{
 					name:       "http_requests_total",
 					metricType: metrics.Counter,
 					tags:       ts.tags,
 				}
-				ms.store[renamedTS] = v
-				log.Tracef("Created %q from %q", renamedTS.name, ts.name)
-			}()
+				ms.store[renamedTS] = val
 
-			func() {
+				log.Tracef("Created %q from %q", renamedTS.name, ts.name)
+			}
+
+			{
 				tags := ts.tags
 				if tlsVersion, found := ts.tags.Get("tls_version"); found {
-					tags = ts.tags.Without("tls_version").With("tls_version", strings.TrimPrefix(tlsVersion, "tls"))
+					tags = ts.tags.
+						Without("tls_version").
+						With("tls_version", strings.TrimPrefix(tlsVersion, "tls"))
 				}
+
 				infoTS := timeseries{
 					name:       "http_info",
 					metricType: metrics.Gauge,
 					tags:       tags,
 				}
 				ms.store[infoTS] = value{1, 1}
-				log.Tracef("Created %q from %q", infoTS.name, ts.name)
-			}()
 
-			func() {
+				log.Tracef("Created %q from %q", infoTS.name, ts.name)
+			}
+
+			{
 				newValue := 0.0
 				if _, found := ts.tags.Get("tls_version"); found {
 					newValue = 1.0
@@ -198,10 +220,11 @@ func (ms *metricStore) DeriveMetrics() {
 					tags:       ts.tags,
 				}
 				ms.store[sslTS] = value{newValue, 1}
-				log.Tracef("Created %q from %q", sslTS.name, ts.name)
-			}()
 
-			func() {
+				log.Tracef("Created %q from %q", sslTS.name, ts.name)
+			}
+
+			{
 				newValue := 0.0
 				if expected, _ := ts.tags.Get("expected_response"); expected == "true" {
 					newValue = 1.0
@@ -213,10 +236,11 @@ func (ms *metricStore) DeriveMetrics() {
 					tags:       ts.tags,
 				}
 				ms.store[responseTS] = value{newValue, 1}
-				log.Tracef("Created %q from %q", responseTS.name, ts.name)
-			}()
 
-			func() {
+				log.Tracef("Created %q from %q", responseTS.name, ts.name)
+			}
+
+			{
 				strCode, _ := ts.tags.Get("error_code")
 				newValue, _ := strconv.ParseFloat(strCode, 32)
 				errorCodeTS := timeseries{
@@ -225,12 +249,13 @@ func (ms *metricStore) DeriveMetrics() {
 					tags:       ts.tags,
 				}
 				ms.store[errorCodeTS] = value{newValue, 1}
-				log.Tracef("Created %q from %q", errorCodeTS.name, ts.name)
-			}()
 
-			// TODO: We should revisit this. This keeps the old behavior, but I'm not sure having the status code as the
-			// value of a gauge is actually useful.
-			func() {
+				log.Tracef("Created %q from %q", errorCodeTS.name, ts.name)
+			}
+
+			// TODO: We should revisit this. This keeps the old behavior, but I'm not sure having the status
+			// code as the value of a gauge is actually useful.
+			{
 				strCode, _ := ts.tags.Get("status")
 				newValue, _ := strconv.ParseFloat(strCode, 32)
 				statusCodeTS := timeseries{
@@ -239,87 +264,109 @@ func (ms *metricStore) DeriveMetrics() {
 					tags:       ts.tags,
 				}
 				ms.store[statusCodeTS] = value{newValue, 1}
-				log.Tracef("Created %q from %q", statusCodeTS.name, ts.name)
-			}()
 
-			func() {
+				log.Tracef("Created %q from %q", statusCodeTS.name, ts.name)
+			}
+
+			{
 				strCode, _ := ts.tags.Get("proto")
 				strCode = strings.ToLower(strCode)
 				strCode = strings.TrimPrefix(strCode, "http/") // Leave bare version for "HTTP/1.1"
 				strCode = strings.TrimPrefix(strCode, "h")     // Leave bare version for "h2"
 				newValue, err := strconv.ParseFloat(strCode, 32)
+
 				if err != nil {
 					return // Invalid protocol, skip timeseries.
 				}
+
 				httpVersionTS := timeseries{
 					name:       "http_version",
 					metricType: metrics.Gauge,
 					tags:       ts.tags,
 				}
 				ms.store[httpVersionTS] = value{newValue, 1}
-				log.Tracef("Created %q from %q", httpVersionTS.name, ts.name)
-			}()
 
-		// http_req_failed is a rate, and traditionally we have reported http_requests_failed_total (as a counter)
+				log.Tracef("Created %q from %q", httpVersionTS.name, ts.name)
+			}
+
+		// http_req_failed is a rate, and traditionally we have reported http_requests_failed_total (as a
+		// counter).
+		//
 		// Here we derive the total from the rate.
 		case "http_req_failed":
 			// Derive the counter
-			func() {
+			{
 				failedTotal := ts
 				failedTotal.name = "http_requests_failed_total"
 				ms.store[failedTotal] = value{
-					// Number of failures is the (computed) avg failure rate times the number of samples.
-					value:       math.Round(float64(v.seenSamples) * v.value),
+					// Number of failures is the (computed) avg failure rate times the number of
+					// samples.
+					value:       math.Round(float64(val.seenSamples) * val.value),
 					seenSamples: 1,
 				}
+
 				log.Tracef("Created %q from %q", failedTotal.name, ts.name)
-			}()
+			}
+
 			// Also rename it to s/req/requests.
-			func() {
+			{
 				newTS := ts
 				newTS.name = "http_requests_failed"
-				ms.store[newTS] = v
+				ms.store[newTS] = val
+
 				log.Tracef("Created %q from %q", newTS.name, ts.name)
-			}()
+			}
 
 		// Add _bytes suffix to data_sent and data_received.
 		case "data_sent", "data_received":
 			wihtSuffixTS := ts
-			wihtSuffixTS.name = wihtSuffixTS.name + "_bytes"
-			ms.store[wihtSuffixTS] = v
+			wihtSuffixTS.name += "_bytes"
+			ms.store[wihtSuffixTS] = val
+
 			log.Tracef("Created %q from %q", wihtSuffixTS.name, ts.name)
 
 		case "http_req_duration":
 			// Tweak name and units.
-			func() {
+			{
 				newTS := ts
 				newTS.name = "http_total_duration_seconds"
-				v.value /= 1000 // convert from ms.
-				ms.store[newTS] = v
+				val.value /= 1000 // convert from ms.
+				ms.store[newTS] = val
+
 				log.Tracef("Created %q from %q", newTS.name, ts.name)
-			}()
-			// Additionally, use the labels of this metric to create a made up "resolve" phase with value of zero.
-			func() {
+			}
+
+			// Additionally, use the labels of this metric to create a made up "resolve"
+			// phase with value of zero.
+			{
 				newTS := ts
 				newTS.name = "http_duration_seconds"
 				newTS.tags = newTS.tags.With("phase", "resolve")
-				v.value = 0
-				ms.store[newTS] = v
+				val.value = 0
+				ms.store[newTS] = val
+
 				log.Tracef("Created %s{phase=%q} from %q", newTS.name, "resolve", ts.name)
-			}()
+			}
 
 		case "iteration_duration":
 			newTS := ts
 			newTS.name = "iteration_duration_seconds"
-			v.value /= 1000 // convert from ms.
-			ms.store[newTS] = v
+			val.value /= 1000 // convert from ms.
+			ms.store[newTS] = val
+
 			log.Tracef("Created %q from %q", newTS.name, ts.name)
 
-		// Squash multiple duration metrics into one with a "phase" label, which for historical reasons have slightly
-		// different names to k6 phases.
-		// Note that SM also outputs a http_duration_seconds{phase="resolve"} metric, but this one is hardcoded to zero
-		// and generated from http_requ_duration.
-		case "http_req_blocked", "http_req_connecting", "http_req_receiving", "http_req_sending", "http_req_tls_handshaking", "http_req_waiting":
+		// Squash multiple duration metrics into one with a "phase" label, which for
+		// historical reasons have slightly different names to k6 phases.
+		//
+		// Note that SM also outputs a http_duration_seconds{phase="resolve"} metric, but
+		// this one is hardcoded to zero and generated from http_requ_duration.
+		case "http_req_blocked",
+			"http_req_connecting",
+			"http_req_receiving",
+			"http_req_sending",
+			"http_req_tls_handshaking",
+			"http_req_waiting":
 			phase := strings.TrimPrefix(ts.name, "http_req_")
 			switch phase {
 			case "connecting":
@@ -335,78 +382,94 @@ func (ms *metricStore) DeriveMetrics() {
 			newTS := ts
 			newTS.name = "http_duration_seconds"
 			newTS.tags = newTS.tags.With("phase", phase)
-			v.value /= 1000 // convert from ms.
-			ms.store[newTS] = v
+			val.value /= 1000 // convert from ms.
+			ms.store[newTS] = val
+
 			log.Tracef("Created %s{phase=%q} from %q", newTS.name, phase, ts.name)
 
 		// Split checks metric into two: check_rate and check_total.
-		// TODO: We used to remove the "check" label due to it being high cardinality. However, we are reporting
-		// metrics for URLs which are also high cardinality, so it does not make a lot of sense to remove one but not
-		// others. For now, we're keeping the check metric.
+		//
+		// TODO: We used to remove the "check" label due to it being high cardinality.
+		// However, we are reporting metrics for URLs which are also high cardinality, so it
+		// does not make a lot of sense to remove one but not others. For now, we're keeping
+		// the check metric.
 		case "checks":
-			func() {
+			{
 				newTS := ts
 				newTS.name = "check_success_rate"
-				ms.store[newTS] = v
+				ms.store[newTS] = val
+
 				log.Tracef("Created %q from %q", newTS.name, ts.name)
-			}()
+			}
 
 			// Create counters for the times a check failed and succeeded.
 			// This is done by multiplying success rate by # of samples and rounding.
-			func() {
+			{
 				newTS := ts
 				newTS.name = "checks_total"
 				newTS.tags = newTS.tags.With("result", "pass")
-				ms.store[newTS] = value{value: math.Round(v.value * float64(v.seenSamples)), seenSamples: 1}
+				ms.store[newTS] = value{
+					value:       math.Round(val.value * float64(val.seenSamples)),
+					seenSamples: 1,
+				}
+
 				log.Tracef("Created %q from %q", newTS.name, ts.name)
-			}()
-			func() {
+			}
+
+			{
 				newTS := ts
 				newTS.name = "checks_total"
 				newTS.tags = newTS.tags.With("result", "fail")
-				ms.store[newTS] = value{value: math.Round((1 - v.value) * float64(v.seenSamples)), seenSamples: 1}
+				ms.store[newTS] = value{
+					value:       math.Round((1 - val.value) * float64(val.seenSamples)),
+					seenSamples: 1,
+				}
+
 				log.Tracef("Created %q from %q", newTS.name, ts.name)
-			}()
+			}
 		}
 	}
 }
 
 // DeriveLogs produces logs from metrics.
 func (ms *metricStore) DeriveLogs(logger logrus.FieldLogger) {
-	for ts, v := range ms.store {
-		switch ts.name {
-		// Checks contains the number of checks performed and the rate of them that succeeded.
-		case "checks":
-			tags := ts.tags.Map()
-			if tags["group"] == "" {
-				// Be consistent with metrics, and ignore "group" tag if empty.
-				delete(tags, "group")
-			}
-
-			checkLogger := logger
-			for k, v := range tags {
-				checkLogger = checkLogger.WithField(k, v)
-			}
-			checkLogger.
-				WithField("value", v.value).
-				WithField("count", v.seenSamples).
-				WithField("metric", "checks_total").
-				Info("check result")
+	for timeseries, value := range ms.store {
+		if timeseries.name != "checks" {
+			continue
 		}
+
+		// Checks contains the number of checks performed and the rate of them that succeeded.
+		tags := timeseries.tags.Map()
+		if tags["group"] == "" {
+			// Be consistent with metrics, and ignore "group" tag if empty.
+			delete(tags, "group")
+		}
+
+		checkLogger := logger
+		for k, v := range tags {
+			checkLogger = checkLogger.WithField(k, v)
+		}
+
+		checkLogger.
+			WithField("value", value.value).
+			WithField("count", value.seenSamples).
+			WithField("metric", "checks_total").
+			Info("check result")
 	}
 }
 
-// RemoveLabels returns a new metricStore after removing labels not interesting for SM from all, or some metrics in the
-// store.
+// RemoveLabels returns a new metricStore after removing labels not interesting for SM from all, or
+// some metrics in the store.
 func (ms *metricStore) RemoveLabels() {
 	log := ms.logger.WithField("step", "removeLabels")
 
-	// When we remove labels, we create a new TS without the label and store it on the map. As the new TS would have the
-	// same name, we cannot store it on the same map we're iterating over, or we could risk iterating over the newly
-	// added key. We need to duplicate the map for this.
+	// When we remove labels, we create a new TS without the label and store it on the map. As
+	// the new TS would have the same name, we cannot store it on the same map we're iterating
+	// over, or we could risk iterating over the newly added key. We need to duplicate the map
+	// for this.
 	newStore := make(map[timeseries]value, len(ms.store))
 
-	for ts, v := range ms.store {
+	for ts, value := range ms.store {
 		// The documentation at https://k6.io/docs/using-k6/tags-and-groups/ seems to suggest that
 		// "group" should not be empty (it shouldn't be there if there's a single group), but I keep
 		// seeing instances of an empty group name.
@@ -422,14 +485,15 @@ func (ms *metricStore) RemoveLabels() {
 		// High cardinality label. This is already present in logs.
 		ts.tags = ts.tags.Without("error")
 
-		// Replace url with __raw_url__ if the latter is present. The agent sets this tag on multihttp checks to be the
-		// user-specified URL, before interpolating variables in it.
+		// Replace url with __raw_url__ if the latter is present. The agent sets this tag on
+		// multihttp checks to be the user-specified URL, before interpolating variables in
+		// it.
 		if rawURL, found := ts.tags.Get("__raw_url__"); found && rawURL != "" {
 			log.Tracef("Overwriting url tag with __raw_url__ on %q", ts.name)
 			ts.tags = ts.tags.Without("__raw_url__").With("url", rawURL)
 		}
 
-		newStore[ts] = v
+		newStore[ts] = value
 	}
 
 	ms.store = newStore
@@ -445,17 +509,27 @@ func (ms *metricStore) RemoveMetrics() {
 		"vus":        true,
 		"vus_max":    true,
 		"iterations": true,
+
 		// Replaced by version with _bytes suffix:
 		"data_sent":     true,
 		"data_received": true,
+
 		// Renamed to _seconds.
 		"http_req_duration":  true,
 		"iteration_duration": true,
+
 		// Squashed into a single metric with a phase label.
-		"http_req_blocked": true, "http_req_connecting": true, "http_req_receiving": true, "http_req_sending": true, "http_req_tls_handshaking": true, "http_req_waiting": true,
+		"http_req_blocked":         true,
+		"http_req_connecting":      true,
+		"http_req_receiving":       true,
+		"http_req_sending":         true,
+		"http_req_tls_handshaking": true,
+		"http_req_waiting":         true,
+
 		// Renamed s/reqs/requests.
 		"http_reqs":       true,
 		"http_req_failed": true,
+
 		// Replaced by check_rate and checks_total
 		"checks": true,
 	}
@@ -467,8 +541,8 @@ func (ms *metricStore) RemoveMetrics() {
 		}
 	}
 
-	// List of resource types that are worth keeping metrics for. All timeseries with a `resource_type` tag not present
-	// here will be removed.
+	// List of resource types that are worth keeping metrics for. All timeseries with a
+	// `resource_type` tag not present here will be removed.
 	allowedResourceTypes := map[string]bool{"document": true}
 	// If SM_K6_BROWSER_RESOURCE_TYPES is defined, parse it as a comma-separated list of `resource_type`s to allow.
 	if envTypes := os.Getenv("SM_K6_BROWSER_RESOURCE_TYPES"); envTypes != "" {
@@ -505,26 +579,27 @@ type Output struct {
 }
 
 // New creates a new instance of the output.
-func New(p output.Params) (output.Output, error) {
-	fn := p.ConfigArgument
-	if len(fn) == 0 {
-		return nil, errors.New("output filename required")
+func New(params output.Params) (output.Output, error) { //nolint:gocritic,ireturn // Signature defined by k6.
+	fn := params.ConfigArgument
+	if fn == "" {
+		return nil, errOutputFilenameRequired
 	}
 
-	fh, err := p.FS.Create(fn)
+	outputHandle, err := params.FS.Create(fn)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("creating output file: %w", err)
 	}
 
-	logger := p.Logger.WithField("output", "sm")
+	logger := params.Logger.WithField("output", "sm")
 
-	store := newMetricStore(32) // Reasonable size assumption.
+	store := newMetricStore(defaultMetricsBufferSize)
 	store.logger = logger.WithField("component", "store")
 
 	return &Output{
 		logger: logger,
-		out:    fh,
+		out:    outputHandle,
 		store:  store,
+		start:  time.Time{},
 	}, nil
 }
 
@@ -576,8 +651,10 @@ func (o *Output) Stop() error {
 	defer o.out.Close()
 
 	o.store.Record(metrics.Sample{
+		Time:     time.Time{},
+		Metadata: nil,
 		TimeSeries: metrics.TimeSeries{
-			Metric: &metrics.Metric{
+			Metric: &metrics.Metric{ //nolint:exhaustruct // Zero values for the other fields are fine.
 				Name: "script_duration_seconds",
 				Type: metrics.Gauge,
 			},
@@ -592,7 +669,13 @@ func (o *Output) Stop() error {
 	o.store.RemoveLabels()
 
 	for ts, value := range o.store.store {
-		fmt.Fprintf(o.out, "probe_%s%s %f\n", sanitizeLabelName(ts.name), marshalPrometheus(ts.tags.Map()), value.value)
+		fmt.Fprintf(
+			o.out,
+			"probe_%s%s %f\n",
+			sanitizeLabelName(ts.name),
+			marshalPrometheus(ts.tags.Map()),
+			value.value,
+		)
 	}
 
 	return nil
@@ -607,6 +690,7 @@ func marshalPrometheus(labels map[string]string) string {
 	for k := range labels {
 		labelNames = append(labelNames, k)
 	}
+
 	slices.Sort(labelNames)
 
 	pairs := make([]string, 0, len(labelNames))
@@ -622,7 +706,13 @@ func sanitizeLabelName(s string) string {
 	var builder strings.Builder
 
 	for i, r := range s {
-		if (r >= 'a' && r <= 'z') || (r >= 'A' && r <= 'Z') || r == '_' || r == ':' || (r >= '0' && r <= '9' && i > 0) {
+		isValid := r <= unicode.MaxASCII &&
+			((r >= 'a' && r <= 'z') ||
+				(r >= 'A' && r <= 'Z') ||
+				r == '_' ||
+				r == ':' ||
+				(r >= '0' && r <= '9' && i > 0))
+		if isValid {
 			builder.WriteRune(r)
 		} else {
 			builder.WriteRune('_')
