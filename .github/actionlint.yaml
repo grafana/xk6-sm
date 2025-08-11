@@ -1,0 +1,14 @@
+self-hosted-runner:
+  labels:
+    - ubuntu-arm64
+    - ubuntu-arm64-small
+    - ubuntu-arm64-large
+    - ubuntu-x64
+    - ubuntu-x64-small
+    - ubuntu-x64-large
+
+# Configuration variables in array of strings defined in your repository or
+# organization. `null` means disabling configuration variables check.
+# Empty array means no configuration variable is allowed.
+# config-variables: null
+# config-variables: []

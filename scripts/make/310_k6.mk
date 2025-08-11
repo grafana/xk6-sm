@@ -11,7 +11,7 @@ BUILD_K6_TARGETS += build-k6-$(1)-$(2)
 
 build-k6-$(1)-$(2) : GOOS := $(1)
 build-k6-$(1)-$(2) : GOARCH := $(2)
-build-k6-$(1)-$(2) : DIST_FILENAME := $(DISTDIR)/$(1)-$(2)/k6
+build-k6-$(1)-$(2) : DIST_FILENAME := $(DISTDIR)/$(1)-$(2)/sm-k6
 
 endef
 
