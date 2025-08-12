@@ -1,5 +1,26 @@
 # Changelog
 
+## [0.6.0](https://github.com/grafana/xk6-sm/compare/v0.5.12...v0.6.0) (2025-08-12)
+
+
+### Features
+
+* Normalize build system ([#170](https://github.com/grafana/xk6-sm/issues/170)) ([2f6304f](https://github.com/grafana/xk6-sm/commit/2f6304f6b1acd413143ebbbfd57a7e0e517b2f10))
+
+
+### Fixes
+
+* Switch to standard workflows ([#171](https://github.com/grafana/xk6-sm/issues/171)) ([aa820a9](https://github.com/grafana/xk6-sm/commit/aa820a9978ab0d1539412deb25fb8494c222b8e7))
+* Update README.md ([#173](https://github.com/grafana/xk6-sm/issues/173)) ([3222d75](https://github.com/grafana/xk6-sm/commit/3222d75a4d7c6c2e961bf46d3d8ba7afbe23eac2))
+
+
+### Miscellaneous Chores
+
+* Update actions/checkout action to v4.3.0 ([#168](https://github.com/grafana/xk6-sm/issues/168)) ([1e75280](https://github.com/grafana/xk6-sm/commit/1e75280702a563c3c780364b7001bf4acbb919a8))
+* Update actions/checkout digest to 08eba0b ([#167](https://github.com/grafana/xk6-sm/issues/167)) ([60ca23b](https://github.com/grafana/xk6-sm/commit/60ca23b21a17d005d48a14ca99c65b0c5ed6f7f8))
+* Update actions/create-github-app-token action to v2.1.1 ([#166](https://github.com/grafana/xk6-sm/issues/166)) ([638c9e5](https://github.com/grafana/xk6-sm/commit/638c9e566a871e794c90b1462a67a62c94998a1f))
+* Update ghcr.io/grafana/crocochrome Docker tag to v0.6.4 ([#162](https://github.com/grafana/xk6-sm/issues/162)) ([23b55a0](https://github.com/grafana/xk6-sm/commit/23b55a0fb37d891b6a2b2440f808d11620826289))
+
 ## [0.5.12](https://github.com/grafana/xk6-sm/compare/v0.5.11...v0.5.12) (2025-07-23)
 
 
