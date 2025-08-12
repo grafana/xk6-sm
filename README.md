@@ -15,7 +15,11 @@ This matching is case-insensitive, and the special value `*` will cause every `r
 
 ## Build
 
-Use [xk6](https://github.com/grafana/xk6). See the CI/CD pipelines for a full example of a build command.
+Type `make` (or `make build-native` if you just want a binary for your current
+operating system / architecture). The resulting binaries will be found in the
+`dist/` directory.
+
+The extension is built using [xk6](https://github.com/grafana/xk6).
 
 ## Release process
 
