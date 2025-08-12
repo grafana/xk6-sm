@@ -8,32 +8,13 @@ policy:
   approval:
     - or:
         - and:
-            - Workflow .github/workflows/lint.yaml succeeded or skipped
-            - Workflow .github/workflows/push-pr-release.yaml succeeded or skipped
             - Workflow .github/workflows/renovate-validate.yaml succeeded or skipped
             - Workflow .github/workflows/validate-policy-bot-config.yml succeeded or skipped
+            - Workflow .github/workflows/validate_pr.yaml succeeded or skipped
             - default to approval
         - override policies
     - policy bot config is valid when modified
 approval_rules:
-  - name: Workflow .github/workflows/lint.yaml succeeded or skipped
-    requires:
-      conditions:
-        has_workflow_result:
-          conclusions:
-            - skipped
-            - success
-          workflows:
-            - .github/workflows/lint.yaml
-  - name: Workflow .github/workflows/push-pr-release.yaml succeeded or skipped
-    requires:
-      conditions:
-        has_workflow_result:
-          conclusions:
-            - skipped
-            - success
-          workflows:
-            - .github/workflows/push-pr-release.yaml
   - name: Workflow .github/workflows/renovate-validate.yaml succeeded or skipped
     if:
       changed_files:
@@ -63,6 +44,18 @@ approval_rules:
             - success
           workflows:
             - .github/workflows/validate-policy-bot-config.yml
+  - name: Workflow .github/workflows/validate_pr.yaml succeeded or skipped
+    if:
+      targets_branch:
+        pattern: (^main$)
+    requires:
+      conditions:
+        has_workflow_result:
+          conclusions:
+            - skipped
+            - success
+          workflows:
+            - .github/workflows/validate_pr.yaml
   - name: default to approval
   - name: policy bot config is valid when modified
     if:

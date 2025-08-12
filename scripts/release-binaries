@@ -1,0 +1,18 @@
+#!/bin/sh
+
+set -e
+set -u
+
+tag="${1:-}"
+
+if [ -z "$tag" ]; then
+	echo "Usage: $0 <tag>"
+	exit 1
+fi
+
+find dist/*-*/ -maxdepth 1 -type f | while read -r f ; do
+	fn=$(basename "$f")
+	os_arch=$(basename "$(dirname "$f")")
+	cp "$f" "dist/$fn-${os_arch}"
+	gh release upload "$tag" "dist/$fn-${os_arch}" --clobber
+done
