@@ -26,6 +26,12 @@ jobs:
       id-token: write
     container:
       image: ghcr.io/grafana/grafana-build-tools:v1.13.0@sha256:8a314d3961678a751a45e7ba4fe3e0a21ca69d479f305e6224e2a011428f6384
+      volumes:
+        # This works as long as we are using self-hosted runners.
+        #
+        # Self-hosted runners have this file which is used to configure
+        # buildkitd. The file is injected when the image is created.
+        - /etc/buildkitd.toml:/etc/buildkitd.toml
     steps:
       - name: retrieve secrets
         id: get-secrets
@@ -107,10 +113,12 @@ jobs:
           fi
 
       - name: test docker build
-        uses: grafana/shared-workflows/actions/build-push-to-dockerhub@7d18a46aafb8b875ed76a0bc98852d74b91e7f91 # v1.0.0
+        uses: grafana/shared-workflows/actions/build-push-to-dockerhub@1acd69f48c01d7aef5f209f94048dfeb789026db # build-push-to-dockerhub/v0.2.0
         if: always() && steps.find-dockerfile.outputs.found == 'true'
         with:
           push: false
+          cache-from: type=local,src=${{ runner.temp }}/.buildx-cache
+          cache-to: type=local,dest=${{ runner.temp }}/.buildx-cache,mode=min
           platforms: |-
             ${{ steps.id-platform.outputs.platform }}
           tags: |-
