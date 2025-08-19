@@ -2,7 +2,7 @@ module github.com/grafana/xk6-sm
 
 go 1.23.6
 
-toolchain go1.24.5
+toolchain go1.25.0
 
 require (
 	github.com/grafana/gsm-api-go-client v0.2.0
