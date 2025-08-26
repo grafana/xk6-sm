@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.6.2](https://github.com/grafana/xk6-sm/compare/v0.6.1...v0.6.2) (2025-08-26)
+
+
+### Fixes
+
+* Work around build-push-to-dockerhub issues ([#184](https://github.com/grafana/xk6-sm/issues/184)) ([34dbe81](https://github.com/grafana/xk6-sm/commit/34dbe81c21190289fac68f177ef58d1656e7a57a))
+
+
+### Miscellaneous Chores
+
+* Update ghcr.io/grafana/crocochrome Docker tag to v0.6.5 ([#179](https://github.com/grafana/xk6-sm/issues/179)) ([b9099ea](https://github.com/grafana/xk6-sm/commit/b9099ea1b2ed7d9e54921b26510e07debade1317))
+* Update ghcr.io/grafana/grafana-build-tools Docker tag to v1.14.0 ([#180](https://github.com/grafana/xk6-sm/issues/180)) ([d3f5148](https://github.com/grafana/xk6-sm/commit/d3f514809151fbd2b840e0a1a1b08ddab084c818))
+* Update ghcr.io/grafana/grafana-build-tools Docker tag to v1.15.0 ([#187](https://github.com/grafana/xk6-sm/issues/187)) ([ea39b24](https://github.com/grafana/xk6-sm/commit/ea39b2493969b277b426c6564f948356119e28d4))
+* Update ghcr.io/grafana/grafana-build-tools Docker tag to v1.16.0 ([#188](https://github.com/grafana/xk6-sm/issues/188)) ([d71b441](https://github.com/grafana/xk6-sm/commit/d71b441fc5d73c91530d558e1c4abb3488f489fe))
+* Update googleapis/release-please-action action to v4.3.0 ([#185](https://github.com/grafana/xk6-sm/issues/185)) ([378a468](https://github.com/grafana/xk6-sm/commit/378a46866103324321ac39015a07a8695468262f))
+* Update module github.com/stretchr/testify to v1.11.0 ([#186](https://github.com/grafana/xk6-sm/issues/186)) ([2bd3282](https://github.com/grafana/xk6-sm/commit/2bd32822325b666da98b81cadc79782cf3393b32))
+* Update module go.k6.io/k6 to v1.2.2 ([#181](https://github.com/grafana/xk6-sm/issues/181)) ([9eee6cb](https://github.com/grafana/xk6-sm/commit/9eee6cb641f29bc2ba69be035aa3e651dc744c36))
+
 ## [0.6.1](https://github.com/grafana/xk6-sm/compare/v0.6.0...v0.6.1) (2025-08-15)
 
 
