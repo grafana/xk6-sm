@@ -273,8 +273,8 @@ func (ms *metricStore) DeriveMetrics() {
 				strCode = strings.ToLower(strCode)
 				strCode = strings.TrimPrefix(strCode, "http/") // Leave bare version for "HTTP/1.1"
 				strCode = strings.TrimPrefix(strCode, "h")     // Leave bare version for "h2"
-				newValue, err := strconv.ParseFloat(strCode, 32)
 
+				newValue, err := strconv.ParseFloat(strCode, 32)
 				if err != nil {
 					return // Invalid protocol, skip timeseries.
 				}
