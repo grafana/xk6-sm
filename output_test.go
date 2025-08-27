@@ -88,10 +88,10 @@ func TestOutputStartStop(t *testing.T) {
 	fileOut, err := testFS.Open("test.out")
 	require.NoError(t, err)
 
-	output, err := io.ReadAll(fileOut)
+	result, err := io.ReadAll(fileOut)
 	require.NoError(t, err)
 
-	require.Contains(t, string(output), "probe_script_duration_seconds")
+	require.Contains(t, string(result), "probe_script_duration_seconds")
 }
 
 // TestMetricStore tests the metricStore functionality that is hard to test from an integration perspective.
