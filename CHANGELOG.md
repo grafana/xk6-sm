@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.6.3](https://github.com/grafana/xk6-sm/compare/v0.6.2...v0.6.3) (2025-08-30)
+
+
+### Fixes
+
+* Migrate golangci-lint to v2 ([#190](https://github.com/grafana/xk6-sm/issues/190)) ([f826afc](https://github.com/grafana/xk6-sm/commit/f826afc1e166b189baf69eff7eb9a63beb5abe35))
+
+
+### Miscellaneous Chores
+
+* Update ghcr.io/grafana/crocochrome Docker tag to v0.6.6 ([#194](https://github.com/grafana/xk6-sm/issues/194)) ([08be7be](https://github.com/grafana/xk6-sm/commit/08be7be22059f7ff59e838aa3557c3cfe8785535))
+* Update ghcr.io/grafana/grafana-build-tools Docker tag to v1.16.1 ([#189](https://github.com/grafana/xk6-sm/issues/189)) ([6c707da](https://github.com/grafana/xk6-sm/commit/6c707dad8f6d9a8085ee4716973b9042257848c9))
+* Update ghcr.io/grafana/grafana-build-tools Docker tag to v1.17.0 ([#195](https://github.com/grafana/xk6-sm/issues/195)) ([5e29010](https://github.com/grafana/xk6-sm/commit/5e290106cc369ca6fd0f0f274d80731bb71f9923))
+* Update module github.com/stretchr/testify to v1.11.1 ([#193](https://github.com/grafana/xk6-sm/issues/193)) ([955cfab](https://github.com/grafana/xk6-sm/commit/955cfabc4b453859efcdd8ad3a63ef88e7e4a9cb))
+* Update module go.k6.io/k6 to v1.2.3 ([#192](https://github.com/grafana/xk6-sm/issues/192)) ([cd013ec](https://github.com/grafana/xk6-sm/commit/cd013ec26639f65416e19b0bb25c26b16ecacf5f))
+
 ## [0.6.2](https://github.com/grafana/xk6-sm/compare/v0.6.1...v0.6.2) (2025-08-26)
 
 
