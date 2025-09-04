@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.6.4](https://github.com/grafana/xk6-sm/compare/v0.6.3...v0.6.4) (2025-09-04)
+
+
+### Miscellaneous Chores
+
+* Update ghcr.io/grafana/crocochrome Docker tag to v0.6.7 ([4dacf71](https://github.com/grafana/xk6-sm/commit/4dacf7144594214ee37d5baddcb19ac286c31dab))
+* Update ghcr.io/grafana/grafana-build-tools Docker tag to v1.18.1 ([#201](https://github.com/grafana/xk6-sm/issues/201)) ([5743155](https://github.com/grafana/xk6-sm/commit/57431556089dc51bee0694f6c83b40dbff2fd7fd))
+* Update module github.com/prometheus/common to v0.66.0 ([162f956](https://github.com/grafana/xk6-sm/commit/162f956f3e16da1f3c995ab9a4f064ab0d747e18))
+
 ## [0.6.3](https://github.com/grafana/xk6-sm/compare/v0.6.2...v0.6.3) (2025-08-30)
 
 
