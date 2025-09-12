@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.5](https://github.com/grafana/xk6-sm/compare/v0.6.4...v0.6.5) (2025-09-12)
+
+
+### Miscellaneous Chores
+
+* Update actions/create-github-app-token action to v2.1.2 ([#206](https://github.com/grafana/xk6-sm/issues/206)) ([2c6b630](https://github.com/grafana/xk6-sm/commit/2c6b630a3a6ae189fdfd9570f9454da24d4da18c))
+
 ## [0.6.4](https://github.com/grafana/xk6-sm/compare/v0.6.3...v0.6.4) (2025-09-11)
 
 
