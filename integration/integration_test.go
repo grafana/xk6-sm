@@ -160,6 +160,7 @@ func TestSMK6(t *testing.T) {
 			//"probe_http_info":             {"tls_version", "proto"},
 			"probe_http_duration_seconds": {"phase"},
 			"probe_checks_total":          {"result"},
+			"my_gauge":                    {"foo", "tab"},
 		}
 
 		for _, mf := range mfs {

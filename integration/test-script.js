@@ -17,8 +17,9 @@ export default function () {
   myTrend.add(0.6);
   myTrend.add(0.7);
 
-  myGauge.add(5);
-  myGauge.add(6); // Discards previous value.
+  const gaugeLabels = {foo: 'bar', tab: "\tab", quote: '"quoted"'};
+  myGauge.add(5, gaugeLabels);
+  myGauge.add(6, gaugeLabels); // Discards previous value.
 
   myCounter.add(1);
   myCounter.add(2);
