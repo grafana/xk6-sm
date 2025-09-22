@@ -681,6 +681,14 @@ func (o *Output) Stop() error {
 	return nil
 }
 
+// quotedEscaper is a replacer that escapes characters that must be escaped when put between double quotes in the
+// prometheus text exposition format.
+// It is shamelessly stolen from
+// https://github.com/prometheus/common/blob/f595ac6c9f79e0a2d49cc83fd83da65ebc0cc1c6/expfmt/text_create.go#L451
+//
+//nolint:gochecknoglobals // This is essentially used as a function, stored in a global to avoid having to redeclare it.
+var quotedEscaper = strings.NewReplacer("\\", `\\`, "\n", `\n`, "\"", `\"`)
+
 func marshalPrometheus(labels map[string]string) string {
 	if len(labels) == 0 {
 		return ""
@@ -695,7 +703,9 @@ func marshalPrometheus(labels map[string]string) string {
 
 	pairs := make([]string, 0, len(labelNames))
 	for _, name := range labelNames {
-		pairs = append(pairs, fmt.Sprintf("%s=%q", sanitizeLabelName(name), labels[name]))
+		value := quotedEscaper.Replace(labels[name])
+		//nolint:gocritic // Quoting here is purposefully homemade. See #212.
+		pairs = append(pairs, fmt.Sprintf(`%s="%s"`, sanitizeLabelName(name), value))
 	}
 
 	return "{" + strings.Join(pairs, ",") + "}"
