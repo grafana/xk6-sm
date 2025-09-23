@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.6.6](https://github.com/grafana/xk6-sm/compare/v0.6.5...v0.6.6) (2025-09-23)
+
+
+### Miscellaneous Chores
+
+* Update actions/create-github-app-token action to v2.1.4 ([#208](https://github.com/grafana/xk6-sm/issues/208)) ([127c1ef](https://github.com/grafana/xk6-sm/commit/127c1ef004a791d09f17fd26ae8723ef6a754134))
+* Update ghcr.io/grafana/crocochrome Docker tag to v0.6.9 ([#209](https://github.com/grafana/xk6-sm/issues/209)) ([3631302](https://github.com/grafana/xk6-sm/commit/363130203337494ec58d78093a085660809f47ae))
+* Update ghcr.io/grafana/grafana-build-tools Docker tag to v1.20.0 ([#210](https://github.com/grafana/xk6-sm/issues/210)) ([ea953f3](https://github.com/grafana/xk6-sm/commit/ea953f3d0fa39bbda70b2ab10cdd3ba09dd5a05a))
+* Update module go.k6.io/k6 to v1.3.0 ([#214](https://github.com/grafana/xk6-sm/issues/214)) ([e7fbe8c](https://github.com/grafana/xk6-sm/commit/e7fbe8cdf25def7cf745d78ef52a0f7976f07a71))
+
 ## [0.6.5](https://github.com/grafana/xk6-sm/compare/v0.6.4...v0.6.5) (2025-09-12)
 
 
