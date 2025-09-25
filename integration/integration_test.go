@@ -46,7 +46,7 @@ func runScript(t *testing.T, scriptFileName string, env []string) []*prometheus.
 	smOutFile := filepath.Join(t.TempDir(), "metrics.txt")
 	jsonOutFile := filepath.Join(t.TempDir(), "metrics.json")
 
-	cmd := exec.CommandContext(ctx, smk6, "run", "-", "-o=sm="+smOutFile, "-o=json="+jsonOutFile)
+	cmd := exec.CommandContext(ctx, smk6, "run", "-", "--summary-mode=disabled", "--address=", "-o=sm="+smOutFile, "-o=json="+jsonOutFile)
 	cmd.Stdin = bytes.NewReader(script)
 	cmd.Env = env
 	k6out, err := cmd.CombinedOutput()
