@@ -95,8 +95,6 @@ func runScript(t *testing.T, scriptFileName string, env []string) []*prometheus.
 func TestSMK6(t *testing.T) {
 	t.Parallel()
 
-	t.Skip("Make me work correctly and remove this.")
-
 	mfs := runScript(t, "test-script.js", nil)
 
 	t.Run("wanted metrics are present", func(t *testing.T) {
@@ -406,10 +404,6 @@ func TestSMK6(t *testing.T) {
 
 func TestSMK6Browser(t *testing.T) {
 	t.Parallel()
-
-	// This test fails to run in all the standard ways. Lacking any
-	// documentation, this gets disabled until the situation is fixed.
-	t.Skip("Make me work correctly and remove this.")
 
 	runCrocochrome(t)
 
