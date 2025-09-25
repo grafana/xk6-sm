@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.6.7](https://github.com/grafana/xk6-sm/compare/v0.6.6...v0.6.7) (2025-09-25)
+
+
+### Fixes
+
+* do not abort metric processing entirely on parsing error ([7e3a37e](https://github.com/grafana/xk6-sm/commit/7e3a37e4d39ced23b1f5d1668b2d70ebad00f7fa))
+
+
+### Miscellaneous Chores
+
+* Update ghcr.io/grafana/crocochrome Docker tag to v0.6.10 ([#215](https://github.com/grafana/xk6-sm/issues/215)) ([87bd992](https://github.com/grafana/xk6-sm/commit/87bd992d6e35e0ec88ffa1b458350ff1d6bf0308))
+
 ## [0.6.6](https://github.com/grafana/xk6-sm/compare/v0.6.5...v0.6.6) (2025-09-23)
 
 
