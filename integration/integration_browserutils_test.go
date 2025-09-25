@@ -1,8 +1,6 @@
 // Copyright (C) 2024 Grafana Labs.
 // SPDX-License-Identifier: AGPL-3.0-only
 
-//go:build integration
-
 package integration_test
 
 import (

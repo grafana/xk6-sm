@@ -6,7 +6,6 @@ TEST_OUTPUT := $(DISTDIR)/test
 
 ifeq ($(CI),true)
 GOTESTSUM ?= gotestsum
-GO_TEST_BUILD_TAGS ?= -tags=integration
 endif
 
 ifeq ($(origin GOTESTSUM),undefined)
@@ -27,7 +26,6 @@ test-go: ## Run Go tests.
 		-cover \
 		-coverprofile=$(TEST_OUTPUT).cov \
 		-race \
-		$(GO_TEST_BUILD_TAGS) \
 		$(GO_TEST_ARGS)
 	$(S) $(ROOTDIR)/scripts/report-test-coverage $(TEST_OUTPUT).cov
 
