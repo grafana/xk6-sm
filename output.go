@@ -269,14 +269,20 @@ func (ms *metricStore) DeriveMetrics() {
 			}
 
 			{
-				strCode, _ := ts.tags.Get("proto")
-				strCode = strings.ToLower(strCode)
+				proto, hasProto := ts.tags.Get("proto")
+				if !hasProto {
+					continue
+				}
+
+				strCode := strings.ToLower(proto)
 				strCode = strings.TrimPrefix(strCode, "http/") // Leave bare version for "HTTP/1.1"
 				strCode = strings.TrimPrefix(strCode, "h")     // Leave bare version for "h2"
 
 				newValue, err := strconv.ParseFloat(strCode, 32)
 				if err != nil {
-					return // Invalid protocol, skip timeseries.
+					ms.logger.Warnf("could not parse http proto %q: %v", proto, err)
+
+					continue // Invalid protocol, skip timeseries.
 				}
 
 				httpVersionTS := timeseries{
