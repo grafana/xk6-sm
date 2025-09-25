@@ -27,7 +27,18 @@ func runCrocochrome(t *testing.T) {
 
 	const crocochromeImage = "ghcr.io/grafana/crocochrome:v0.10.2@sha256:294f0378efa0263363a394f6be193206aa4210b9c3a1e59dec2a637693428e15"
 	t.Logf("Starting crocochrome %s", crocochromeImage)
-	dockerCmd := exec.Command("docker", "run", "--rm", "-i", "-p", "8080:8080", crocochromeImage)
+
+	readinessEndpoint := "http://localhost:8080/metrics"
+	dockerArgs := []string{"run", "--rm", "-i", "-p", "8080:8080"}
+	if os.Getenv("CI") != "" {
+		// We're running on CI/CD. Give the container a name so we can connect to it.
+		dockerArgs = append(dockerArgs, "--name", "crocochrome")
+		readinessEndpoint = "http://crocochrome:8080/metrics"
+	}
+
+	dockerArgs = append(dockerArgs, crocochromeImage)
+
+	dockerCmd := exec.Command("docker", dockerArgs...)
 	dockerCmd.Stderr = os.Stderr
 	err := dockerCmd.Start()
 	if err != nil {
@@ -49,7 +60,7 @@ func runCrocochrome(t *testing.T) {
 	readinessCtx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 	for {
-		req, err := http.NewRequestWithContext(readinessCtx, http.MethodGet, "http://localhost:8080/metrics", nil)
+		req, err := http.NewRequestWithContext(readinessCtx, http.MethodGet, readinessEndpoint, nil)
 		if err != nil {
 			t.Fatalf("building crocochrome health request: %v", err)
 		}
@@ -82,6 +93,10 @@ func runBrowserScript(t *testing.T, scriptFileName string, env []string) []*prom
 	t.Helper()
 
 	endpoint := "http://localhost:8080"
+	if os.Getenv("CI") != "" {
+		// Use container name
+		endpoint = "http://crocochrome:8080"
+	}
 
 	session, err := createSession(endpoint)
 	if err != nil {
