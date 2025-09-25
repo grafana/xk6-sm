@@ -15,6 +15,7 @@ endif
 
 .PHONY: test-go
 test-go: export CGO_ENABLED=1 # Required so that -race works.
+test-go: build-native
 test-go: ## Run Go tests.
 	$(S) echo "test backend"
 	$(S) mkdir -p '$(DISTDIR)'
