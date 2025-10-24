@@ -25,7 +25,7 @@ import (
 func runCrocochrome(t *testing.T) {
 	t.Helper()
 
-	const crocochromeImage = "ghcr.io/grafana/crocochrome:v0.6.12@sha256:53a817e473623549bb208cd1a9e793a4c124f9c52f33d80121b44b12ca69d31c"
+	const crocochromeImage = "ghcr.io/grafana/crocochrome:v0.6.13@sha256:144f66290885afd2a2e3207c28ee33a30c76b70066234770b0042ec6b77e3783"
 	t.Logf("Starting crocochrome %s", crocochromeImage)
 	dockerCmd := exec.Command("docker", "run", "--rm", "-i", "-p", "8080:8080", crocochromeImage)
 	dockerCmd.Stderr = os.Stderr
