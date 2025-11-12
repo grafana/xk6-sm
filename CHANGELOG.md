@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.6.11](https://github.com/grafana/xk6-sm/compare/v0.6.10...v0.6.11) (2025-11-12)
+
+
+### Fixes
+
+* use actual prometheus escaping technique for label values ([6c136fa](https://github.com/grafana/xk6-sm/commit/6c136fac9b573a347ab49477288ac5723f538d1f)), closes [#212](https://github.com/grafana/xk6-sm/issues/212)
+
+
+### Miscellaneous Chores
+
+* add test case for escape sequences in tags ([da62f58](https://github.com/grafana/xk6-sm/commit/da62f583fbe749a13b42e74c12481265dc9c36f7))
+* Update dependency go to v1.25.4 ([e76d6b2](https://github.com/grafana/xk6-sm/commit/e76d6b2665810a982a04442c4cddeb8067ec9bf3))
+* Update ghcr.io/grafana/grafana-build-tools Docker tag to v1.23.0 ([#241](https://github.com/grafana/xk6-sm/issues/241)) ([04a0f35](https://github.com/grafana/xk6-sm/commit/04a0f3563d0e763fa15c53a1cfcc0c8badf096c7))
+* Update GitHub Artifact Actions ([5227d55](https://github.com/grafana/xk6-sm/commit/5227d55eab33236876679167a89cc2ff059e7e68))
+* Update googleapis/release-please-action action to v4.4.0 ([a17541b](https://github.com/grafana/xk6-sm/commit/a17541ba644fb38def29c06eeb490abff8e12911))
+
 ## [0.6.10](https://github.com/grafana/xk6-sm/compare/v0.6.9...v0.6.10) (2025-10-31)
 
 
