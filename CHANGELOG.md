@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.6.12](https://github.com/grafana/xk6-sm/compare/v0.6.11...v0.6.12) (2025-11-17)
+
+
+### Miscellaneous Chores
+
+* Update actions/checkout action to v5.0.1 ([#242](https://github.com/grafana/xk6-sm/issues/242)) ([3349a02](https://github.com/grafana/xk6-sm/commit/3349a022173117ed4fb961ecd534249354315b46))
+* Update ghcr.io/grafana/crocochrome Docker tag to v0.8.1 ([#240](https://github.com/grafana/xk6-sm/issues/240)) ([ad3be75](https://github.com/grafana/xk6-sm/commit/ad3be754101b4c55f1892a86cbac417d6072f9cf))
+* Update module go.k6.io/k6 to v1.4.0 ([#239](https://github.com/grafana/xk6-sm/issues/239)) ([3ef967c](https://github.com/grafana/xk6-sm/commit/3ef967c7f36fe18dd0207cf0b91df6324c996f99))
+
 ## [0.6.11](https://github.com/grafana/xk6-sm/compare/v0.6.10...v0.6.11) (2025-11-12)
 
 
