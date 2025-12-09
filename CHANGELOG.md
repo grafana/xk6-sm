@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.6.13](https://github.com/grafana/xk6-sm/compare/v0.6.12...v0.6.13) (2025-12-09)
+
+
+### Miscellaneous Chores
+
+* **deps:** update grafana/shared-workflows/build-push-to-dockerhub action to v0.4.0 ([#252](https://github.com/grafana/xk6-sm/issues/252)) ([b0a15b1](https://github.com/grafana/xk6-sm/commit/b0a15b1aaed09699a185380f55b202ac0673c387))
+* **deps:** update grafana/shared-workflows/get-vault-secrets action to v1.3.0 ([#253](https://github.com/grafana/xk6-sm/issues/253)) ([c12b545](https://github.com/grafana/xk6-sm/commit/c12b5452c58ccdc139584eee8af49a8b03b4881c))
+* Update actions/checkout action to v6 ([#247](https://github.com/grafana/xk6-sm/issues/247)) ([636e187](https://github.com/grafana/xk6-sm/commit/636e187b695a6734406a4e1dd39e51d2cb8ed3e3))
+* Update actions/create-github-app-token action to v2.2.1 ([#249](https://github.com/grafana/xk6-sm/issues/249)) ([e1361ad](https://github.com/grafana/xk6-sm/commit/e1361ad74ee6bf5d01ec808d6c026e866b3886d3))
+* Update ghcr.io/grafana/grafana-build-tools Docker tag to v1.23.1 ([#245](https://github.com/grafana/xk6-sm/issues/245)) ([20a6a1f](https://github.com/grafana/xk6-sm/commit/20a6a1f4be7daf9a3ec8d808da4130630e27b101))
+* Update ghcr.io/grafana/grafana-build-tools Docker tag to v1.27.0 ([#250](https://github.com/grafana/xk6-sm/issues/250)) ([69db716](https://github.com/grafana/xk6-sm/commit/69db71623044ed8e08374e5322acbd21d3611bb3))
+* Update module github.com/prometheus/common to v0.67.4 ([#244](https://github.com/grafana/xk6-sm/issues/244)) ([4375083](https://github.com/grafana/xk6-sm/commit/43750837fd759645d315c959ebf8e7ea7db5b2f8))
+* Update module go.k6.io/k6 to v1.4.2 ([#246](https://github.com/grafana/xk6-sm/issues/246)) ([c6ba976](https://github.com/grafana/xk6-sm/commit/c6ba97635f05deb929a40014f45320391587c373))
+
 ## [0.6.12](https://github.com/grafana/xk6-sm/compare/v0.6.11...v0.6.12) (2025-11-17)
 
 
