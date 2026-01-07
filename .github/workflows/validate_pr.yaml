@@ -25,7 +25,7 @@ jobs:
       contents: read
       id-token: write
     container:
-      image: ghcr.io/grafana/grafana-build-tools:v1.27.0@sha256:f1429fc26abfe74fc815d55db7351759e0c97667f503b4310f13dcc07c2e4118
+      image: ghcr.io/grafana/grafana-build-tools:v1.27.1@sha256:3a62d9a01bf74fd8cc614cabc63cbc277a4431adf03f8a5f68d9aa6ffb456be9
       volumes:
         # This works as long as we are using self-hosted runners.
         #
