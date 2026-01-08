@@ -1,4 +1,4 @@
-// Copyright (C) 2025 Grafana Labs.
+// Copyright (C) 2026 Grafana Labs.
 // SPDX-License-Identifier: AGPL-3.0-only
 
 package sm_test
@@ -24,7 +24,7 @@ func BenchmarkRemove(b *testing.B) {
 			// Create a list of #keys needles to find in map. 1
 			// every [lcm(100, 40) / min(100, 40) = 5] needles
 			// should be in map.
-			sliceHaystack := []string{}
+			sliceHaystack := []string{} //nolint:prealloc // No need to do the math for a test.
 			for i := range keys {
 				sliceHaystack = append(sliceHaystack, strconv.Itoa(1_000_000+40*i))
 			}
