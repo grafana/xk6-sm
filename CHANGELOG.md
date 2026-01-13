@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.6.15](https://github.com/grafana/xk6-sm/compare/v0.6.14...v0.6.15) (2026-01-08)
+
+
+### Miscellaneous Chores
+
+* **deps:** update grafana/shared-workflows/build-push-to-dockerhub action to v0.4.1 ([e1c083b](https://github.com/grafana/xk6-sm/commit/e1c083b0fcb18dc62eb343fc4eaa8c7fdf144fe8))
+* Update dependency go to v1.25.5 ([ffd3b90](https://github.com/grafana/xk6-sm/commit/ffd3b9095b081ded657247f7ed62d130f62172ac))
+
 ## [0.6.14](https://github.com/grafana/xk6-sm/compare/v0.6.13...v0.6.14) (2026-01-07)
 
 
