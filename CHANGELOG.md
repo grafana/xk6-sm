@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.6.16](https://github.com/grafana/xk6-sm/compare/v0.6.15...v0.6.16) (2026-01-27)
+
+
+### Miscellaneous Chores
+
+* Update actions/checkout action to v6.0.2 ([#272](https://github.com/grafana/xk6-sm/issues/272)) ([8f090f5](https://github.com/grafana/xk6-sm/commit/8f090f5c5a62079aef262cd3bc478703de7a6728))
+* Update ghcr.io/grafana/crocochrome Docker tag to v0.9.2 ([#265](https://github.com/grafana/xk6-sm/issues/265)) ([55db2a4](https://github.com/grafana/xk6-sm/commit/55db2a483ef1cf7942c66bb68c58738a4e9e6151))
+* Update ghcr.io/grafana/crocochrome Docker tag to v0.9.3 ([#270](https://github.com/grafana/xk6-sm/issues/270)) ([fdf0050](https://github.com/grafana/xk6-sm/commit/fdf00508e1ceba8548247e1e8ca62948cd7739c0))
+* Update ghcr.io/grafana/grafana-build-tools Docker tag to v1.28.0 ([#262](https://github.com/grafana/xk6-sm/issues/262)) ([62b030f](https://github.com/grafana/xk6-sm/commit/62b030ff338034bbc326d92c1402af7642e88bd6))
+* Update ghcr.io/grafana/grafana-build-tools Docker tag to v1.28.2 ([#269](https://github.com/grafana/xk6-sm/issues/269)) ([7de87a5](https://github.com/grafana/xk6-sm/commit/7de87a587dcbbd8dc98658a1a971c0748f48bfa8))
+* Update ghcr.io/grafana/grafana-build-tools Docker tag to v1.28.4 ([#271](https://github.com/grafana/xk6-sm/issues/271)) ([2db0ee2](https://github.com/grafana/xk6-sm/commit/2db0ee272235100d197f0dbd481d4db81dc67314))
+* Update module github.com/sirupsen/logrus to v1.9.4 ([#266](https://github.com/grafana/xk6-sm/issues/266)) ([6b9a175](https://github.com/grafana/xk6-sm/commit/6b9a175b677c42da3a03100107fd515b5462aefe))
+
 ## [0.6.15](https://github.com/grafana/xk6-sm/compare/v0.6.14...v0.6.15) (2026-01-08)
 
 
