@@ -96,9 +96,10 @@ jobs:
 
       - name: build
         run: make build-native
- 
-      - name: lint
-        run: make lint
+
+      # FIXME: This is currently not scoped to newly introduced issues, creating noise. It should be fixed to do so.
+      # - name: lint
+      #   run: make lint
 
       - name: test
         run: make test
