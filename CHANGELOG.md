@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.6.18](https://github.com/grafana/xk6-sm/compare/v0.6.17...v0.6.18) (2026-02-16)
+
+
+### Miscellaneous Chores
+
+* Update ghcr.io/grafana/crocochrome Docker tag to v0.9.4 ([#275](https://github.com/grafana/xk6-sm/issues/275)) ([d97265d](https://github.com/grafana/xk6-sm/commit/d97265dcc0ee0a494288c14c3908781f5f2cea02))
+* Update ghcr.io/grafana/grafana-build-tools Docker tag to v1.30.0 ([#276](https://github.com/grafana/xk6-sm/issues/276)) ([6a33b10](https://github.com/grafana/xk6-sm/commit/6a33b10699514466d16ec961a0153d5c88003a0f))
+* Update module go.k6.io/k6 to v1.6.1 ([#277](https://github.com/grafana/xk6-sm/issues/277)) ([1bb345a](https://github.com/grafana/xk6-sm/commit/1bb345a7db8c523269daa624fc807d143ff6361a))
+
 ## [0.6.17](https://github.com/grafana/xk6-sm/compare/v0.6.16...v0.6.17) (2026-01-27)
 
 
