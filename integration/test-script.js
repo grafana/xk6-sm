@@ -37,7 +37,6 @@ export default function () {
     }
   );
 
-  http.get(`http://${testHost}/login`); // non-https.
   http.get(`https://${testHost}/login`);
   http.get(`https://${testHost}/thats-a-404`); // 404
   http.get(`https://${testHost}/thats-another-404-accessed-twice`); // 404

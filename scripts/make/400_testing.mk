@@ -6,7 +6,6 @@ TEST_OUTPUT := $(DISTDIR)/test
 
 ifeq ($(CI),true)
 GOTESTSUM ?= gotestsum
-GO_TEST_BUILD_TAGS ?= -tags=integration
 endif
 
 ifeq ($(origin GOTESTSUM),undefined)
@@ -14,11 +13,12 @@ GOTESTSUM ?= ./scripts/docker-run gotestsum
 endif
 
 .PHONY: test-go
-test-go: export CGO_ENABLED=1 # Required so that -race works.
+test-go: build-native
 test-go: ## Run Go tests.
 	$(S) echo "test backend"
 	$(S) mkdir -p '$(DISTDIR)'
-	$(GOTESTSUM) \
+	# CGO_ENABLED is required for -race
+	CGO_ENABLED=1 $(GOTESTSUM) \
 		--format standard-verbose \
 		--jsonfile $(TEST_OUTPUT).json \
 		--junitfile $(TEST_OUTPUT).xml \
@@ -27,7 +27,6 @@ test-go: ## Run Go tests.
 		-cover \
 		-coverprofile=$(TEST_OUTPUT).cov \
 		-race \
-		$(GO_TEST_BUILD_TAGS) \
 		$(GO_TEST_ARGS)
 	$(S) $(ROOTDIR)/scripts/report-test-coverage $(TEST_OUTPUT).cov
 

@@ -35,6 +35,16 @@ if test -z "${GOARCH}" ; then
 	GOARCH=$(go env GOARCH)
 fi
 
+default_docker_sock=/var/run/docker.sock
+if test -z "${DOCKER_SOCK}" ; then
+  DOCKER_SOCK=${default_docker_sock}
+fi
+
+group=$(id -g)
+if grep -qe 'docker' /etc/group; then
+  group=$(grep -e docker /etc/group | cut -d: -f 3)
+fi
+
 tty_flag=""
 int_flag=""
 if test -t 1 ; then
@@ -46,11 +56,13 @@ exec docker run                                  \
 	$tty_flag                                \
 	$int_flag                                \
 	--rm                                     \
-	--user "$(id -u):$(id -g)"               \
+	--user "$(id -u):${group}"               \
 	--volume "${ROOTDIR}:${ROOTDIR}"         \
 	--volume "${HOME}/.cache:/.cache"        \
 	--volume "${GOPATH}:/go"                 \
 	--volume "${GOMODCACHE}:/go/pkg/mod"     \
+	--volume "${DOCKER_SOCK}:${default_docker_sock}"     \
+	--network=host                           \
 	--workdir "${PWD}"                       \
 	--env CI="${CI}"                         \
 	--env CGO_ENABLED="${CGO_ENABLED}"       \
