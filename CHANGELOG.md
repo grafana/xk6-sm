@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.6.19](https://github.com/grafana/xk6-sm/compare/v0.6.18...v0.6.19) (2026-03-06)
+
+
+### Miscellaneous Chores
+
+* **deps:** update grafana/shared-workflows/build-push-to-dockerhub action to v0.4.2 ([#284](https://github.com/grafana/xk6-sm/issues/284)) ([da9350b](https://github.com/grafana/xk6-sm/commit/da9350bd21724a7b22235eecd13a6ac022d86317))
+* **deps:** update grafana/shared-workflows/get-vault-secrets action to v1.3.1 ([#285](https://github.com/grafana/xk6-sm/issues/285)) ([a8dc911](https://github.com/grafana/xk6-sm/commit/a8dc9110c3462003825d48c43a6ed0c90f2cf853))
+* Update ghcr.io/grafana/crocochrome Docker tag to v0.9.5 ([#280](https://github.com/grafana/xk6-sm/issues/280)) ([e354f2e](https://github.com/grafana/xk6-sm/commit/e354f2e3b40f98f93e20eaa61d2288d329ea6e28))
+* Update ghcr.io/grafana/crocochrome Docker tag to v0.9.6 ([#286](https://github.com/grafana/xk6-sm/issues/286)) ([324dc60](https://github.com/grafana/xk6-sm/commit/324dc60c5b58bb56401708e24aca481af282b508))
+* Update ghcr.io/grafana/grafana-build-tools Docker tag to v1.31.1 ([#279](https://github.com/grafana/xk6-sm/issues/279)) ([2a58b27](https://github.com/grafana/xk6-sm/commit/2a58b275efebfc5f3f3efc770c57f0f517c32bd1))
+* Update ghcr.io/grafana/grafana-build-tools Docker tag to v1.32.0 ([#282](https://github.com/grafana/xk6-sm/issues/282)) ([f124b83](https://github.com/grafana/xk6-sm/commit/f124b837cf14e12e348a64d4c1d45e02e501d33d))
+* Update ghcr.io/grafana/grafana-build-tools Docker tag to v1.33.0 ([#288](https://github.com/grafana/xk6-sm/issues/288)) ([b4b232a](https://github.com/grafana/xk6-sm/commit/b4b232aaca29f52449817681fa8166eddb373afd))
+* Update ghcr.io/grafana/grafana-build-tools Docker tag to v1.33.1 ([#289](https://github.com/grafana/xk6-sm/issues/289)) ([c6a3029](https://github.com/grafana/xk6-sm/commit/c6a3029b6a9944a03cbc83746fd2e56b715c44cb))
+* Update GitHub Artifact Actions ([#287](https://github.com/grafana/xk6-sm/issues/287)) ([b0c1322](https://github.com/grafana/xk6-sm/commit/b0c1322434d10d4b0eeb03853ff9a4d889a20b75))
+* Update module go.opentelemetry.io/otel/sdk to v1.40.0 [SECURITY] ([#283](https://github.com/grafana/xk6-sm/issues/283)) ([87ddc94](https://github.com/grafana/xk6-sm/commit/87ddc944801bc2a0fee744a68b138b07ffb0e60d))
+
 ## [0.6.18](https://github.com/grafana/xk6-sm/compare/v0.6.17...v0.6.18) (2026-02-16)
 
 
