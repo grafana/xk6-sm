@@ -1,8 +1,6 @@
 // Copyright (C) 2024 Grafana Labs.
 // SPDX-License-Identifier: AGPL-3.0-only
 
-//go:build integration
-
 package integration_test
 
 import (
@@ -48,7 +46,7 @@ func runScript(t *testing.T, scriptFileName string, env []string) []*prometheus.
 	smOutFile := filepath.Join(t.TempDir(), "metrics.txt")
 	jsonOutFile := filepath.Join(t.TempDir(), "metrics.json")
 
-	cmd := exec.CommandContext(ctx, smk6, "run", "-", "-o=sm="+smOutFile, "-o=json="+jsonOutFile)
+	cmd := exec.CommandContext(ctx, smk6, "run", "-", "--summary-mode=disabled", "--address=", "-o=sm="+smOutFile, "-o=json="+jsonOutFile)
 	cmd.Stdin = bytes.NewReader(script)
 	cmd.Env = env
 	k6out, err := cmd.CombinedOutput()
@@ -96,8 +94,6 @@ func runScript(t *testing.T, scriptFileName string, env []string) []*prometheus.
 
 func TestSMK6(t *testing.T) {
 	t.Parallel()
-
-	t.Skip("Make me work correctly and remove this.")
 
 	mfs := runScript(t, "test-script.js", nil)
 
@@ -409,10 +405,6 @@ func TestSMK6(t *testing.T) {
 
 func TestSMK6Browser(t *testing.T) {
 	t.Parallel()
-
-	// This test fails to run in all the standard ways. Lacking any
-	// documentation, this gets disabled until the situation is fixed.
-	t.Skip("Make me work correctly and remove this.")
 
 	runCrocochrome(t)
 
