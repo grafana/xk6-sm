@@ -275,6 +275,10 @@ linters:
       - linters:
           - gosmopolitan
         path: (.+)_test\.go
+      - linters:
+          - revive
+        path: internal/version/
+        text: avoid package names that conflict with Go standard library package names
     paths:
       - proto/.*.go
       - third_party$
