@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.6.20](https://github.com/grafana/xk6-sm/compare/v0.6.19...v0.6.20) (2026-03-30)
+
+
+### Miscellaneous Chores
+
+* **deps:** Upgrade go to v1.25.0 ([#297](https://github.com/grafana/xk6-sm/issues/297)) ([8c86add](https://github.com/grafana/xk6-sm/commit/8c86add792d3f402b7c9655a782508a7f0772fe5))
+* Fix linter nolint ([#298](https://github.com/grafana/xk6-sm/issues/298)) ([b7c956f](https://github.com/grafana/xk6-sm/commit/b7c956f212b677ec392297f2ba4effae5aa137e1))
+* Update actions/create-github-app-token action to v2.2.2 ([#291](https://github.com/grafana/xk6-sm/issues/291)) ([1a21d5a](https://github.com/grafana/xk6-sm/commit/1a21d5a476fce577d0719a7df5b7f48793ebdbba))
+* Update actions/download-artifact action to v8.0.1 ([#290](https://github.com/grafana/xk6-sm/issues/290)) ([8a17f82](https://github.com/grafana/xk6-sm/commit/8a17f82f9c7bbf52cac3bc21896128c63306939a))
+* Update ghcr.io/grafana/crocochrome Docker tag to v0.10.0 ([#296](https://github.com/grafana/xk6-sm/issues/296)) ([660a40f](https://github.com/grafana/xk6-sm/commit/660a40fec1325b834aa65017d91b9c4d71c9ff4d))
+* Update module go.k6.io/k6 to v1.7.0 ([#295](https://github.com/grafana/xk6-sm/issues/295)) ([303d587](https://github.com/grafana/xk6-sm/commit/303d5879d7337ae26ae186931d6bdbffae7a1f4e))
+* Update module go.k6.io/k6 to v1.7.1 ([#299](https://github.com/grafana/xk6-sm/issues/299)) ([c761678](https://github.com/grafana/xk6-sm/commit/c7616789999cbd0fd48d4fa76575eef19f8e6565))
+* Update module google.golang.org/grpc to v1.79.3 [SECURITY] ([#293](https://github.com/grafana/xk6-sm/issues/293)) ([9e72483](https://github.com/grafana/xk6-sm/commit/9e724832994563125c88c052e615bff813c054b7))
+
 ## [0.6.19](https://github.com/grafana/xk6-sm/compare/v0.6.18...v0.6.19) (2026-03-06)
 
 
