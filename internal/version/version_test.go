@@ -1,7 +1,7 @@
 // Copyright (C) 2026 Grafana Labs.
 // SPDX-License-Identifier: AGPL-3.0-only
 
-package version //nolint:revive // "version" package name is OK.
+package version
 
 import (
 	"runtime/debug"
