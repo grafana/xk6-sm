@@ -13,7 +13,7 @@ require (
 	github.com/sirupsen/logrus v1.9.4
 	github.com/spf13/afero v1.15.0
 	github.com/stretchr/testify v1.11.1
-	go.k6.io/k6 v1.7.0
+	go.k6.io/k6 v1.7.1
 )
 
 require (
