@@ -4,18 +4,26 @@
     "github>grafana/sm-renovate//presets/grafana.json5",
     "github>grafana/sm-renovate//presets/synthetic-monitoring.json5",
     "github>grafana/sm-renovate//presets/go.json5",
-    "github>grafana/sm-renovate//presets/grafana-build-tools.json5",
+    "github>grafana/sm-renovate//presets/grafana-build-tools.json5"
+  ],
+  "baseBranchPatterns": ["main", "v1"],
+  "packageRules": [
+    {
+      // On v1: Skip major updates for all deps.
+      // Treat it as maintenance branch.
+      "matchBaseBranches": ["v1"],
+      "matchUpdateTypes": ["major"],
+      "enabled": false
+    }
   ],
   "customManagers": [
     {
       "customType": "regex",
       "datasourceTemplate": "docker",
       "depNameTemplate": "ghcr.io/grafana/crocochrome",
-      "managerFilePatterns": [
-        "**/*_test.go",
-      ],
+      "managerFilePatterns": ["**/*_test.go"],
       "matchStrings": [
-        "ghcr.io/grafana/crocochrome:(?<currentValue>[\\w.-]+)(?:@(?<currentDigest>[\\w:]+))?",
+        "ghcr.io/grafana/crocochrome:(?<currentValue>[\\w.-]+)(?:@(?<currentDigest>[\\w:]+))?"
       ]
     },
     {
@@ -24,9 +32,7 @@
       "depNameTemplate": "gsm-api-go-client",
       "packageNameTemplate": "https://github.com/grafana/gsm-api-go-client",
       "currentValueTemplate": "main",
-      "managerFilePatterns": [
-        ".github/workflows/push-pr-release.yaml"
-      ],
+      "managerFilePatterns": [".github/workflows/push-pr-release.yaml"],
       "matchStrings": [
         "--with github.com/grafana/gsm-api-go-client@(?<currentDigest>[a-f0-9]{7,40})"
       ]
