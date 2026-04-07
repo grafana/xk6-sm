@@ -6,6 +6,16 @@
     "github>grafana/sm-renovate//presets/go.json5",
     "github>grafana/sm-renovate//presets/grafana-build-tools.json5",
   ],
+  // Tell Renovate to update both branches
+  "baseBranches": ["main", "v1"],
+  "packageRules": [
+    {
+      // On v1: skip major updates for all deps (avoid accidental breaking changes)
+      "matchBaseBranches": ["v1"],
+      "matchUpdateTypes": ["major"],
+      "enabled": false,
+    },
+  ],
   "customManagers": [
     {
       "customType": "regex",
