@@ -9,6 +9,8 @@
   "baseBranchPatterns": ["main", "v1"],
   "packageRules": [
     {
+      // On v1: Skip major updates for all deps.
+      // Treat it as maintenance branch.
       "matchBaseBranches": ["v1"],
       "matchUpdateTypes": ["major"],
       "enabled": false
