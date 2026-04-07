@@ -3,10 +3,10 @@ name: validate pull request
 on:
   pull_request:
     branches:
-      - main
+      - v1
   push:
     branches:
-      - main
+      - v1
   release:
     types:
       - published
@@ -16,6 +16,10 @@ permissions:
 
 jobs:
   validate:
+    # Continue if this is not a release, or if it's a release for v1.
+    # This is because release publish events are repo wide, and it does not
+    # allow filtering by tag.
+    if: github.event_name != 'release' || startsWith(github.ref_name, 'v1.')
     name: validate
     strategy:
       matrix:
