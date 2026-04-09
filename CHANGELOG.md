@@ -1,5 +1,25 @@
 # Changelog
 
+## [1.0.0](https://github.com/grafana/xk6-sm/compare/v0.6.20...v1.0.0) (2026-04-09)
+
+
+### ⚠ BREAKING CHANGES
+
+* Bump version to v1.0.0
+
+### Features
+
+* Bump version to v1.0.0 ([c1e86bb](https://github.com/grafana/xk6-sm/commit/c1e86bbafc0dee6ceb8986a74092da6393d32706))
+
+
+### Miscellaneous Chores
+
+* Update actions/create-github-app-token action to v3 ([#292](https://github.com/grafana/xk6-sm/issues/292)) ([edecf29](https://github.com/grafana/xk6-sm/commit/edecf29744398d894ab21392d9a290537aafb6f8))
+* Update ghcr.io/grafana/grafana-build-tools Docker tag to v1.34.0 ([#301](https://github.com/grafana/xk6-sm/issues/301)) ([82b17d5](https://github.com/grafana/xk6-sm/commit/82b17d57e361c82c4a7e8a292dcd61e4a1921839))
+* Update ghcr.io/grafana/grafana-build-tools Docker tag to v1.35.0 ([#308](https://github.com/grafana/xk6-sm/issues/308)) ([cea4901](https://github.com/grafana/xk6-sm/commit/cea49017678cad99a9f88c0f80a4a467ff4abed6))
+* Update ghcr.io/grafana/grafana-build-tools Docker tag to v1.35.1 ([#314](https://github.com/grafana/xk6-sm/issues/314)) ([372243c](https://github.com/grafana/xk6-sm/commit/372243c65476fb567aee3c3e481cb105a8159131))
+* Update module go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp to v1.43.0 [SECURITY] ([#311](https://github.com/grafana/xk6-sm/issues/311)) ([baca30f](https://github.com/grafana/xk6-sm/commit/baca30ff7a55cd3c0db8be88849507c82f6e0539))
+
 ## [0.6.20](https://github.com/grafana/xk6-sm/compare/v0.6.19...v0.6.20) (2026-03-30)
 
 
