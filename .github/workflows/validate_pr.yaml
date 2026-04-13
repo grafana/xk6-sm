@@ -16,6 +16,10 @@ permissions:
 
 jobs:
   validate:
+    # Continue if this is not a release, or if it's a release for v2.
+    # This is because release publish events are repo wide, and it does not allow
+    # filtering by tag.
+    if: github.event_name != 'release' || startsWith(github.ref_name, 'v2.')
     name: validate
     strategy:
       matrix:
