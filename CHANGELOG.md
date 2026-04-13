@@ -1,5 +1,29 @@
 # Changelog
 
+## [1.0.0](https://github.com/grafana/xk6-sm/compare/v0.6.20...v1.0.0) (2026-04-10)
+
+
+### ⚠ BREAKING CHANGES
+
+* Bump version to v1.0.0 ([#315](https://github.com/grafana/xk6-sm/issues/315))
+
+### Features
+
+* Bump version to v1.0.0 ([#315](https://github.com/grafana/xk6-sm/issues/315)) ([feb2480](https://github.com/grafana/xk6-sm/commit/feb2480973e686209db9132a23ac4d4f8b89d221))
+
+
+### Miscellaneous Chores
+
+* Allow rp bump major version ([#316](https://github.com/grafana/xk6-sm/issues/316)) ([9c7a3bc](https://github.com/grafana/xk6-sm/commit/9c7a3bcbc0f80d0ae56b92a681f9f9ce0e7849b2))
+* **renovate:** Include v1 as base branch for renovate ([#304](https://github.com/grafana/xk6-sm/issues/304)) ([0460c25](https://github.com/grafana/xk6-sm/commit/0460c2513210f80bf008561fcd932525b804d6f9))
+* Update actions/create-github-app-token action to v3 ([#292](https://github.com/grafana/xk6-sm/issues/292)) ([edecf29](https://github.com/grafana/xk6-sm/commit/edecf29744398d894ab21392d9a290537aafb6f8))
+* Update actions/upload-artifact action to v7.0.1 (main) ([#317](https://github.com/grafana/xk6-sm/issues/317)) ([f3105a1](https://github.com/grafana/xk6-sm/commit/f3105a1dc5b5b6ca6e47ff044e11a59048b4e9f3))
+* Update ghcr.io/grafana/grafana-build-tools Docker tag to v1.34.0 ([#301](https://github.com/grafana/xk6-sm/issues/301)) ([82b17d5](https://github.com/grafana/xk6-sm/commit/82b17d57e361c82c4a7e8a292dcd61e4a1921839))
+* Update ghcr.io/grafana/grafana-build-tools Docker tag to v1.35.0 ([#307](https://github.com/grafana/xk6-sm/issues/307)) ([b7ce447](https://github.com/grafana/xk6-sm/commit/b7ce4473c286fe600888f436b17afd0e6f7f5647))
+* Update ghcr.io/grafana/grafana-build-tools Docker tag to v1.35.1 ([#313](https://github.com/grafana/xk6-sm/issues/313)) ([d116a16](https://github.com/grafana/xk6-sm/commit/d116a162c94e492e2f0700be1cecb00562e759e4))
+* Update module go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp to v1.43.0 [SECURITY] ([#309](https://github.com/grafana/xk6-sm/issues/309)) ([b974084](https://github.com/grafana/xk6-sm/commit/b974084d5e09a6434c8e4c97dddcff0e5de2afa2))
+* Update module go.opentelemetry.io/otel/sdk to v1.43.0 [SECURITY] ([#310](https://github.com/grafana/xk6-sm/issues/310)) ([20efd50](https://github.com/grafana/xk6-sm/commit/20efd508ff01d05ac544cc840ede5fac201c0efa))
+
 ## [0.6.20](https://github.com/grafana/xk6-sm/compare/v0.6.19...v0.6.20) (2026-03-30)
 
 
