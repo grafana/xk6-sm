@@ -1,4 +1,4 @@
-// Copyright (C) 2025 Grafana Labs.
+// Copyright (C) 2026 Grafana Labs.
 // SPDX-License-Identifier: AGPL-3.0-only
 
 package sm
@@ -11,8 +11,8 @@ import (
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"go.k6.io/k6/metrics"
-	"go.k6.io/k6/output"
+	"go.k6.io/k6/v2/metrics"
+	"go.k6.io/k6/v2/output"
 )
 
 func TestOutputNew(t *testing.T) {

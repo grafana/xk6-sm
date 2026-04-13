@@ -15,7 +15,7 @@ import (
 
 	gsmClient "github.com/grafana/gsm-api-go-client"
 	"github.com/sirupsen/logrus"
-	"go.k6.io/k6/secretsource"
+	"go.k6.io/k6/v2/secretsource"
 	"golang.org/x/time/rate"
 )
 

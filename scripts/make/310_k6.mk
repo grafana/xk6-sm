@@ -23,7 +23,7 @@ $(BUILD_K6_TARGETS) : build-k6-% :
 	$(S) echo 'Building k6 ($(GOOS)-$(GOARCH))'
 	$(S) mkdir -p $(DISTDIR)/$(GOOS)-$(GOARCH)
 	$(V) $(XK6) build \
-		--with github.com/grafana/xk6-sm=. \
+		--with github.com/grafana/xk6-sm/v2=. \
 		--k6-version $(LOCAL_K6_VERSION) \
 		--output '$(DIST_FILENAME)' \
 		--os '$(GOOS)' \
