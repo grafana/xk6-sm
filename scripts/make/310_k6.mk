@@ -23,7 +23,7 @@ $(BUILD_K6_TARGETS) : build-k6-% :
 	$(S) echo 'Building k6 ($(GOOS)-$(GOARCH))'
 	$(S) mkdir -p $(DISTDIR)/$(GOOS)-$(GOARCH)
 	$(V) $(XK6) build \
-		--with github.com/grafana/xk6-sm=. \
+		--with github.com/grafana/xk6-sm/v2=. \
 		--with github.com/grafana/gsm-api-go-client@$(LOCAL_GSM_API_CLIENT_VERSION) \
 		--k6-version $(LOCAL_K6_VERSION) \
 		--output '$(DIST_FILENAME)' \
