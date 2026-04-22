@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.0.1](https://github.com/grafana/xk6-sm/compare/v1.0.0...v1.0.1) (2026-04-15)
+
+
+### Miscellaneous Chores
+
+* Update actions/create-github-app-token action to v3.1.0 (main) ([#318](https://github.com/grafana/xk6-sm/issues/318)) ([9dc46d5](https://github.com/grafana/xk6-sm/commit/9dc46d55add040a204cebd9e166f871fe80a3970))
+* Update ghcr.io/grafana/crocochrome Docker tag to v0.10.1 (main) ([#333](https://github.com/grafana/xk6-sm/issues/333)) ([96d5ad0](https://github.com/grafana/xk6-sm/commit/96d5ad0d69ae09f9c1af6ceeb83ba6a6f5882b26))
+* Update ghcr.io/grafana/grafana-build-tools Docker tag to v1.36.0 ([#345](https://github.com/grafana/xk6-sm/issues/345)) ([fcaff30](https://github.com/grafana/xk6-sm/commit/fcaff3057fa1e1117c90601c4417ed0b009cbc87))
+* Update googleapis/release-please-action action to v4.4.1 (main) ([#334](https://github.com/grafana/xk6-sm/issues/334)) ([f86ef4b](https://github.com/grafana/xk6-sm/commit/f86ef4b934a6c72c5e80917d22216a3be9540e78))
+
 ## [1.0.0](https://github.com/grafana/xk6-sm/compare/v0.6.20...v1.0.0) (2026-04-10)
 
 
