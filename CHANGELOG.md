@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.0.2](https://github.com/grafana/xk6-sm/compare/v1.0.1...v1.0.2) (2026-04-23)
+
+
+### Miscellaneous Chores
+
+* Update ghcr.io/grafana/crocochrome Docker tag to v0.10.2 ([#379](https://github.com/grafana/xk6-sm/issues/379)) ([5895ce6](https://github.com/grafana/xk6-sm/commit/5895ce6d90e6a8b489fa3fb8a2406176b55dcdca))
+* Update ghcr.io/grafana/grafana-build-tools Docker tag to v1.37.0 ([#381](https://github.com/grafana/xk6-sm/issues/381)) ([789104e](https://github.com/grafana/xk6-sm/commit/789104eed378a8c2335931f62b1e6cef5d4372c1))
+
 ## [1.0.1](https://github.com/grafana/xk6-sm/compare/v1.0.0...v1.0.1) (2026-04-15)
 
 
