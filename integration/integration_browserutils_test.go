@@ -28,19 +28,29 @@ func runCrocochrome(t *testing.T) {
 	const crocochromeImage = "ghcr.io/grafana/crocochrome:v0.10.2@sha256:294f0378efa0263363a394f6be193206aa4210b9c3a1e59dec2a637693428e15"
 	t.Logf("Starting crocochrome %s", crocochromeImage)
 
+	// Pull image ahead of time to avoid race condition with readiness probe.
+	pullOut, err := exec.Command("docker", "pull", crocochromeImage).CombinedOutput()
+	if err != nil {
+		t.Fatalf("pulling crocochrome image: %v\n%s", err, pullOut)
+	}
+
 	readinessEndpoint := "http://localhost:8080/metrics"
 	dockerArgs := []string{"run", "--rm", "-i", "-p", "8080:8080"}
 	if os.Getenv("CI") != "" {
-		// We're running on CI/CD. Give the container a name so we can connect to it.
-		dockerArgs = append(dockerArgs, "--name", "crocochrome")
-		readinessEndpoint = "http://crocochrome:8080/metrics"
+		hostname, err := os.Hostname()
+		if err != nil {
+			t.Fatalf("getting hostname for container ID: %v", err)
+		}
+		// Share the job container's network namespace so crocochrome is
+		// reachable at localhost. Port mapping is not allowed in this mode.
+		dockerArgs = []string{"run", "--rm", "-i", "--network=container:" + hostname}
 	}
 
 	dockerArgs = append(dockerArgs, crocochromeImage)
 
 	dockerCmd := exec.Command("docker", dockerArgs...)
 	dockerCmd.Stderr = os.Stderr
-	err := dockerCmd.Start()
+	err = dockerCmd.Start()
 	if err != nil {
 		t.Fatalf("starting crocochrome container: %v", err)
 	}
@@ -93,10 +103,6 @@ func runBrowserScript(t *testing.T, scriptFileName string, env []string) []*prom
 	t.Helper()
 
 	endpoint := "http://localhost:8080"
-	if os.Getenv("CI") != "" {
-		// Use container name
-		endpoint = "http://crocochrome:8080"
-	}
 
 	session, err := createSession(endpoint)
 	if err != nil {
