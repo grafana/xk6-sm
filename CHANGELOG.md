@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.0.2](https://github.com/grafana/xk6-sm/compare/v1.0.1...v1.0.2) (2026-04-28)
+
+
+### Miscellaneous Chores
+
+* Update ghcr.io/grafana/crocochrome Docker tag to v0.10.2 ([#379](https://github.com/grafana/xk6-sm/issues/379)) ([5895ce6](https://github.com/grafana/xk6-sm/commit/5895ce6d90e6a8b489fa3fb8a2406176b55dcdca))
+* Update ghcr.io/grafana/grafana-build-tools Docker tag to v1.37.0 ([#381](https://github.com/grafana/xk6-sm/issues/381)) ([789104e](https://github.com/grafana/xk6-sm/commit/789104eed378a8c2335931f62b1e6cef5d4372c1))
+* Update googleapis/release-please-action action to v5 (main) ([#382](https://github.com/grafana/xk6-sm/issues/382)) ([8d59827](https://github.com/grafana/xk6-sm/commit/8d598273294a22ae95f8c8f5183af8bd91f6c243))
+* Update module github.com/grafana/gsm-api-go-client to v0.2.2 ([#383](https://github.com/grafana/xk6-sm/issues/383)) ([09ad976](https://github.com/grafana/xk6-sm/commit/09ad97620b383df1c75cf1c5e08a5ec696bf78ba))
+
 ## [1.0.1](https://github.com/grafana/xk6-sm/compare/v1.0.0...v1.0.1) (2026-04-15)
 
 
