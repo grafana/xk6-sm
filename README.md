@@ -22,15 +22,14 @@ operating system / architecture). The resulting binaries will be found in the
 The extension is built using [xk6](https://github.com/grafana/xk6).
 
 ## Test
-Unit tests:
+Running unit tests only:
 ```
-make test
+$ make test
 ```
 
-All tests (including integration):
+Running all tests, including integration tests (requires Docker):
 ```
-# Note: Requires Docker
-GO_TEST_BUILD_TAGS="-tags=integration" make test
+$ make test TEST_SHORT=false
 ```
 
 ## Release process

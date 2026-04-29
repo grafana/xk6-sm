@@ -1,8 +1,6 @@
 // Copyright (C) 2026 Grafana Labs.
 // SPDX-License-Identifier: AGPL-3.0-only
 
-//go:build integration
-
 package integration_test
 
 import (
@@ -111,6 +109,10 @@ func runScript(t *testing.T, scriptFileName string, env []string) []*dto.MetricF
 //nolint:gocognit,gocyclo,cyclop // Table-driven test with many subtests.
 func TestSMK6(t *testing.T) {
 	t.Parallel()
+
+	if testing.Short() {
+		t.Skip("skipping integration test in -short mode")
+	}
 
 	mfs := runScript(t, "test-script.js", nil)
 
@@ -495,9 +497,13 @@ func TestSMK6(t *testing.T) {
 	})
 }
 
-//nolint:gocognit,cyclop // Table-driven test with many subtests.
+//nolint:gocognit,gocyclo,cyclop // Table-driven test with many subtests.
 func TestSMK6Browser(t *testing.T) {
 	t.Parallel()
+
+	if testing.Short() {
+		t.Skip("skipping integration test in -short mode")
+	}
 
 	runCrocochrome(t)
 

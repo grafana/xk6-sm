@@ -1,8 +1,6 @@
 // Copyright (C) 2026 Grafana Labs.
 // SPDX-License-Identifier: AGPL-3.0-only
 
-//go:build integration
-
 package integration_test
 
 import (
@@ -41,7 +39,7 @@ func runCrocochrome(t *testing.T) {
 	readinessEndpoint := "http://localhost:8080/metrics"
 	dockerArgs := []string{"run", "--rm", "-i", "-p", "8080:8080"} //nolint:prealloc // No need to prealloc.
 
-	if os.Getenv("CI") != "" {
+	if os.Getenv("CI") == "true" {
 		hostname, err := os.Hostname()
 		if err != nil {
 			t.Fatalf("getting hostname for container ID: %v", err)
