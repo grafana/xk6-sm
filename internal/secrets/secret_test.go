@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -360,6 +361,168 @@ func TestGetConfig(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestGrafanaSecretsGetRetry(t *testing.T) {
+	t.Parallel()
+
+	const (
+		secretName  = "test-secret-id"
+		secretValue = "test-secret-value"
+		testToken   = "test-token"
+	)
+
+	makeClient := func(serverURL string) *gsmClient.Client {
+		c, _ := gsmClient.NewClient(serverURL, gsmClient.WithBearerAuth(testToken))
+
+		return c
+	}
+
+	makeServer := func(handler http.HandlerFunc) *httptest.Server {
+		return httptest.NewServer(handler)
+	}
+
+	okResponse := func(t *testing.T, w http.ResponseWriter) {
+		t.Helper()
+		w.Header().Set("Content-Type", "application/json")
+
+		if err := json.NewEncoder(w).Encode(gsmClient.DecryptedSecret{Plaintext: secretValue}); err != nil {
+			t.Fatalf("failed to encode response: %v", err)
+		}
+	}
+
+	t.Run("retry on transient 503 then success", func(t *testing.T) {
+		t.Parallel()
+
+		var calls atomic.Int32
+
+		server := makeServer(func(w http.ResponseWriter, _ *http.Request) {
+			if calls.Add(1) <= 2 {
+				w.WriteHeader(http.StatusServiceUnavailable)
+
+				return
+			}
+
+			okResponse(t, w)
+		})
+		defer server.Close()
+
+		gs := &grafanaSecrets{client: makeClient(server.URL), limiter: testLimiter{}, logger: testLogger}
+		val, err := gs.Get(secretName)
+		require.NoError(t, err)
+		require.Equal(t, secretValue, val)
+		require.EqualValues(t, 3, calls.Load())
+	})
+
+	t.Run("retry exhausted on persistent 503", func(t *testing.T) {
+		t.Parallel()
+
+		server := makeServer(func(w http.ResponseWriter, _ *http.Request) {
+			w.WriteHeader(http.StatusServiceUnavailable)
+		})
+		defer server.Close()
+
+		gs := &grafanaSecrets{client: makeClient(server.URL), limiter: testLimiter{}, logger: testLogger}
+		_, err := gs.Get(secretName)
+		require.ErrorIs(t, err, errTooManyRetries)
+	})
+
+	t.Run("retry on 429 with Retry-After header then success", func(t *testing.T) {
+		t.Parallel()
+
+		var calls atomic.Int32
+
+		server := makeServer(func(w http.ResponseWriter, _ *http.Request) {
+			if calls.Add(1) == 1 {
+				w.Header().Set("Retry-After", "0")
+				w.WriteHeader(http.StatusTooManyRequests)
+
+				return
+			}
+
+			okResponse(t, w)
+		})
+		defer server.Close()
+
+		gs := &grafanaSecrets{client: makeClient(server.URL), limiter: testLimiter{}, logger: testLogger}
+		val, err := gs.Get(secretName)
+		require.NoError(t, err)
+		require.Equal(t, secretValue, val)
+		require.EqualValues(t, 2, calls.Load())
+	})
+
+	t.Run("retry on 429 without Retry-After header then success", func(t *testing.T) {
+		t.Parallel()
+
+		var calls atomic.Int32
+
+		server := makeServer(func(w http.ResponseWriter, _ *http.Request) {
+			if calls.Add(1) == 1 {
+				w.WriteHeader(http.StatusTooManyRequests)
+
+				return
+			}
+
+			okResponse(t, w)
+		})
+		defer server.Close()
+
+		gs := &grafanaSecrets{client: makeClient(server.URL), limiter: testLimiter{}, logger: testLogger}
+		val, err := gs.Get(secretName)
+		require.NoError(t, err)
+		require.Equal(t, secretValue, val)
+		require.EqualValues(t, 2, calls.Load())
+	})
+
+	t.Run("non-retriable 401 returns error immediately", func(t *testing.T) {
+		t.Parallel()
+
+		var calls atomic.Int32
+
+		server := makeServer(func(w http.ResponseWriter, _ *http.Request) {
+			calls.Add(1)
+			w.WriteHeader(http.StatusUnauthorized)
+		})
+		defer server.Close()
+
+		gs := &grafanaSecrets{client: makeClient(server.URL), limiter: testLimiter{}, logger: testLogger}
+		_, err := gs.Get(secretName)
+		require.Error(t, err)
+		require.NotErrorIs(t, err, errTooManyRetries)
+		require.EqualValues(t, 1, calls.Load())
+	})
+
+	t.Run("non-retriable 404 returns error immediately", func(t *testing.T) {
+		t.Parallel()
+
+		var calls atomic.Int32
+
+		server := makeServer(func(w http.ResponseWriter, _ *http.Request) {
+			calls.Add(1)
+			w.WriteHeader(http.StatusNotFound)
+		})
+		defer server.Close()
+
+		gs := &grafanaSecrets{client: makeClient(server.URL), limiter: testLimiter{}, logger: testLogger}
+		_, err := gs.Get(secretName)
+		require.Error(t, err)
+		require.NotErrorIs(t, err, errTooManyRetries)
+		require.EqualValues(t, 1, calls.Load())
+	})
+
+	t.Run("Retry-After exceeds budget returns errTooManyRetries", func(t *testing.T) {
+		t.Parallel()
+
+		server := makeServer(func(w http.ResponseWriter, _ *http.Request) {
+			w.Header().Set("Retry-After", "999")
+			w.WriteHeader(http.StatusTooManyRequests)
+		})
+		defer server.Close()
+
+		gs := &grafanaSecrets{client: makeClient(server.URL), limiter: testLimiter{}, logger: testLogger}
+		_, err := gs.Get(secretName)
+		require.ErrorIs(t, err, errTooManyRetries)
+	})
 }
 
 func valToPtr[T any](v T) *T { return &v }
