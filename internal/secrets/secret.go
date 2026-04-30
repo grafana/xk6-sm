@@ -36,7 +36,7 @@ const (
 	maxAttempts         = 5
 	initialInterval     = 100 * time.Millisecond
 	maxElapsedTime      = 2500 * time.Millisecond
-	requestTimeout      = maxElapsedTime
+	requestTimeout      = maxElapsedTime / maxAttempts
 	backoffMultiplier   = 2.5
 	randomizationFactor = 0.10
 )
