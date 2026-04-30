@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.1.0](https://github.com/grafana/xk6-sm/compare/v1.0.2...v1.1.0) (2026-04-30)
+
+
+### Features
+
+* Move secret source extension here ([#385](https://github.com/grafana/xk6-sm/issues/385)) ([24829e6](https://github.com/grafana/xk6-sm/commit/24829e6ff2787268e9a4c5bf944693273f0326c7))
+
+
+### Fixes
+
+* Restore integration test suite ([#217](https://github.com/grafana/xk6-sm/issues/217)) ([6ed213e](https://github.com/grafana/xk6-sm/commit/6ed213e7f2054c191f8903535c0e34759283f4e3))
+
+
+### Miscellaneous Chores
+
+* Update ghcr.io/grafana/grafana-build-tools Docker tag to v1.37.1 ([#387](https://github.com/grafana/xk6-sm/issues/387)) ([296b28c](https://github.com/grafana/xk6-sm/commit/296b28cb1e1eb72915eed48c1269c7e12c18873d))
+
 ## [1.0.2](https://github.com/grafana/xk6-sm/compare/v1.0.1...v1.0.2) (2026-04-28)
 
 
