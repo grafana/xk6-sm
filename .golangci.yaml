@@ -168,7 +168,7 @@ linters:
         const:
           COMPANY: Grafana Labs
       template: |-
-        Copyright (C) {{ MOD-YEAR }} {{ COMPANY }}.
+        Copyright (C) {{ MOD-YEAR-RANGE }} {{ COMPANY }}.
         SPDX-License-Identifier: AGPL-3.0-only
     gomoddirectives:
       replace-local: false
