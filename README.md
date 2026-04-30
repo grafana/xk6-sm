@@ -21,6 +21,17 @@ operating system / architecture). The resulting binaries will be found in the
 
 The extension is built using [xk6](https://github.com/grafana/xk6).
 
+## Test
+Running unit tests only:
+```
+$ make test
+```
+
+Running all tests, including integration tests (requires Docker):
+```
+$ make test TEST_SHORT=false
+```
+
 ## Release process
 
 Merge the release PR created by release-please. Once a release is created in github, a CI/CD pipeline will build the artifacts and attach them to the release.
