@@ -10,9 +10,11 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
+	"github.com/cenkalti/backoff/v5"
 	gsmClient "github.com/grafana/gsm-api-go-client"
 	"github.com/sirupsen/logrus"
 	"go.k6.io/k6/secretsource"
@@ -26,6 +28,29 @@ var (
 	errFailedToGetSecret             = errors.New("failed to get secret")
 	errInvalidRequestsPerMinuteLimit = errors.New("requestsPerMinuteLimit must be greater than 0")
 	errInvalidRequestsBurst          = errors.New("requestsBurst must be greater than 0")
+	errTooManyRetries                = errors.New("too many retries")
+)
+
+// retryError signals to the retry loop that the operation should be
+// retried, while carrying the terminal HTTP status. When retries are
+// exhausted, the status surfaces in the wrapped errTooManyRetries
+// returned to the caller.
+type retryError struct {
+	status string
+}
+
+func (e *retryError) Error() string {
+	return "retry request: " + e.status
+}
+
+const (
+	maxAttempts         = 5
+	baseInterval        = 100 * time.Millisecond
+	requestTimeout      = 2 * time.Second
+	maxInterval         = 1 * time.Second
+	maxElapsedTime      = maxAttempts * requestTimeout
+	backoffMultiplier   = 2.5
+	randomizationFactor = 0.10
 )
 
 // extConfig holds the configuration for Grafana Secrets.
@@ -105,7 +130,9 @@ func (gs *grafanaSecrets) Description() string {
 }
 
 func (gs *grafanaSecrets) Get(key string) (string, error) {
-	gs.logger.WithField("key", key).Debug("Getting secret")
+	logger := gs.logger.WithField("key", key)
+
+	logger.Debug("Getting secret")
 
 	ctx := context.Background()
 
@@ -113,29 +140,98 @@ func (gs *grafanaSecrets) Get(key string) (string, error) {
 		return "", fmt.Errorf("rate limiter error: %w", err)
 	}
 
-	response, err := gs.client.DecryptSecretById(ctx, key)
-	if err != nil {
-		gs.logger.WithError(err).Debug("error getting secret")
+	var (
+		retryAfterError *backoff.RetryAfterError
+		retryErr        *retryError
+		requests        int
+	)
 
-		return "", fmt.Errorf("failed to get secret: %w", err)
+	plaintext, err := retry(ctx, gs.get(ctx, key, logger, &requests))
+	switch {
+	case err == nil:
+		if requests > 1 {
+			logger.WithField("requests", requests).Info("secret retrieved")
+		}
+
+		return plaintext, nil
+
+	case errors.As(err, &retryErr):
+		// If this error gets back here it's because we retried too many times.
+		logger.WithError(err).WithField("requests", requests).Error("too many retries getting secret")
+
+		return "", fmt.Errorf("%w (last status: %s)", errTooManyRetries, retryErr.status)
+
+	case errors.As(err, &retryAfterError):
+		// The server asked us to wait longer than our total retry budget.
+		logger.WithError(err).WithField("requests", requests).Warn("Retry-After exceeds retry budget")
+
+		return "", errTooManyRetries
+
+	default:
+		logger.WithError(err).WithField("requests", requests).Error("error getting secret")
+
+		return "", err
 	}
+}
 
-	defer response.Body.Close()
+func (gs *grafanaSecrets) get(
+	ctx context.Context,
+	key string,
+	logger logrus.FieldLogger,
+	counter *int,
+) func() (string, error) {
+	return func() (string, error) {
+		reqCtx, cancel := context.WithTimeout(ctx, requestTimeout)
+		defer cancel()
 
-	if response.StatusCode != http.StatusOK {
-		gs.logger.WithField("status", response.Status).Debug("failed to get secret")
+		*counter++
 
-		return "", fmt.Errorf("status code %d: %w", response.StatusCode, errFailedToGetSecret)
+		response, err := gs.client.DecryptSecretById(reqCtx, key)
+		if err != nil {
+			// Non-permanent error from the transport; backoff.Retry treats
+			// it as retriable.
+			logger.WithError(err).Debug("error getting secret")
+
+			return "", fmt.Errorf("failed to get secret: %w", err)
+		}
+
+		defer response.Body.Close()
+
+		switch response.StatusCode {
+		case http.StatusOK:
+			var decryptedSecret gsmClient.DecryptedSecret
+
+			err := json.NewDecoder(response.Body).Decode(&decryptedSecret)
+			if err != nil {
+				logger.WithError(err).Error("error decoding secret")
+
+				return "", backoff.Permanent(fmt.Errorf("failed to decode response: %w", err))
+			}
+
+			return decryptedSecret.Plaintext, nil
+
+		case http.StatusTooManyRequests:
+			if retryErr := parseRetryAfter(response.Header.Get("Retry-After")); retryErr != nil {
+				return "", retryErr
+			}
+
+			fallthrough
+
+		case http.StatusRequestTimeout,
+			http.StatusConflict,
+			http.StatusInternalServerError,
+			http.StatusBadGateway,
+			http.StatusServiceUnavailable,
+			http.StatusGatewayTimeout:
+			logger.WithField("status", response.Status).Warn("Retriable error received")
+
+			return "", &retryError{status: response.Status}
+
+		default:
+			// Anything else we don't know how to handle and therefore we won't retry it.
+			return "", backoff.Permanent(fmt.Errorf("status code %d: %w", response.StatusCode, errFailedToGetSecret))
+		}
 	}
-
-	var decryptedSecret gsmClient.DecryptedSecret
-	if err := json.NewDecoder(response.Body).Decode(&decryptedSecret); err != nil {
-		gs.logger.WithError(err).Debug("error decoding secret")
-
-		return "", fmt.Errorf("failed to decode response: %w", err)
-	}
-
-	return decryptedSecret.Plaintext, nil
 }
 
 type limiter interface {
@@ -198,4 +294,49 @@ func getConfig(arg string) (extConfig, error) {
 	}
 
 	return config, nil
+}
+
+// parseRetryAfter interprets a Retry-After header value in either form
+// allowed by RFC 7231 §7.1.3: a non-negative integer (seconds) or an
+// HTTP-date. It returns a backoff error carrying the requested wait, or
+// nil if the value is empty or unparseable (in which case the caller
+// should fall back to its own backoff schedule).
+func parseRetryAfter(value string) error {
+	if value == "" {
+		return nil
+	}
+
+	if seconds, err := strconv.Atoi(value); err == nil {
+		//nolint:wrapcheck // Sentinel returned for backoff.Retry to consume.
+		return backoff.RetryAfter(seconds)
+	}
+
+	if deadline, err := http.ParseTime(value); err == nil {
+		return &backoff.RetryAfterError{Duration: max(0, time.Until(deadline))}
+	}
+
+	return nil
+}
+
+// retry executes the provided function until it succeeds or the maximum number of attempts is reached.
+func retry(ctx context.Context, operation func() (string, error)) (string, error) {
+	// Since baseInterval should be much lower than maxInterval, only the
+	// last few retries will wait for MaxInterval if any. If all the
+	// requests are hitting the timeout, more retries is not going to
+	// change that.
+	expbackoff := backoff.ExponentialBackOff{
+		InitialInterval:     baseInterval,
+		MaxInterval:         maxInterval,
+		Multiplier:          backoffMultiplier,
+		RandomizationFactor: randomizationFactor,
+	}
+
+	//nolint:wrapcheck // This is returning our own error from operation.
+	return backoff.Retry(
+		ctx,
+		operation,
+		backoff.WithBackOff(&expbackoff),
+		backoff.WithMaxTries(maxAttempts),
+		backoff.WithMaxElapsedTime(maxElapsedTime),
+	)
 }
