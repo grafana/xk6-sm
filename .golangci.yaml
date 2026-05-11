@@ -279,6 +279,9 @@ linters:
           - revive
         path: internal/version/
         text: avoid package names that conflict with Go standard library package names
+      - linters:
+          - goconst
+        path: integration/integration_test.go
     paths:
       - proto/.*.go
       - third_party$
