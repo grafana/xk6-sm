@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.1.1](https://github.com/grafana/xk6-sm/compare/v1.1.0...v1.1.1) (2026-05-11)
+
+
+### Miscellaneous Chores
+
+* **deps:** update grafana/shared-workflows/get-vault-secrets action to v1.3.2 ([#391](https://github.com/grafana/xk6-sm/issues/391)) ([63f43e1](https://github.com/grafana/xk6-sm/commit/63f43e11daa23d731d9eee7d4a1cf98f8e2cd4cf))
+* Update ghcr.io/grafana/grafana-build-tools Docker tag to v1.38.0 (main) ([#394](https://github.com/grafana/xk6-sm/issues/394)) ([4c36f54](https://github.com/grafana/xk6-sm/commit/4c36f541b49c50f1791e5c99c7ca85f3c98125a4))
+* Update ghcr.io/grafana/grafana-build-tools Docker tag to v1.38.1 (main) ([#396](https://github.com/grafana/xk6-sm/issues/396)) ([0fbebab](https://github.com/grafana/xk6-sm/commit/0fbebabce8a691e36a8c0d34a20597a15605042a))
+* Update module golang.org/x/net to v0.53.0 [SECURITY] ([#393](https://github.com/grafana/xk6-sm/issues/393)) ([4300bd6](https://github.com/grafana/xk6-sm/commit/4300bd62dd0d12adc3af1859d14ce2b3145857eb))
+
 ## [1.1.0](https://github.com/grafana/xk6-sm/compare/v1.0.2...v1.1.0) (2026-04-30)
 
 
