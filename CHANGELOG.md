@@ -1,5 +1,16 @@
 # Changelog
 
+## [2.0.0](https://github.com/grafana/xk6-sm/compare/v1.1.1...v2.0.0) (2026-05-12)
+
+
+### ⚠ BREAKING CHANGES
+
+* Adopt k6 v2 ([#397](https://github.com/grafana/xk6-sm/issues/397))
+
+### Features
+
+* Adopt k6 v2 ([#397](https://github.com/grafana/xk6-sm/issues/397)) ([ed0fafc](https://github.com/grafana/xk6-sm/commit/ed0fafc8dbece18edc2544dc688ee489178ea06f))
+
 ## [1.1.1](https://github.com/grafana/xk6-sm/compare/v1.1.0...v1.1.1) (2026-05-11)
 
 
