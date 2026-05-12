@@ -9,6 +9,9 @@ on:
       - main
   release:
     types:
+      # When a release published event is triggered, this workflow is run from
+      # the repo's default branch (main). It will be triggered from any branch,
+      # v1 or main (v2).
       - published
 
 permissions:
