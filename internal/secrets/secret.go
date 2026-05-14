@@ -143,30 +143,32 @@ func (gs *grafanaSecrets) Get(key string) (string, error) {
 	var (
 		retryAfterError *backoff.RetryAfterError
 		retryErr        *retryError
-		requests        int
+		attempts        int
 	)
 
-	plaintext, err := retry(ctx, gs.get(ctx, key, logger, &requests))
+	plaintext, err := retry(ctx, gs.get(ctx, key, logger, &attempts))
+	logger = logger.WithField("attempts", attempts)
+
 	switch {
 	case err == nil:
-		logger.WithField("attempts", requests).Info("secret retrieved")
+		logger.Info("secret retrieved")
 
 		return plaintext, nil
 
 	case errors.As(err, &retryErr):
 		// If this error gets back here it's because we retried too many times.
-		logger.WithError(err).WithField("requests", requests).Error("too many retries getting secret")
+		logger.WithError(err).Error("too many retries getting secret")
 
 		return "", fmt.Errorf("%w (last status: %s)", errTooManyRetries, retryErr.status)
 
 	case errors.As(err, &retryAfterError):
 		// The server asked us to wait longer than our total retry budget.
-		logger.WithError(err).WithField("requests", requests).Warn("Retry-After exceeds retry budget")
+		logger.WithError(err).Warn("Retry-After exceeds retry budget")
 
 		return "", errTooManyRetries
 
 	default:
-		logger.WithError(err).WithField("requests", requests).Error("error getting secret")
+		logger.WithError(err).Error("error getting secret")
 
 		return "", err
 	}
