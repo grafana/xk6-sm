@@ -149,9 +149,7 @@ func (gs *grafanaSecrets) Get(key string) (string, error) {
 	plaintext, err := retry(ctx, gs.get(ctx, key, logger, &requests))
 	switch {
 	case err == nil:
-		if requests > 1 {
-			logger.WithField("requests", requests).Info("secret retrieved")
-		}
+		logger.WithField("attempts", requests).Info("secret retrieved")
 
 		return plaintext, nil
 
