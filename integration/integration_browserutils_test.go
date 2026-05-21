@@ -137,11 +137,38 @@ type sessionInfo struct {
 	} `json:"chromiumVersion"`
 }
 
-// createSession uses the crocochrome API to start a browser session.
+// createSession uses the crocochrome API to start a browser session. It retries on 5xx responses.
 func createSession(endpoint string) (*sessionInfo, error) {
+	const attempts = 3
+
+	const backoff = time.Second
+
+	var lastErr error
+
+	for attempt := range attempts {
+		if attempt > 0 {
+			time.Sleep(backoff)
+		}
+
+		session, status, err := doCreateSession(endpoint)
+		if err == nil {
+			return session, nil
+		}
+
+		if status < 500 {
+			return nil, fmt.Errorf("creating session: %w", err)
+		}
+
+		lastErr = err
+	}
+
+	return nil, fmt.Errorf("after %d attempts: %w", attempts, lastErr)
+}
+
+func doCreateSession(endpoint string) (*sessionInfo, int, error) {
 	resp, err := http.Post(endpoint+"/sessions", "application/json", nil) //nolint:noctx // Test helper.
 	if err != nil {
-		return nil, fmt.Errorf("posting session: %w", err)
+		return nil, 0, fmt.Errorf("posting session: %w", err)
 	}
 
 	defer resp.Body.Close()
@@ -150,17 +177,17 @@ func createSession(endpoint string) (*sessionInfo, error) {
 		body, _ := io.ReadAll(resp.Body)
 
 		//nolint:err113 // No need for static error in test helper.
-		return nil, fmt.Errorf("got unexpected status %d:\n%s", resp.StatusCode, string(body))
+		return nil, resp.StatusCode, fmt.Errorf("got unexpected status %d:\n%s", resp.StatusCode, string(body))
 	}
 
 	session := sessionInfo{}
 
 	err = json.NewDecoder(resp.Body).Decode(&session)
 	if err != nil {
-		return nil, fmt.Errorf("decoding session: %w", err)
+		return nil, resp.StatusCode, fmt.Errorf("decoding session: %w", err)
 	}
 
-	return &session, nil
+	return &session, resp.StatusCode, nil
 }
 
 // deleteSession calls the crocochrome API to delete a session.
