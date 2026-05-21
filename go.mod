@@ -5,6 +5,7 @@ go 1.25.0
 toolchain go1.25.5
 
 require (
+	github.com/cenkalti/backoff/v5 v5.0.3
 	github.com/grafana/gsm-api-go-client v0.3.0
 	github.com/mstoykov/atlas v0.0.0-20220811071828-388f114305dd
 	github.com/prometheus/client_model v0.6.2
@@ -19,7 +20,6 @@ require (
 
 require (
 	github.com/apapsch/go-jsonmerge/v2 v2.0.0 // indirect
-	github.com/cenkalti/backoff/v5 v5.0.3 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fatih/color v1.18.0 // indirect
