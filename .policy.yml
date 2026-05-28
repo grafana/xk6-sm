@@ -26,6 +26,8 @@ approval_rules:
       file_not_deleted:
         paths:
           - ^\.github\/workflows\/renovate-validate\.yaml$
+      targets_branch:
+        pattern: (^v1$)
     requires:
       conditions:
         has_workflow_result:
@@ -42,6 +44,8 @@ approval_rules:
       file_not_deleted:
         paths:
           - ^\.github\/workflows\/validate-policy-bot-config\.yml$
+      targets_branch:
+        pattern: (^v1$)
     requires:
       conditions:
         has_workflow_result:
