@@ -21,7 +21,7 @@ jobs:
   validate:
     name: Validate policy bot config
 
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-arm64-small
 
     permissions:
       contents: read

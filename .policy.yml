@@ -22,7 +22,9 @@ approval_rules:
           - ^renovate\.(?:[^/]*)$
           - ^\.renovate\.(?:[^/]*)$
           - ^\.github\/renovate\.(?:[^/]*)$
-          - ^\.github\/workflows\/renovate(?:[^/]*)$
+          - ^scripts\/check-renovate-config$
+          - ^scripts\/generate-renovate-config$
+          - ^\.github\/workflows\/renovate-validate\.yaml$
       file_not_deleted:
         paths:
           - ^\.github\/workflows\/renovate-validate\.yaml$
