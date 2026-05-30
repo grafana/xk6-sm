@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.1.2](https://github.com/grafana/xk6-sm/compare/v1.1.1...v1.1.2) (2026-05-30)
+
+
+### Fixes
+
+* Add retries ([#410](https://github.com/grafana/xk6-sm/issues/410)) ([c43bc04](https://github.com/grafana/xk6-sm/commit/c43bc04f8774f8582dce6c113b4910db3a9eb813))
+* Constrain workflows to v1 branch ([fed5507](https://github.com/grafana/xk6-sm/commit/fed5507d0a5c53b5bbb6fda9d3f62edceb583c34))
+* **integration:** retry POST /sessions on 5xx to deflake browser test ([#412](https://github.com/grafana/xk6-sm/issues/412)) ([#413](https://github.com/grafana/xk6-sm/issues/413)) ([2deaa28](https://github.com/grafana/xk6-sm/commit/2deaa287b266297ea4d18a0cafad1c13364a82b0))
+* Migrate workflows to NOT use get-vault-secrets ([#411](https://github.com/grafana/xk6-sm/issues/411)) ([61fdc9c](https://github.com/grafana/xk6-sm/commit/61fdc9caf1464e7f0edc4074327d830a1f7dbf39))
+* Remove self-hosted renovate workflow ([050e2e9](https://github.com/grafana/xk6-sm/commit/050e2e9c681b8e46aaa41015dbec923fe8eb5878))
+
+
+### Miscellaneous Chores
+
+* Adapt CI to xk6-sm v1 branch ([86bc82b](https://github.com/grafana/xk6-sm/commit/86bc82b573fabebf6e6c93911b46976836dda0df))
+* **deps:** update grafana/shared-workflows/create-github-app-token action to v0.2.3 ([f3751e3](https://github.com/grafana/xk6-sm/commit/f3751e3cce96e937e9fbb1eca3a5249f7f60be47))
+* Update module golang.org/x/net to v0.55.0 [SECURITY] ([#420](https://github.com/grafana/xk6-sm/issues/420)) ([5472fb6](https://github.com/grafana/xk6-sm/commit/5472fb67465e092107729bbf74ecb3773d2644d4))
+* Update module golang.org/x/sys to v0.44.0 [SECURITY] ([a47365b](https://github.com/grafana/xk6-sm/commit/a47365b8a05b1818ede6cde10c54ddd1aa2c9468))
+
 ## [1.1.1](https://github.com/grafana/xk6-sm/compare/v1.1.0...v1.1.1) (2026-05-11)
 
 
