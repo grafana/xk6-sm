@@ -164,6 +164,7 @@ jobs:
 
       - name: upload artifact to release
         env:
+          GH_TOKEN: ${{ github.token }}
           GITHUB_REF_NAME: ${{ github.ref_name }}
         run: |-
           ./scripts/release-binaries "${GITHUB_REF_NAME}"
