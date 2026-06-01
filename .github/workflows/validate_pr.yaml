@@ -7,6 +7,9 @@ on:
   push:
     branches:
       - v1
+  release:
+    types:
+      - published
 
 permissions:
   contents: none
@@ -126,3 +129,50 @@ jobs:
           name: binaries-${{ steps.id-platform.outputs.platform_goos }}-${{ steps.id-platform.outputs.platform_goarch }}
           path: dist/binaries-${{ steps.id-platform.outputs.platform_goos }}-${{ steps.id-platform.outputs.platform_goarch }}.tar
           retention-days: 1
+
+  release:
+    # Do not try to release unless we are sure all the supported platforms have
+    # been validated.
+    #
+    # Because this is running _after_ the release has been created by release
+    # please, if the above validations fail, we end up without artifacts in the
+    # release. That's arguably better than having *some* artifacts and not
+    # others.
+    name: release
+    needs:
+      - validate
+    if: github.event_name == 'release'
+    runs-on: ubuntu-arm64-small
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Get GitHub App token
+        id: get-release-app-token
+        uses: grafana/shared-workflows/actions/create-github-app-token@259ba21cb3ff07724f331e26d926d655d24b317b # create-github-app-token/v0.2.3
+        with:
+          github_app: sm-release-app
+
+      - name: checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 1
+          fetch-tags: false
+          persist-credentials: false
+
+      - name: download artifacts
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          pattern: binaries-*
+          github-token: ${{ steps.get-release-app-token.outputs.token }}
+
+      - name: extract binaries
+        run: |
+          find binaries-* -name 'binaries-*.tar' -print0 | xargs -r -0 -n1 tar -xvpf
+
+      - name: upload artifact to release
+        env:
+          GH_TOKEN: ${{ steps.get-release-app-token.outputs.token }}
+          GITHUB_REF_NAME: ${{ github.ref_name }}
+        run: |-
+          ./scripts/release-binaries "${GITHUB_REF_NAME}"
