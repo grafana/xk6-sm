@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.4](https://github.com/grafana/xk6-sm/compare/v1.1.3...v1.1.4) (2026-06-01)
+
+
+### Fixes
+
+* Remove create-github-app-token from release ([890328a](https://github.com/grafana/xk6-sm/commit/890328a6bc0428645f537010607265903c0b0813))
+
 ## [1.1.3](https://github.com/grafana/xk6-sm/compare/v1.1.2...v1.1.3) (2026-06-01)
 
 
