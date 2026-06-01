@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.3](https://github.com/grafana/xk6-sm/compare/v1.1.2...v1.1.3) (2026-06-01)
+
+
+### Fixes
+
+* **ci:** Restore release workflow ([8f4f67d](https://github.com/grafana/xk6-sm/commit/8f4f67d18ad822b4d30384797d94fdeeb5722169))
+
 ## [1.1.2](https://github.com/grafana/xk6-sm/compare/v1.1.1...v1.1.2) (2026-05-30)
 
 
