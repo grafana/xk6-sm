@@ -14,8 +14,7 @@ on:
       # v1 or main (v2).
       - published
 
-permissions:
-  contents: none
+permissions: {}
 
 jobs:
   validate:
@@ -147,15 +146,9 @@ jobs:
     if: github.event_name == 'release'
     runs-on: ubuntu-arm64-small
     permissions:
-      contents: read
-      id-token: write
+      contents: write # Needed to update the release
+      actions: read   # Needed to read artifacts
     steps:
-      - name: Get GitHub App token
-        id: get-release-app-token
-        uses: grafana/shared-workflows/actions/create-github-app-token@259ba21cb3ff07724f331e26d926d655d24b317b # create-github-app-token/v0.2.3
-        with:
-          github_app: sm-release-app
-
       - name: checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
@@ -167,7 +160,6 @@ jobs:
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           pattern: binaries-*
-          github-token: ${{ steps.get-release-app-token.outputs.token }}
 
       - name: extract binaries
         run: |
@@ -175,7 +167,7 @@ jobs:
 
       - name: upload artifact to release
         env:
-          GH_TOKEN: ${{ steps.get-release-app-token.outputs.token }}
+          GH_TOKEN: ${{ github.token }}
           GITHUB_REF_NAME: ${{ github.ref_name }}
         run: |-
           ./scripts/release-binaries "${GITHUB_REF_NAME}"
