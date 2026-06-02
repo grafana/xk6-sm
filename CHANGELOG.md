@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.5](https://github.com/grafana/xk6-sm/compare/v1.1.4...v1.1.5) (2026-06-02)
+
+
+### Fixes
+
+* Pass github token in environment ([#434](https://github.com/grafana/xk6-sm/issues/434)) ([8907ca5](https://github.com/grafana/xk6-sm/commit/8907ca55f2edcbd2dfda58262867003f39e7ab07))
+
 ## [1.1.4](https://github.com/grafana/xk6-sm/compare/v1.1.3...v1.1.4) (2026-06-01)
 
 
