@@ -9,7 +9,7 @@ require (
 	github.com/grafana/gsm-api-go-client v0.3.0
 	github.com/mstoykov/atlas v0.0.0-20220811071828-388f114305dd
 	github.com/prometheus/client_model v0.6.2
-	github.com/prometheus/common v0.68.0
+	github.com/prometheus/common v0.68.1
 	github.com/quasilyte/go-ruleguard/dsl v0.3.23
 	github.com/sirupsen/logrus v1.9.4
 	github.com/spf13/afero v1.15.0
