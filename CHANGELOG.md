@@ -1,5 +1,32 @@
 # Changelog
 
+## [2.0.1](https://github.com/grafana/xk6-sm/compare/v2.0.0...v2.0.1) (2026-06-10)
+
+
+### Fixes
+
+* Add architecture documentation ([#431](https://github.com/grafana/xk6-sm/issues/431)) ([d7b9924](https://github.com/grafana/xk6-sm/commit/d7b9924c6f1acc4e7c7f1be4c2ef9accfb4cc21f))
+* Add id-token: write for create-github-app-token ([#406](https://github.com/grafana/xk6-sm/issues/406)) ([1847d75](https://github.com/grafana/xk6-sm/commit/1847d753ef9e9ef0e39663405bbe2186d7da2cde))
+* Add retries ([#389](https://github.com/grafana/xk6-sm/issues/389)) ([cc6d013](https://github.com/grafana/xk6-sm/commit/cc6d0134367a6d0c2c594ca0e9a864da1a219a4e))
+* **integration:** retry POST /sessions on 5xx to deflake browser test ([#412](https://github.com/grafana/xk6-sm/issues/412)) ([4daf249](https://github.com/grafana/xk6-sm/commit/4daf249393808b89b4dc576e872ee949640807c8))
+* Migrate workflows to NOT use get-vault-secrets ([#405](https://github.com/grafana/xk6-sm/issues/405)) ([3433933](https://github.com/grafana/xk6-sm/commit/343393306793fb6c1c5fb8e83e9940e0624a5af8))
+* Point release please at .github/release-please/release-please-manifest.json ([#407](https://github.com/grafana/xk6-sm/issues/407)) ([a420c6d](https://github.com/grafana/xk6-sm/commit/a420c6d4b7ac0809008d2cb03168e0afdcc6a8b3))
+* Remove self-hosted renovate workflow ([#424](https://github.com/grafana/xk6-sm/issues/424)) ([a6af9a9](https://github.com/grafana/xk6-sm/commit/a6af9a9d5baf103147665745d89006cd3a4e0ecc))
+* Sync workflow with v1 version ([#436](https://github.com/grafana/xk6-sm/issues/436)) ([2960eed](https://github.com/grafana/xk6-sm/commit/2960eed8ad2c36bb93fb7806f0b446474accd2fc))
+
+
+### Miscellaneous Chores
+
+* **deps:** update grafana/shared-workflows/create-github-app-token action to v0.2.3 ([8d37b66](https://github.com/grafana/xk6-sm/commit/8d37b664078f9f3a68b2b8b4cb350877f8cd4a8a))
+* **deps:** update grafana/shared-workflows/create-github-app-token action to v0.3.1 ([59223b2](https://github.com/grafana/xk6-sm/commit/59223b2ca509dd424ef5253de6588aa86e992208))
+* Update actions/checkout action to v6.0.3 ([5f3a9c8](https://github.com/grafana/xk6-sm/commit/5f3a9c877c6c1c3c0329b231e1b3976fad629b9e))
+* Update ghcr.io/grafana/grafana-build-tools Docker tag to v1.40.1 ([abb335b](https://github.com/grafana/xk6-sm/commit/abb335b8edacce260421afa4b50dce94333adb9d))
+* Update go toolchain directive to v1.25.11 [SECURITY] ([b146406](https://github.com/grafana/xk6-sm/commit/b146406d557cc06237362d1f5ea4fba559406654))
+* Update go toolchain directive to v1.26.4 ([e6c7692](https://github.com/grafana/xk6-sm/commit/e6c7692bc2a8fdbb62d2ed2e4a6220fb47358278))
+* Update module github.com/prometheus/common to v0.68.0 (main) ([#425](https://github.com/grafana/xk6-sm/issues/425)) ([9e0dcc5](https://github.com/grafana/xk6-sm/commit/9e0dcc5e2d1b67226a74c66fd983c30c785e1297))
+* Update module github.com/prometheus/common to v0.68.1 ([b7cfd79](https://github.com/grafana/xk6-sm/commit/b7cfd79cbf7ee71231c326ca383e9fd4ebc4a61f))
+* Update module golang.org/x/net to v0.55.0 [SECURITY] ([#415](https://github.com/grafana/xk6-sm/issues/415)) ([22e9bf0](https://github.com/grafana/xk6-sm/commit/22e9bf0b8ccb64ae553c81b65aaba4da6eab973b))
+
 ## [2.0.0](https://github.com/grafana/xk6-sm/compare/v1.1.1...v2.0.0) (2026-05-12)
 
 
