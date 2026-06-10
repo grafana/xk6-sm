@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.1.6](https://github.com/grafana/xk6-sm/compare/v1.1.5...v1.1.6) (2026-06-10)
+
+
+### Miscellaneous Chores
+
+* **deps:** update grafana/shared-workflows/create-github-app-token action to v0.3.1 ([68e7ae7](https://github.com/grafana/xk6-sm/commit/68e7ae7c524a3d4ce8f2ffe5fc2cdeb755725977))
+* Update actions/checkout action to v6.0.3 ([4b7b281](https://github.com/grafana/xk6-sm/commit/4b7b28195ed439f814962a4879901d78f5cff17e))
+* Update ghcr.io/grafana/grafana-build-tools Docker tag to v1.40.0 ([10e843d](https://github.com/grafana/xk6-sm/commit/10e843d58f9508de220779d83b97427a38ebc40a))
+* Update ghcr.io/grafana/grafana-build-tools Docker tag to v1.40.1 ([6f4959d](https://github.com/grafana/xk6-sm/commit/6f4959d8ae489647084d2a085bb4e76a29840668))
+* Update go toolchain directive to v1.25.11 [SECURITY] ([#439](https://github.com/grafana/xk6-sm/issues/439)) ([f77a4dc](https://github.com/grafana/xk6-sm/commit/f77a4dc0ab063bfe449cc2ca36d2be55070c110b))
+* Update go toolchain directive to v1.26.4 ([5b1fe17](https://github.com/grafana/xk6-sm/commit/5b1fe17e07a4ae4244d103bf59981e5a973993e5))
+* Update module github.com/prometheus/common to v0.68.0 ([fc42ce8](https://github.com/grafana/xk6-sm/commit/fc42ce865fab8a14b5ea86f06dae71c193780c20))
+* Update module github.com/prometheus/common to v0.68.1 ([cf18bc7](https://github.com/grafana/xk6-sm/commit/cf18bc7394e574fb01b49d473f79ca9e7188d99a))
+
 ## [1.1.5](https://github.com/grafana/xk6-sm/compare/v1.1.4...v1.1.5) (2026-06-02)
 
 
