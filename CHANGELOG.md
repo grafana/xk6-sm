@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.1.7](https://github.com/grafana/xk6-sm/compare/v1.1.6...v1.1.7) (2026-06-12)
+
+
+### Miscellaneous Chores
+
+* Update ghcr.io/grafana/grafana-build-tools Docker tag to v1.41.0 ([e23bd34](https://github.com/grafana/xk6-sm/commit/e23bd34473d0297d39a0d03cbc327441587657ba))
+* Update module github.com/grafana/gsm-api-go-client to v0.3.1 ([5364192](https://github.com/grafana/xk6-sm/commit/53641925fb1347447b7ee436d865fe575740f87b))
+* Update module go.k6.io/k6 to v1.8.0 ([bbf755d](https://github.com/grafana/xk6-sm/commit/bbf755d4d9a44ce9de1fffe8cfb602a68e32cfa0))
+
 ## [1.1.6](https://github.com/grafana/xk6-sm/compare/v1.1.5...v1.1.6) (2026-06-10)
 
 
