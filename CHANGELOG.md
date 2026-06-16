@@ -1,5 +1,14 @@
 # Changelog
 
+## [2.0.2](https://github.com/grafana/xk6-sm/compare/v2.0.1...v2.0.2) (2026-06-16)
+
+
+### Miscellaneous Chores
+
+* **deps:** update grafana/shared-workflows/validate-renovate-config action to v0.1.4 ([38791c4](https://github.com/grafana/xk6-sm/commit/38791c44c44b0b3a02bf2c7460cb16b8f40b68fa))
+* Update ghcr.io/grafana/grafana-build-tools Docker tag to v1.41.0 ([ee2bd32](https://github.com/grafana/xk6-sm/commit/ee2bd32c4ddebe33bbf2ff4166cd172f8ccc53f2))
+* Update module github.com/grafana/gsm-api-go-client to v0.3.1 ([ae6b49b](https://github.com/grafana/xk6-sm/commit/ae6b49b0802b1a492df925add2d6bae6cf026809))
+
 ## [2.0.1](https://github.com/grafana/xk6-sm/compare/v2.0.0...v2.0.1) (2026-06-10)
 
 
