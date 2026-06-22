@@ -1,5 +1,15 @@
 # Changelog
 
+## [2.0.3](https://github.com/grafana/xk6-sm/compare/v2.0.2...v2.0.3) (2026-06-22)
+
+
+### Miscellaneous Chores
+
+* Update actions/checkout action to v7 ([#461](https://github.com/grafana/xk6-sm/issues/461)) ([053f34a](https://github.com/grafana/xk6-sm/commit/053f34ac3761f423e69157e6b1657447e1bc08d8))
+* Update ghcr.io/grafana/grafana-build-tools Docker tag to v1.41.1 ([#456](https://github.com/grafana/xk6-sm/issues/456)) ([dcddf09](https://github.com/grafana/xk6-sm/commit/dcddf09419ccc97ef1172794b5710e152e1d216a))
+* Update module github.com/cenkalti/backoff/v5 to v6 ([#458](https://github.com/grafana/xk6-sm/issues/458)) ([659a167](https://github.com/grafana/xk6-sm/commit/659a16770cc4fdbe8790e2db37b769be3457013d))
+* Update prometheus-go to v0.69.0 ([#459](https://github.com/grafana/xk6-sm/issues/459)) ([e04432b](https://github.com/grafana/xk6-sm/commit/e04432bb585b373cc3d40a9468ac4837effec344))
+
 ## [2.0.2](https://github.com/grafana/xk6-sm/compare/v2.0.1...v2.0.2) (2026-06-16)
 
 
