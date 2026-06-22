@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.8](https://github.com/grafana/xk6-sm/compare/v1.1.7...v1.1.8) (2026-06-22)
+
+
+### Miscellaneous Chores
+
+* Update ghcr.io/grafana/grafana-build-tools Docker tag to v1.41.1 ([#457](https://github.com/grafana/xk6-sm/issues/457)) ([744f04b](https://github.com/grafana/xk6-sm/commit/744f04b50ac6e56e1e63f351fea4e561dd97302f))
+* Update prometheus-go to v0.69.0 ([#460](https://github.com/grafana/xk6-sm/issues/460)) ([d8525f8](https://github.com/grafana/xk6-sm/commit/d8525f8dda0d0f623136641bd5a9bd9fa7eee8d4))
+
 ## [1.1.7](https://github.com/grafana/xk6-sm/compare/v1.1.6...v1.1.7) (2026-06-16)
 
 
