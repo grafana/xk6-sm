@@ -14,7 +14,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cenkalti/backoff/v6"
+	"github.com/cenkalti/backoff/v7"
 	gsmClient "github.com/grafana/gsm-api-go-client"
 	"github.com/sirupsen/logrus"
 	"go.k6.io/k6/v2/secretsource"
