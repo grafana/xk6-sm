@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.0.5](https://github.com/grafana/xk6-sm/compare/v2.0.4...v2.0.5) (2026-07-15)
+
+
+### Miscellaneous Chores
+
+* Update ghcr.io/grafana/grafana-build-tools Docker tag to v1.43.0 ([#480](https://github.com/grafana/xk6-sm/issues/480)) ([86572ac](https://github.com/grafana/xk6-sm/commit/86572ac176671710529f11734e2ca5031e4c9e88))
+* Update ghcr.io/grafana/grafana-build-tools Docker tag to v1.43.1 (main) ([#482](https://github.com/grafana/xk6-sm/issues/482)) ([186204d](https://github.com/grafana/xk6-sm/commit/186204d7c01db3f5a0070cc44bdb5bd25273d2be))
+* Update go toolchain directive to v1.26.5 [SECURITY] ([#472](https://github.com/grafana/xk6-sm/issues/472)) ([6c52c99](https://github.com/grafana/xk6-sm/commit/6c52c995846293855c14b856ada87cf12730ba0e))
+* Update module github.com/grafana/gsm-api-go-client to v0.3.2 ([#470](https://github.com/grafana/xk6-sm/issues/470)) ([3e43e1f](https://github.com/grafana/xk6-sm/commit/3e43e1f3308182ff220b69ba90a5f5160b75acbc))
+* Update module github.com/prometheus/common to v0.70.0 ([#476](https://github.com/grafana/xk6-sm/issues/476)) ([e2a3dc2](https://github.com/grafana/xk6-sm/commit/e2a3dc2c346e70deffafd6e43bda033df9557710))
+* Update module go.k6.io/k6/v2 to v2.1.0 ([#468](https://github.com/grafana/xk6-sm/issues/468)) ([c3aa7b7](https://github.com/grafana/xk6-sm/commit/c3aa7b7c00ad4353b525e1458fe6c0df1683d52c))
+
 ## [2.0.4](https://github.com/grafana/xk6-sm/compare/v2.0.3...v2.0.4) (2026-07-01)
 
 
