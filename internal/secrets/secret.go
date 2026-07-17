@@ -308,7 +308,7 @@ func parseRetryAfter(value string) error {
 
 	if seconds, err := strconv.Atoi(value); err == nil {
 		//nolint:wrapcheck // Sentinel returned for backoff.Retry to consume.
-		return backoff.RetryAfter(seconds)
+		return backoff.RetryAfter(time.Duration(seconds)*time.Second, nil)
 	}
 
 	if deadline, err := http.ParseTime(value); err == nil {
