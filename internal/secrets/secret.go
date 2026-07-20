@@ -14,7 +14,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cenkalti/backoff/v6"
+	"github.com/cenkalti/backoff/v7"
 	gsmClient "github.com/grafana/gsm-api-go-client"
 	"github.com/sirupsen/logrus"
 	"go.k6.io/k6/v2/secretsource"
@@ -308,7 +308,7 @@ func parseRetryAfter(value string) error {
 
 	if seconds, err := strconv.Atoi(value); err == nil {
 		//nolint:wrapcheck // Sentinel returned for backoff.Retry to consume.
-		return backoff.RetryAfter(seconds)
+		return backoff.RetryAfter(time.Duration(seconds)*time.Second, nil)
 	}
 
 	if deadline, err := http.ParseTime(value); err == nil {
