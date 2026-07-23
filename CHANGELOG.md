@@ -1,5 +1,15 @@
 # Changelog
 
+## [2.0.6](https://github.com/grafana/xk6-sm/compare/v2.0.5...v2.0.6) (2026-07-23)
+
+
+### Miscellaneous Chores
+
+* Update actions/checkout action to v7.0.1 ([#490](https://github.com/grafana/xk6-sm/issues/490)) ([4385ad6](https://github.com/grafana/xk6-sm/commit/4385ad690abd984dbd61ca374a0bcc01ca0bd3bb))
+* Update module github.com/cenkalti/backoff/v6 to v7 (main) ([#469](https://github.com/grafana/xk6-sm/issues/469)) ([ee41560](https://github.com/grafana/xk6-sm/commit/ee41560dbe6276c77e1f006ed32b5d2a2efc1197))
+* Update module golang.org/x/text to v0.39.0 [SECURITY] ([#485](https://github.com/grafana/xk6-sm/issues/485)) ([3f0fdc2](https://github.com/grafana/xk6-sm/commit/3f0fdc292f6f7428179df97dff01df67093196c1))
+* Update module google.golang.org/grpc to v1.82.1 [SECURITY] ([#487](https://github.com/grafana/xk6-sm/issues/487)) ([e72f714](https://github.com/grafana/xk6-sm/commit/e72f714dbb78dc367dbe2bac5e1d1dd174c502a7))
+
 ## [2.0.5](https://github.com/grafana/xk6-sm/compare/v2.0.4...v2.0.5) (2026-07-15)
 
 
