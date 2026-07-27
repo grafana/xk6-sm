@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.1.11](https://github.com/grafana/xk6-sm/compare/v1.1.10...v1.1.11) (2026-07-23)
+
+
+### Miscellaneous Chores
+
+* Update actions/checkout action to v6.1.0 ([#491](https://github.com/grafana/xk6-sm/issues/491)) ([6111919](https://github.com/grafana/xk6-sm/commit/61119199f885bd5cb18520481e46129d564fc9fc))
+* Update module golang.org/x/text to v0.39.0 [SECURITY] ([#486](https://github.com/grafana/xk6-sm/issues/486)) ([6603d0b](https://github.com/grafana/xk6-sm/commit/6603d0b170686d9fcddccad7c282291ee0494b12))
+* Update module google.golang.org/grpc to v1.82.1 [SECURITY] ([#488](https://github.com/grafana/xk6-sm/issues/488)) ([a6b3613](https://github.com/grafana/xk6-sm/commit/a6b36132ff4cba4990dfcd638e5e95a46bb6534e))
+
 ## [1.1.10](https://github.com/grafana/xk6-sm/compare/v1.1.9...v1.1.10) (2026-07-15)
 
 
