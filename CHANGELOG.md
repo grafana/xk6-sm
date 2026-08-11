@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.1.12](https://github.com/grafana/xk6-sm/compare/v1.1.11...v1.1.12) (2026-08-03)
+
+
+### Miscellaneous Chores
+
+* Update ghcr.io/grafana/grafana-build-tools Docker tag to v1.44.0 ([#497](https://github.com/grafana/xk6-sm/issues/497)) ([f7fe924](https://github.com/grafana/xk6-sm/commit/f7fe9242d4e5a6b1620773a5c3f7f78bf0a28fdf))
+* Update module github.com/grafana/gsm-api-go-client to v0.3.3 ([#500](https://github.com/grafana/xk6-sm/issues/500)) ([2f4ab02](https://github.com/grafana/xk6-sm/commit/2f4ab022f791ea795fda8c55c3fd9137c4a39ac9))
+* Update module github.com/prometheus/common to v0.70.1 ([#494](https://github.com/grafana/xk6-sm/issues/494)) ([2f0fc95](https://github.com/grafana/xk6-sm/commit/2f0fc95b04ddd61233a67fce37d8f39a77d2f1ed))
+* Update module go.opentelemetry.io/otel to v1.44.0 [SECURITY] ([#492](https://github.com/grafana/xk6-sm/issues/492)) ([c5c8da7](https://github.com/grafana/xk6-sm/commit/c5c8da7d8c78d9c9bd53368f77fe55e2eb9fc6b6))
+
 ## [1.1.11](https://github.com/grafana/xk6-sm/compare/v1.1.10...v1.1.11) (2026-07-23)
 
 
