@@ -189,6 +189,24 @@ insights collector uses, for consistency):
 > consider stripping sensitive query parameters from URLs in your script
 > before making the request if this is a concern.
 
+## Integration tests
+
+Unit tests (`go test ./...`) don't require anything beyond Go — they don't
+build a k6 binary. A separate integration test builds a real `k6-traces`
+binary via `xk6` and runs a script against it (no `tracing.instrument()`
+call) to confirm requests are instrumented automatically end-to-end,
+including a local HTTP server that validates the `traceparent` header it
+actually receives. It's gated behind the `integration` build tag, so it's
+excluded from `go test ./...` and only runs on demand or in CI:
+
+```sh
+go test -tags=integration ./integration/... -v
+```
+
+Requires `xk6` on `PATH` and the same local k6 checkout the rest of this
+extension is built against (see [Requirements](#requirements) above) — the
+test builds its own binary the same way the `xk6 build` command above does.
+
 ## Known limitations
 
 - **WebSocket traffic isn't instrumented.** WebSocket upgrades use a
