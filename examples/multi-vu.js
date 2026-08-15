@@ -11,7 +11,7 @@
 //
 //   ./build/k6-traces run --traces-output=otel=http://127.0.0.1:4318/v1/traces examples/basic.js
 //
-// Without --traces-output, tracing.instrument() still runs safely, but k6's
+// Without --traces-output, requests are still instrumented, but k6's
 // TracerProvider is a no-op: spans get no real trace/span IDs, so no
 // traceparent header is injected and tracing.currentTraceparent() returns ""
 // - zero overhead, zero errors, just nothing to see. A real backend (even
@@ -38,16 +38,11 @@ export const options = {
 };
 
 export default function () {
-  // Call this once per iteration, before making any requests you want
-  // traced. It's idempotent - cheap to call every iteration, and safe to
-  // call more than once.
-  tracing.instrument();
-
-  // Every http.get/post/... call from here on is automatically wrapped in
-  // an OTel span: method, URL, status code, and k6.vu.id/k6.iteration/
-  // k6.scenario/k6.group are recorded as span attributes, and a
-  // traceparent header is injected so the downstream service can continue
-  // the trace.
+  // No setup call needed: importing k6/x/tracing is enough. Every
+  // http.get/post/... call is automatically wrapped in an OTel span:
+  // method, URL, status code, and k6.vu.id/k6.iteration/k6.scenario/
+  // k6.group are recorded as span attributes, and a traceparent header is
+  // injected so the downstream service can continue the trace.
   http.get('https://test.k6.io/');
   http.get('https://test.k6.io/contacts.php');
 

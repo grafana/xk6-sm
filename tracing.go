@@ -1,13 +1,13 @@
 // Package tracing implements the k6/x/tracing extension: OpenTelemetry
 // distributed-tracing instrumentation for k6/http requests.
 //
-// Scripts must call tracing.instrument() once (idempotent, safe every
-// iteration) before making HTTP requests they want traced - typically as the
-// first line of their default exported function. See the design plan for why
-// this can't be fully automatic: the mechanism that would make it so
-// (subscribing to k6's internal IterStart event) requires a package under
-// go.k6.io/k6/v2/internal/, which Go's compiler forbids importing from any
-// module outside go.k6.io/k6/v2.
+// Instrumentation is fully automatic: importing the module is enough. Each
+// VU subscribes to k6's per-iteration IterStart event
+// (go.k6.io/k6/v2/event) and installs the tracing RoundTripper on
+// state.Transport before that event's wait completes, which k6 guarantees
+// happens before the very first line of the VU's iteration function runs -
+// see ensureWrapped and watchEvents below. No script-side setup call is
+// required.
 //
 // Export is entirely k6's own OTel pipeline: this extension only ever calls
 // state.TracerProvider.Tracer(...), which is wired to a real OTLP exporter
@@ -25,6 +25,7 @@ import (
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/trace"
 
+	"go.k6.io/k6/v2/event"
 	"go.k6.io/k6/v2/js/modules"
 )
 
@@ -66,7 +67,7 @@ var (
 // NewModuleInstance implements modules.Module; called once per VU that
 // imports k6/x/tracing.
 func (r *RootModule) NewModuleInstance(vu modules.VU) modules.Instance {
-	return &Instance{
+	i := &Instance{
 		vu: vu,
 		parentCtx: resolveParentContext(
 			context.Background(),
@@ -78,6 +79,8 @@ func (r *RootModule) NewModuleInstance(vu modules.VU) modules.Instance {
 			},
 		),
 	}
+	i.watchEvents()
+	return i
 }
 
 // Exports implements modules.Instance.
@@ -85,12 +88,57 @@ func (i *Instance) Exports() modules.Exports {
 	return modules.Exports{Default: i}
 }
 
-// Instrument installs the tracing RoundTripper on the VU's HTTP transport,
-// if not already installed. Idempotent and cheap to call on every
-// iteration. Every http.get/post/... made after this call returns is
-// instrumented automatically for the rest of the VU's lifetime.
-func (i *Instance) Instrument() {
-	i.ensureWrapped()
+// watchEvents subscribes to this VU's IterStart event and the run's Exit
+// event, and installs the handlers that drive automatic instrumentation and
+// eventual cleanup. Called once per VU, from NewModuleInstance.
+func (i *Instance) watchEvents() {
+	exitSubID, exitCh := i.vu.Events().Global.Subscribe(event.Exit)
+	iterSubID, iterCh := i.vu.Events().Local.Subscribe(event.IterStart)
+
+	unsubscribe := func() {
+		i.vu.Events().Local.Unsubscribe(iterSubID)
+		i.vu.Events().Global.Unsubscribe(exitSubID)
+	}
+
+	go i.handleIterStart(iterCh)
+	go i.handleExit(exitCh, unsubscribe)
+}
+
+// handleIterStart ensures state.Transport is wrapped on every IterStart
+// event. k6 blocks the VU's iteration on this event's Done being called
+// before running the script's exported function, so by the time this
+// handler's ensureWrapped/Done pair returns, the wrap is guaranteed in place
+// before any script-issued HTTP request. ensureWrapped's sync.Once makes the
+// actual wrap happen only once per VU; every event after that is a cheap
+// no-op.
+func (i *Instance) handleIterStart(iterCh <-chan *event.Event) {
+	for evt := range iterCh {
+		i.ensureWrapped()
+		evt.Done()
+	}
+}
+
+// handleExit unsubscribes this VU's event subscriptions once the run's Exit
+// event fires, so the goroutines spawned by watchEvents terminate even for
+// VUs that never ran an iteration. unsubscribe is deferred ahead of Done so
+// it completes before Done is signalled, matching the ordering k6 core's own
+// k6/browser module uses for the same reason: it prevents a concurrent Exit
+// emission from being delivered to an already-exited goroutine, which would
+// leave Done uncalled and the emitter's wait blocked.
+func (i *Instance) handleExit(exitCh <-chan *event.Event, unsubscribe func()) {
+	var evt *event.Event
+	defer func() {
+		if evt != nil {
+			evt.Done()
+		}
+	}()
+	defer unsubscribe()
+
+	received, ok := <-exitCh
+	if !ok {
+		return
+	}
+	evt = received
 }
 
 // ensureWrapped performs the actual, one-time-per-VU wrap of
@@ -102,8 +150,9 @@ func (i *Instance) ensureWrapped() {
 		if state == nil {
 			// Still in init context; nothing to wrap yet. wrapOnce means this
 			// won't be retried automatically - callers are expected to invoke
-			// Instrument()/StartSpan()/CurrentTraceparent() from within an
-			// iteration, where state is always non-nil.
+			// StartSpan()/CurrentTraceparent() from within an iteration, where
+			// state is always non-nil, or rely on the automatic IterStart-driven
+			// wrap in watchEvents.
 			return
 		}
 

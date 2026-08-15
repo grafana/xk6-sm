@@ -31,10 +31,9 @@ or replace any other k6 binary on your system.
 
 ```js
 import http from 'k6/http';
-import tracing from 'k6/x/tracing';
+import 'k6/x/tracing';
 
 export default function () {
-  tracing.instrument(); // once per iteration, idempotent
   http.get('https://example.com');
 }
 ```
@@ -46,16 +45,22 @@ export default function () {
 See [`examples/basic.js`](examples/basic.js) for a fuller walkthrough
 (manual spans, reading the current traceparent, `K6_TRACE_PARENT`).
 
-## Why `tracing.instrument()` is required
+## Automatic instrumentation
 
-Every `http.get/post/...` call is instrumented automatically **after**
-`tracing.instrument()` has run at least once — call it as the first line of
-your default exported function; it's idempotent and safe to call every
-iteration. This can't be made fully automatic: the mechanism that would
-allow it (subscribing to k6's internal per-iteration lifecycle event)
-requires an internal Go package under `go.k6.io/k6/v2/internal/`. Since this is
-a standalone extension, that hook isn't available, so one explicit call is the
-trade-off.
+Importing `k6/x/tracing` is enough — every `http.get/post/...` call in every
+VU is instrumented from the very first iteration, with no script-side setup
+call required. Each VU subscribes to k6's `IterStart` event
+(`go.k6.io/k6/v2/event`) and installs the tracing `RoundTripper` on
+`state.Transport` before that event's wait completes, which k6 guarantees
+happens before the VU's iteration function runs.
+
+This relies on `go.k6.io/k6/v2/event` being a **public** package, so external
+modules can import the event types without reaching into k6's `internal/`
+tree. That's only true today on the local `../k6` checkout this extension is
+built against (branch `mem/split-event-package`) — it isn't part of any
+released k6 version, and hasn't landed on k6's upstream `main` yet. Until (or
+unless) that change is upstreamed, this extension is coupled to that
+specific checkout.
 
 ## JS API
 
@@ -63,7 +68,6 @@ Import as `import tracing from 'k6/x/tracing';`.
 
 | Call | Description |
 |---|---|
-| `tracing.instrument()` | Installs HTTP instrumentation for the current VU. Idempotent — call once per iteration, typically as the first line of your default function. No-op if called before any VU state exists (e.g. at module scope outside a function). |
 | `tracing.startSpan(name, attrs)` | Starts a manual span as a child of the VU's current trace context, for instrumenting non-HTTP work (validation steps, waits, custom timing). `attrs` is a flat object of string key/value pairs set as span attributes. Returns a span handle, or `null` if called before any VU state exists. |
 | `span.setAttribute(key, value)` | Sets one additional string attribute on a span returned by `startSpan`. |
 | `span.end(errMsg)` | Ends the span. Pass `''` for a normal end, or a non-empty string to mark the span as failed with that error message. |

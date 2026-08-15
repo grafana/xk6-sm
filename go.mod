@@ -6,6 +6,7 @@ replace go.k6.io/k6/v2 => ../k6
 
 require (
 	github.com/grafana/sobek v0.0.0-20260727154728-7781506a890f
+	github.com/sirupsen/logrus v1.9.3
 	github.com/stretchr/testify v1.11.1
 	go.k6.io/k6/v2 v2.0.0-00010101000000-000000000000
 	go.opentelemetry.io/otel v1.45.0
@@ -32,7 +33,6 @@ require (
 	github.com/mstoykov/atlas v0.0.0-20220811071828-388f114305dd // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/serenize/snaker v0.0.0-20201027110005-a7ad2135616e // indirect
-	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/spf13/afero v1.1.2 // indirect
 	go.opentelemetry.io/auto/sdk v1.2.1 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.44.0 // indirect
