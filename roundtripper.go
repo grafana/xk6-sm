@@ -3,15 +3,23 @@ package tracing
 import (
 	"context"
 	"net/http"
-	"sync"
 	"sync/atomic"
 
+	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/trace"
 
 	"go.k6.io/k6/v2/js/modules"
+	"go.k6.io/k6/v2/lib"
 )
+
+// spanState pairs a started span with the context carrying it, so it can
+// both parent further spans (ctx) and be ended later (span).
+type spanState struct {
+	ctx  context.Context
+	span trace.Span
+}
 
 // tracingRoundTripper wraps an http.RoundTripper, starting an OTel client
 // span for every request that passes through it, injecting a W3C
@@ -22,14 +30,16 @@ import (
 // ensureWrapped in tracing.go) - lib.State.Transport is the single choke
 // point all k6/http traffic passes through.
 //
-// Root span model: if K6_TRACE_PARENT is set, every request in every VU
-// becomes a child of that one external span, forming a single trace for the
-// whole run. Otherwise, each VU's first request becomes that VU's own root
-// span, and every later request in the same VU becomes a child of it - one
-// trace per VU, distinguishable via the k6.vu.id attribute. The root span is
-// an ordinary request span like any other (ended normally via defer
-// span.End() in its own RoundTrip call), so there's no separate span whose
-// lifecycle needs managing.
+// Span hierarchy: a "vu" span spans this VU's entire lifetime (vuRoot,
+// started here at construction time - i.e. the VU's first IterStart - and
+// ended by endVURoot when the run's Exit event fires); an "iteration" span
+// spans one IterStart..IterEnd pair (iter, via startIteration/endIteration,
+// called from tracing.go's event handlers); and a request span like any
+// other is created per HTTP request, parented under whichever iteration
+// span is currently open. If K6_TRACE_PARENT is set, there is no vuRoot at
+// all: every iteration span becomes a direct child of that one external
+// span instead, forming a single trace for the whole run regardless of VU
+// count, same as before iteration spans existed.
 type tracingRoundTripper struct {
 	next   http.RoundTripper
 	tracer trace.Tracer
@@ -38,14 +48,16 @@ type tracingRoundTripper struct {
 	parentCtx context.Context
 	hasParent bool
 
-	// rootOnce/rootCtx implement the per-VU root-span rendezvous described
-	// above. Concurrent first requests within the same VU (e.g. from
-	// http.batch()) may race to become the root; sync.Once guarantees
-	// exactly one winner is recorded, though a batch's concurrent opening
-	// requests may occasionally each start as independent roots before the
-	// winner is recorded - a known, accepted v1 limitation.
-	rootOnce sync.Once
-	rootCtx  atomic.Value // holds context.Context, set once by rootOnce
+	// vuRoot is this VU's root span, set once at construction time and
+	// never reassigned; nil when hasParent, since the external parent
+	// already unifies every VU into one trace.
+	vuRoot *spanState
+
+	// iter holds the currently open iteration span, if any - set by
+	// startIteration at IterStart, cleared (and ended) by endIteration at
+	// the matching IterEnd. nil between iterations, and before the first
+	// one (e.g. during setup()/teardown(), which don't emit IterStart).
+	iter atomic.Pointer[spanState]
 }
 
 func newTracingRoundTripper(
@@ -53,14 +65,22 @@ func newTracingRoundTripper(
 	tracer trace.Tracer,
 	vu modules.VU,
 	parentCtx context.Context,
+	state *lib.State,
 ) *tracingRoundTripper {
-	return &tracingRoundTripper{
+	t := &tracingRoundTripper{
 		next:      next,
 		tracer:    tracer,
 		vu:        vu,
 		parentCtx: parentCtx,
 		hasParent: trace.SpanContextFromContext(parentCtx).IsValid(),
 	}
+
+	if !t.hasParent {
+		ctx, span := tracer.Start(vu.Context(), "vu", trace.WithAttributes(k6Attributes(state)...))
+		t.vuRoot = &spanState{ctx: ctx, span: span}
+	}
+
+	return t
 }
 
 // RoundTrip starts a span for req, propagates it downstream via a
@@ -71,10 +91,6 @@ func (t *tracingRoundTripper) RoundTrip(req *http.Request) (*http.Response, erro
 	// per-request timeout added by k6's own request pipeline).
 	ctx, span := t.tracer.Start(t.parentFor(req.Context()), spanName(req), trace.WithSpanKind(trace.SpanKindClient))
 	defer span.End()
-
-	if !t.hasParent {
-		t.rootOnce.Do(func() { t.rootCtx.Store(ctx) })
-	}
 
 	span.SetAttributes(requestAttributes(req)...)
 	if state := t.vu.State(); state != nil {
@@ -100,30 +116,76 @@ func (t *tracingRoundTripper) RoundTrip(req *http.Request) (*http.Response, erro
 	return resp, nil
 }
 
+// startIteration starts a new "iteration" span, parented under
+// iterationParent(baseCtx), and stores it as the currently open iteration.
+func (t *tracingRoundTripper) startIteration(baseCtx context.Context, attrs []attribute.KeyValue) {
+	ctx, span := t.tracer.Start(t.iterationParent(baseCtx), "iteration", trace.WithAttributes(attrs...))
+	t.iter.Store(&spanState{ctx: ctx, span: span})
+}
+
+// endIteration ends the currently open iteration span, if any, marking it as
+// an error span if err is non-nil (the iteration itself failed - e.g. an
+// uncaught script exception).
+func (t *tracingRoundTripper) endIteration(err error) {
+	v := t.iter.Swap(nil)
+	if v == nil {
+		return
+	}
+	if err != nil {
+		v.span.RecordError(err)
+		v.span.SetStatus(codes.Error, err.Error())
+	}
+	v.span.End()
+}
+
+// endVURoot ends this VU's root span, if one was created (i.e. K6_TRACE_PARENT
+// wasn't set). Called once, from tracing.go's Exit handler.
+func (t *tracingRoundTripper) endVURoot() {
+	if t.vuRoot == nil {
+		return
+	}
+	t.vuRoot.span.End()
+}
+
+// iterationParent returns the context an iteration span (or, if none is
+// open, a request/manual span) should be parented under: the externally
+// supplied parent (K6_TRACE_PARENT) if one was given, this VU's root span
+// otherwise, or baseCtx unchanged if neither exists (shouldn't normally
+// happen outside of setup()/teardown(), which don't emit IterStart).
+func (t *tracingRoundTripper) iterationParent(baseCtx context.Context) context.Context {
+	switch {
+	case t.hasParent:
+		return trace.ContextWithRemoteSpanContext(baseCtx, trace.SpanContextFromContext(t.parentCtx))
+	case t.vuRoot != nil:
+		return trace.ContextWithSpanContext(baseCtx, trace.SpanContextFromContext(t.vuRoot.ctx))
+	default:
+		return baseCtx
+	}
+}
+
 // parentFor returns the context tracer.Start should use for req: the
-// externally supplied parent (K6_TRACE_PARENT) if one was given, this VU's
-// already-established root span if one exists yet, or reqCtx unchanged
-// (letting Start create a fresh root span) otherwise.
+// currently open iteration span, or - if none is open - the same fallback
+// iterationParent uses for the iteration span itself.
 func (t *tracingRoundTripper) parentFor(reqCtx context.Context) context.Context {
-	if t.hasParent {
-		return trace.ContextWithRemoteSpanContext(reqCtx, trace.SpanContextFromContext(t.parentCtx))
+	if v := t.iter.Load(); v != nil {
+		return trace.ContextWithSpanContext(reqCtx, trace.SpanContextFromContext(v.ctx))
 	}
-	if root, ok := t.rootCtx.Load().(context.Context); ok {
-		return trace.ContextWithSpanContext(reqCtx, trace.SpanContextFromContext(root))
-	}
-	return reqCtx
+	return t.iterationParent(reqCtx)
 }
 
 // currentContext returns this VU's current trace context for callers
-// outside of RoundTrip (StartSpan, CurrentTraceparent): the externally
-// supplied parent if one was given, this VU's established root span if any
-// request has been made yet, or a context with no span otherwise.
+// outside of RoundTrip (StartSpan, CurrentTraceparent): the currently open
+// iteration span, the externally supplied parent, this VU's root span, or a
+// context with no span, in that order of preference.
 func (t *tracingRoundTripper) currentContext() context.Context {
+	if v := t.iter.Load(); v != nil {
+		return v.ctx
+	}
 	if t.hasParent {
 		return t.parentCtx
 	}
-	if root, ok := t.rootCtx.Load().(context.Context); ok {
-		return root
+	if t.vuRoot != nil {
+		return t.vuRoot.ctx
 	}
 	return context.Background()
 }

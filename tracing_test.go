@@ -9,7 +9,8 @@ import (
 	"github.com/grafana/sobek"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
-	"go.opentelemetry.io/otel/trace/noop"
+	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/sdk/trace/tracetest"
 
 	"go.k6.io/k6/v2/event"
 	"go.k6.io/k6/v2/js/common"
@@ -18,13 +19,17 @@ import (
 )
 
 // newModuleTestState builds on newTestState (roundtripper_test.go) with a
-// TracerProvider, needed here since ensureWrapped (unlike the roundtripper
-// tests, which construct tracingRoundTripper directly with an explicit
-// tracer) calls state.TracerProvider.Tracer(...) itself.
-func newModuleTestState() *lib.State {
+// real, in-memory-exporter-backed TracerProvider, needed here since
+// ensureWrapped (unlike the roundtripper tests, which construct
+// tracingRoundTripper directly with an explicit tracer) calls
+// state.TracerProvider.Tracer(...) itself, and these tests assert on the
+// spans actually produced through the full event-driven path.
+func newModuleTestState(t *testing.T) (*lib.State, *tracetest.InMemoryExporter) {
+	t.Helper()
+	tp, exporter := newTestTracerProvider(t)
 	state := newTestState()
-	state.TracerProvider = noop.NewTracerProvider()
-	return state
+	state.TracerProvider = tp
+	return state, exporter
 }
 
 // fakeSubscriber is a minimal, self-contained implementation of
@@ -138,7 +143,8 @@ var _ modules.VU = (*instrumentedFakeVU)(nil)
 func TestNewModuleInstance_WrapsTransportOnIterStart(t *testing.T) {
 	t.Parallel()
 
-	vu := &instrumentedFakeVU{state: newModuleTestState()}
+	state, _ := newModuleTestState(t)
+	vu := &instrumentedFakeVU{state: state}
 	root := New()
 	instance := root.NewModuleInstance(vu)
 	inst, ok := instance.(*Instance)
@@ -157,7 +163,8 @@ func TestNewModuleInstance_WrapsTransportOnIterStart(t *testing.T) {
 func TestNewModuleInstance_ExitUnsubscribesEventSubscriptions(t *testing.T) {
 	t.Parallel()
 
-	vu := &instrumentedFakeVU{state: newModuleTestState()}
+	state, _ := newModuleTestState(t)
+	vu := &instrumentedFakeVU{state: state}
 	root := New()
 	root.NewModuleInstance(vu)
 
@@ -174,7 +181,8 @@ func TestNewModuleInstance_ExitUnsubscribesEventSubscriptions(t *testing.T) {
 func TestNewModuleInstance_ExitWithoutIterationDoesNotHang(t *testing.T) {
 	t.Parallel()
 
-	vu := &instrumentedFakeVU{state: newModuleTestState()}
+	state, _ := newModuleTestState(t)
+	vu := &instrumentedFakeVU{state: state}
 	root := New()
 	instance := root.NewModuleInstance(vu)
 	inst, ok := instance.(*Instance)
@@ -187,3 +195,65 @@ func TestNewModuleInstance_ExitWithoutIterationDoesNotHang(t *testing.T) {
 	}, 5*time.Second, 10*time.Millisecond)
 	require.Nil(t, inst.rt, "no iteration ever ran, so nothing should have been wrapped")
 }
+
+func TestNewModuleInstance_IterationSpanLifecycle(t *testing.T) {
+	t.Parallel()
+
+	state, exporter := newModuleTestState(t)
+	vu := &instrumentedFakeVU{state: state}
+	root := New()
+	root.NewModuleInstance(vu)
+
+	vu.local.emit(t, &event.Event{Type: event.IterStart, Data: event.IterData{VUID: 1, Iteration: 0}})
+	vu.local.emit(t, &event.Event{Type: event.IterEnd, Data: event.IterData{VUID: 1, Iteration: 0}})
+
+	spans := exporter.GetSpans()
+	require.Len(t, spans, 1, "expected exactly one exported span: the ended iteration")
+	iterSpan := spans[0]
+	require.Equal(t, "iteration", iterSpan.Name)
+
+	attrs := map[string]string{}
+	for _, kv := range iterSpan.Attributes {
+		attrs[string(kv.Key)] = kv.Value.Emit()
+	}
+	require.Equal(t, "1", attrs["k6.vu.id"])
+
+	vu.global.emit(t, &event.Event{Type: event.Exit})
+
+	spans = exporter.GetSpans()
+	require.Len(t, spans, 2, "expected the VU-root span to be exported once Exit ends it")
+
+	var vuRootSpan *tracetest.SpanStub
+	for i := range spans {
+		if spans[i].Name == "vu" {
+			vuRootSpan = &spans[i]
+		}
+	}
+	require.NotNil(t, vuRootSpan, "expected an exported \"vu\" root span")
+	require.Equal(t, vuRootSpan.SpanContext.TraceID(), iterSpan.SpanContext.TraceID(),
+		"the iteration span should share its trace ID with the VU root")
+	require.Equal(t, vuRootSpan.SpanContext.SpanID(), iterSpan.Parent.SpanID(),
+		"the iteration span's parent should be the VU root")
+}
+
+func TestNewModuleInstance_IterationErrorMarksSpanFailed(t *testing.T) {
+	t.Parallel()
+
+	state, exporter := newModuleTestState(t)
+	vu := &instrumentedFakeVU{state: state}
+	root := New()
+	root.NewModuleInstance(vu)
+
+	vu.local.emit(t, &event.Event{Type: event.IterStart, Data: event.IterData{VUID: 1}})
+	vu.local.emit(t, &event.Event{Type: event.IterEnd, Data: event.IterData{VUID: 1, Error: assertAnError{}}})
+
+	spans := exporter.GetSpans()
+	require.Len(t, spans, 1)
+	require.Equal(t, codes.Error, spans[0].Status.Code)
+}
+
+// assertAnError is a trivial error used to exercise the IterData.Error path
+// without depending on testify's assert package here.
+type assertAnError struct{}
+
+func (assertAnError) Error() string { return "boom" }

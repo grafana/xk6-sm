@@ -141,22 +141,40 @@ spans on shutdown.
 
 ## Trace/span model
 
-- **No `K6_TRACE_PARENT`**: each VU's first HTTP request becomes that VU's
-  own root span; every later request in the same VU becomes a child of it.
-  Result: one independent trace per VU, distinguishable via the `k6.vu.id`
-  attribute. There's no shared span whose lifecycle needs managing — the
-  "root" is just an ordinary request span, ended normally like any other.
-- **With `K6_TRACE_PARENT`**: every VU's requests become children of that
-  one external span instead, forming a single trace across the whole run
-  regardless of VU count.
-- **Span naming**: `<METHOD> <host>` (e.g. `GET example.com`), not the full
-  URL, to avoid unbounded span-name cardinality from path/query variation.
+Spans form a three-level hierarchy:
+
+```
+"vu" (VU root, spans this VU's whole lifetime)
+  └─ "iteration" (spans one IterStart..IterEnd pair)
+       └─ "<METHOD> <host>" (one per http.get/post/...)
+```
+
+- **No `K6_TRACE_PARENT`**: a `"vu"` root span is created once per VU, at its
+  first iteration, and ended when the run's `Exit` event fires — giving
+  **one trace per VU** for the whole run, distinguishable via the `k6.vu.id`
+  attribute. Every iteration gets its own `"iteration"` span nested under
+  that root, and every HTTP request made during that iteration becomes a
+  child of it. An iteration that throws is recorded as an error span
+  (`event.IterData.Error`).
+- **With `K6_TRACE_PARENT`**: there's no `"vu"` root span at all — every
+  iteration's span becomes a direct child of that one external span
+  instead, forming a single trace across the whole run regardless of VU
+  count, same as without iteration spans.
+- **Span naming**: `<METHOD> <host>` (e.g. `GET example.com`) for request
+  spans, not the full URL, to avoid unbounded span-name cardinality from
+  path/query variation.
 - **Redirects and `http.batch()`**: each hop/request gets its own span,
-  correctly parented.
-- **Span timing**: coarse-grained — span duration is the request's
-  round-trip wall time. k6's own detailed per-phase timings (DNS, connect,
-  TLS handshake, send, wait, receive) aren't exposed as span events in this
-  version.
+  correctly parented under the current iteration.
+- **Span timing**: coarse-grained — a request span's duration is that
+  request's round-trip wall time; an iteration span's duration is the whole
+  iteration, script code and all. k6's own detailed per-phase HTTP timings
+  (DNS, connect, TLS handshake, send, wait, receive) aren't exposed as span
+  events in this version.
+- **Known gap**: if a VU is interrupted mid-iteration (a hard timeout,
+  Ctrl+C) before `IterEnd` fires, that iteration's span - and any request
+  spans still in flight - never get ended, so they aren't exported. The
+  VU-root span still ends and exports correctly regardless, since it's
+  driven by the run's `Exit` event rather than any single iteration.
 
 ## Span attributes
 
