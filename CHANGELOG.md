@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.13](https://github.com/grafana/xk6-sm/compare/v1.1.12...v1.1.13) (2026-08-22)
+
+
+### Miscellaneous Chores
+
+* Update ghcr.io/grafana/grafana-build-tools Docker tag to v1.46.0 ([#502](https://github.com/grafana/xk6-sm/issues/502)) ([238b4c9](https://github.com/grafana/xk6-sm/commit/238b4c9b06bd6f3b57c8d9840d95e8d4b95d9220))
+
 ## [1.1.12](https://github.com/grafana/xk6-sm/compare/v1.1.11...v1.1.12) (2026-08-03)
 
 
