@@ -3,7 +3,7 @@
 //
 // Instrumentation is fully automatic: importing the module is enough. Each
 // VU subscribes to k6's per-iteration IterStart/IterEnd events and the run's
-// Exit event (go.k6.io/k6/v2/event), and installs the tracing RoundTripper
+// Exit event (go.k6.io/k6/v2/x/events), and installs the tracing RoundTripper
 // on state.Transport before the IterStart event's wait completes, which k6
 // guarantees happens before the very first line of the VU's iteration
 // function runs - see ensureWrapped and watchEvents below. No script-side
@@ -31,8 +31,8 @@ import (
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/trace"
 
-	"go.k6.io/k6/v2/event"
 	"go.k6.io/k6/v2/js/modules"
+	"go.k6.io/k6/v2/x/events"
 )
 
 func init() {
@@ -100,8 +100,8 @@ func (i *Instance) Exports() modules.Exports {
 // the per-iteration span lifecycle, and eventual cleanup. Called once per
 // VU, from NewModuleInstance.
 func (i *Instance) watchEvents() {
-	exitSubID, exitCh := i.vu.Events().Global.Subscribe(event.Exit)
-	iterSubID, iterCh := i.vu.Events().Local.Subscribe(event.IterStart, event.IterEnd)
+	exitSubID, exitCh := i.vu.Events().Global.Subscribe(events.Exit)
+	iterSubID, iterCh := i.vu.Events().Local.Subscribe(events.IterStart, events.IterEnd)
 
 	unsubscribe := func() {
 		i.vu.Events().Local.Unsubscribe(iterSubID)
@@ -122,13 +122,13 @@ func (i *Instance) watchEvents() {
 // starts. ensureWrapped's sync.Once makes the actual transport wrap happen
 // only once per VU; every IterStart after that just starts a fresh
 // iteration span.
-func (i *Instance) handleIterEvents(iterCh <-chan *event.Event) {
+func (i *Instance) handleIterEvents(iterCh <-chan *events.Event) {
 	for evt := range iterCh {
 		switch evt.Type {
-		case event.IterStart:
+		case events.IterStart:
 			i.ensureWrapped()
 			i.startIterationSpan()
-		case event.IterEnd:
+		case events.IterEnd:
 			i.endIterationSpan(evt)
 		}
 		evt.Done()
@@ -149,12 +149,12 @@ func (i *Instance) startIterationSpan() {
 }
 
 // endIterationSpan ends this iteration's span, marking it as an error span
-// if the iteration itself failed (evt.Data.(event.IterData).Error).
-func (i *Instance) endIterationSpan(evt *event.Event) {
+// if the iteration itself failed (evt.Data.(events.IterData).Error).
+func (i *Instance) endIterationSpan(evt *events.Event) {
 	if i.rt == nil {
 		return
 	}
-	data, _ := evt.Data.(event.IterData)
+	data, _ := evt.Data.(events.IterData)
 	i.rt.endIteration(data.Error)
 }
 
@@ -170,8 +170,8 @@ func (i *Instance) endIterationSpan(evt *event.Event) {
 // module uses for the same reason: it prevents a concurrent Exit emission
 // from being delivered to an already-exited goroutine, which would leave
 // Done uncalled and the emitter's wait blocked.
-func (i *Instance) handleExit(exitCh <-chan *event.Event, unsubscribe func()) {
-	var evt *event.Event
+func (i *Instance) handleExit(exitCh <-chan *events.Event, unsubscribe func()) {
+	var evt *events.Event
 	defer func() {
 		if evt != nil {
 			evt.Done()

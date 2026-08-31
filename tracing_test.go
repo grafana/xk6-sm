@@ -12,10 +12,10 @@ import (
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/sdk/trace/tracetest"
 
-	"go.k6.io/k6/v2/event"
 	"go.k6.io/k6/v2/js/common"
 	"go.k6.io/k6/v2/js/modules"
 	"go.k6.io/k6/v2/lib"
+	"go.k6.io/k6/v2/x/events"
 )
 
 // newModuleTestState builds on newTestState (roundtripper_test.go) with a
@@ -33,24 +33,24 @@ func newModuleTestState(t *testing.T) (*lib.State, *tracetest.InMemoryExporter) 
 }
 
 // fakeSubscriber is a minimal, self-contained implementation of
-// event.Subscriber (the interface behind vu.Events().Local/Global). It lets
+// events.Subscriber (the interface behind vu.Events().Local/Global). It lets
 // tests emit events directly, without depending on k6's internal dispatcher,
 // which this module can't import.
 type fakeSubscriber struct {
 	mu     sync.Mutex
 	nextID uint64
-	subs   map[uint64]chan *event.Event
+	subs   map[uint64]chan *events.Event
 }
 
-func (f *fakeSubscriber) Subscribe(_ ...event.Type) (uint64, <-chan *event.Event) {
+func (f *fakeSubscriber) Subscribe(_ ...events.Type) (uint64, <-chan *events.Event) {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 
 	f.nextID++
 	id := f.nextID
-	ch := make(chan *event.Event, 1)
+	ch := make(chan *events.Event, 1)
 	if f.subs == nil {
-		f.subs = make(map[uint64]chan *event.Event)
+		f.subs = make(map[uint64]chan *events.Event)
 	}
 	f.subs[id] = ch
 	return id, ch
@@ -69,11 +69,11 @@ func (f *fakeSubscriber) Unsubscribe(subID uint64) {
 // emit sends evt to every current subscriber and waits (with a test-scale
 // timeout) for each to call Done, mirroring the blocking contract k6's real
 // dispatcher provides via emitAndWaitEvent.
-func (f *fakeSubscriber) emit(t *testing.T, evt *event.Event) {
+func (f *fakeSubscriber) emit(t *testing.T, evt *events.Event) {
 	t.Helper()
 
 	f.mu.Lock()
-	chans := make([]chan *event.Event, 0, len(f.subs))
+	chans := make([]chan *events.Event, 0, len(f.subs))
 	for _, ch := range f.subs {
 		chans = append(chans, ch)
 	}
@@ -109,7 +109,7 @@ func (f *fakeSubscriber) subscriptionCount() int {
 	return len(f.subs)
 }
 
-var _ event.Subscriber = (*fakeSubscriber)(nil)
+var _ events.Subscriber = (*fakeSubscriber)(nil)
 
 // instrumentedFakeVU implements modules.VU with working Local/Global event
 // subscribers, so tests can exercise NewModuleInstance's automatic
@@ -152,7 +152,7 @@ func TestNewModuleInstance_WrapsTransportOnIterStart(t *testing.T) {
 
 	require.Nil(t, vu.state.Transport, "transport should be untouched before IterStart")
 
-	vu.local.emit(t, &event.Event{Type: event.IterStart, Data: event.IterData{VUID: 1}})
+	vu.local.emit(t, &events.Event{Type: events.IterStart, Data: events.IterData{VUID: 1}})
 
 	require.NotNil(t, vu.state.Transport, "expected IterStart to trigger the automatic wrap")
 	_, ok = vu.state.Transport.(*tracingRoundTripper)
@@ -171,7 +171,7 @@ func TestNewModuleInstance_ExitUnsubscribesEventSubscriptions(t *testing.T) {
 	require.Equal(t, 1, vu.local.subscriptionCount())
 	require.Equal(t, 1, vu.global.subscriptionCount())
 
-	vu.global.emit(t, &event.Event{Type: event.Exit})
+	vu.global.emit(t, &events.Event{Type: events.Exit})
 
 	require.Eventually(t, func() bool {
 		return vu.local.subscriptionCount() == 0 && vu.global.subscriptionCount() == 0
@@ -188,7 +188,7 @@ func TestNewModuleInstance_ExitWithoutIterationDoesNotHang(t *testing.T) {
 	inst, ok := instance.(*Instance)
 	require.True(t, ok)
 
-	vu.global.emit(t, &event.Event{Type: event.Exit})
+	vu.global.emit(t, &events.Event{Type: events.Exit})
 
 	require.Eventually(t, func() bool {
 		return vu.local.subscriptionCount() == 0 && vu.global.subscriptionCount() == 0
@@ -204,8 +204,8 @@ func TestNewModuleInstance_IterationSpanLifecycle(t *testing.T) {
 	root := New()
 	root.NewModuleInstance(vu)
 
-	vu.local.emit(t, &event.Event{Type: event.IterStart, Data: event.IterData{VUID: 1, Iteration: 0}})
-	vu.local.emit(t, &event.Event{Type: event.IterEnd, Data: event.IterData{VUID: 1, Iteration: 0}})
+	vu.local.emit(t, &events.Event{Type: events.IterStart, Data: events.IterData{VUID: 1, Iteration: 0}})
+	vu.local.emit(t, &events.Event{Type: events.IterEnd, Data: events.IterData{VUID: 1, Iteration: 0}})
 
 	spans := exporter.GetSpans()
 	require.Len(t, spans, 1, "expected exactly one exported span: the ended iteration")
@@ -218,7 +218,7 @@ func TestNewModuleInstance_IterationSpanLifecycle(t *testing.T) {
 	}
 	require.Equal(t, "1", attrs["k6.vu.id"])
 
-	vu.global.emit(t, &event.Event{Type: event.Exit})
+	vu.global.emit(t, &events.Event{Type: events.Exit})
 
 	spans = exporter.GetSpans()
 	require.Len(t, spans, 2, "expected the VU-root span to be exported once Exit ends it")
@@ -244,8 +244,8 @@ func TestNewModuleInstance_IterationErrorMarksSpanFailed(t *testing.T) {
 	root := New()
 	root.NewModuleInstance(vu)
 
-	vu.local.emit(t, &event.Event{Type: event.IterStart, Data: event.IterData{VUID: 1}})
-	vu.local.emit(t, &event.Event{Type: event.IterEnd, Data: event.IterData{VUID: 1, Error: assertAnError{}}})
+	vu.local.emit(t, &events.Event{Type: events.IterStart, Data: events.IterData{VUID: 1}})
+	vu.local.emit(t, &events.Event{Type: events.IterEnd, Data: events.IterData{VUID: 1, Error: assertAnError{}}})
 
 	spans := exporter.GetSpans()
 	require.Len(t, spans, 1)

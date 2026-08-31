@@ -50,11 +50,11 @@ See [`examples/basic.js`](examples/basic.js) for a fuller walkthrough
 Importing `k6/x/tracing` is enough — every `http.get/post/...` call in every
 VU is instrumented from the very first iteration, with no script-side setup
 call required. Each VU subscribes to k6's `IterStart` event
-(`go.k6.io/k6/v2/event`) and installs the tracing `RoundTripper` on
+(`go.k6.io/k6/v2/x/events`) and installs the tracing `RoundTripper` on
 `state.Transport` before that event's wait completes, which k6 guarantees
 happens before the VU's iteration function runs.
 
-This relies on `go.k6.io/k6/v2/event` being a **public** package, so external
+This relies on `go.k6.io/k6/v2/x/events` being a **public** package, so external
 modules can import the event types without reaching into k6's `internal/`
 tree. That's only true today on the local `../k6` checkout this extension is
 built against (branch `mem/split-event-package`) — it isn't part of any
