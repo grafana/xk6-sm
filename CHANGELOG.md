@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.1.14](https://github.com/grafana/xk6-sm/compare/v1.1.13...v1.1.14) (2026-09-07)
+
+
+### Miscellaneous Chores
+
+* Update ghcr.io/grafana/grafana-build-tools Docker tag to v1.47.0 ([#518](https://github.com/grafana/xk6-sm/issues/518)) ([a0995c4](https://github.com/grafana/xk6-sm/commit/a0995c48f15d0f131a8931f9a0476aa46fdeb4de))
+* Update go toolchain directive to v1.26.6 [SECURITY] ([#506](https://github.com/grafana/xk6-sm/issues/506)) ([3afe3aa](https://github.com/grafana/xk6-sm/commit/3afe3aafa06f623649de7f0ce271aeead5023562))
+* Update module github.com/grafana/gsm-api-go-client to v0.3.4 ([#509](https://github.com/grafana/xk6-sm/issues/509)) ([5d3435d](https://github.com/grafana/xk6-sm/commit/5d3435def9e33d75a0eb1881afe8170cff89070f))
+* Update module github.com/sirupsen/logrus to v1.10.2 ([#519](https://github.com/grafana/xk6-sm/issues/519)) ([cc0dfb2](https://github.com/grafana/xk6-sm/commit/cc0dfb241c14bf04e7b7ceee87356c30e03e6c2e))
+* Update module github.com/stretchr/testify to v1.12.1 ([#520](https://github.com/grafana/xk6-sm/issues/520)) ([987f59e](https://github.com/grafana/xk6-sm/commit/987f59e1f84db7b927474cb19a0c64ed657a6a26))
+* Update module go.k6.io/k6 to v1.8.1 ([#510](https://github.com/grafana/xk6-sm/issues/510)) ([9adc1e6](https://github.com/grafana/xk6-sm/commit/9adc1e68cb7d8391f7c5c9ae3d376381966000fd))
+* Update module google.golang.org/grpc to v1.83.1 [SECURITY] ([#522](https://github.com/grafana/xk6-sm/issues/522)) ([152c07f](https://github.com/grafana/xk6-sm/commit/152c07fcb0a141eea476fae7b46ba302ddddbe21))
+* Update prometheus-go ([#524](https://github.com/grafana/xk6-sm/issues/524)) ([b7b9ea5](https://github.com/grafana/xk6-sm/commit/b7b9ea5eb626cef3972d576c0195480c0a26f1d6))
+
 ## [1.1.13](https://github.com/grafana/xk6-sm/compare/v1.1.12...v1.1.13) (2026-08-22)
 
 
