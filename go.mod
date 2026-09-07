@@ -2,7 +2,7 @@ module github.com/grafana/xk6-sm/v2
 
 go 1.25.0
 
-toolchain go1.26.6
+toolchain go1.27.1
 
 require (
 	github.com/cenkalti/backoff/v7 v7.0.0
