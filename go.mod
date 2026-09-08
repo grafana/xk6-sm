@@ -1,6 +1,6 @@
 module github.com/grafana/xk6-sm
 
-go 1.25.0
+go 1.26.0
 
 toolchain go1.26.6
 
@@ -15,7 +15,7 @@ require (
 	github.com/spf13/afero v1.15.0
 	github.com/stretchr/testify v1.12.1
 	go.k6.io/k6 v1.8.1
-	golang.org/x/time v0.15.0
+	golang.org/x/time v0.16.0
 )
 
 require (
