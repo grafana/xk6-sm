@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.1.15](https://github.com/grafana/xk6-sm/compare/v1.1.14...v1.1.15) (2026-09-09)
+
+
+### Miscellaneous Chores
+
+* Update ghcr.io/grafana/grafana-build-tools Docker tag to v1.47.1 ([#532](https://github.com/grafana/xk6-sm/issues/532)) ([0f0c80b](https://github.com/grafana/xk6-sm/commit/0f0c80b450eb65957ee13870e7d861772ca795ed))
+* Update module golang.org/x/time to v0.16.0 ([#526](https://github.com/grafana/xk6-sm/issues/526)) ([da9cc83](https://github.com/grafana/xk6-sm/commit/da9cc833c3e3cd9262b19c4526e8219d5a0194fe))
+* Update module google.golang.org/grpc to v1.83.2 [SECURITY] ([#528](https://github.com/grafana/xk6-sm/issues/528)) ([939a3c6](https://github.com/grafana/xk6-sm/commit/939a3c69f6ab666570507bbfb9aa271e13af9102))
+
 ## [1.1.14](https://github.com/grafana/xk6-sm/compare/v1.1.13...v1.1.14) (2026-09-07)
 
 
