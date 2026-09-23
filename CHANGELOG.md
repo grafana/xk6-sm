@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.1.15](https://github.com/grafana/xk6-sm/compare/v1.1.14...v1.1.15) (2026-09-23)
+
+
+### Miscellaneous Chores
+
+* Update ghcr.io/grafana/grafana-build-tools Docker tag to v1.47.1 ([#532](https://github.com/grafana/xk6-sm/issues/532)) ([0f0c80b](https://github.com/grafana/xk6-sm/commit/0f0c80b450eb65957ee13870e7d861772ca795ed))
+* Update module github.com/grafana/gsm-api-go-client to v0.3.5 ([#534](https://github.com/grafana/xk6-sm/issues/534)) ([e91af93](https://github.com/grafana/xk6-sm/commit/e91af93fab0531386544a84236e6c0a0c85ff51c))
+* Update module go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc to v1.45.0 [SECURITY] ([#541](https://github.com/grafana/xk6-sm/issues/541)) ([1b0e1eb](https://github.com/grafana/xk6-sm/commit/1b0e1ebda8faa5b2bc71ad9e1b8e54d22582f351))
+* Update module go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp to v1.45.0 [SECURITY] ([#542](https://github.com/grafana/xk6-sm/issues/542)) ([814cdc1](https://github.com/grafana/xk6-sm/commit/814cdc14aa7da538a609a9990f0b633cc2d821fd))
+* Update module go.opentelemetry.io/otel/sdk to v1.45.0 [SECURITY] ([#543](https://github.com/grafana/xk6-sm/issues/543)) ([39af602](https://github.com/grafana/xk6-sm/commit/39af602d78e7be50cc9b881805ac1b1f2b3d3770))
+* Update module golang.org/x/time to v0.16.0 ([#526](https://github.com/grafana/xk6-sm/issues/526)) ([da9cc83](https://github.com/grafana/xk6-sm/commit/da9cc833c3e3cd9262b19c4526e8219d5a0194fe))
+* Update module google.golang.org/grpc to v1.83.2 [SECURITY] ([#528](https://github.com/grafana/xk6-sm/issues/528)) ([939a3c6](https://github.com/grafana/xk6-sm/commit/939a3c69f6ab666570507bbfb9aa271e13af9102))
+
 ## [1.1.14](https://github.com/grafana/xk6-sm/compare/v1.1.13...v1.1.14) (2026-09-07)
 
 
