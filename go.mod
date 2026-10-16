@@ -6,7 +6,7 @@ toolchain go1.26.6
 
 require (
 	github.com/cenkalti/backoff/v5 v5.0.3
-	github.com/grafana/gsm-api-go-client v0.3.5
+	github.com/grafana/gsm-api-go-client v0.3.6
 	github.com/mstoykov/atlas v0.0.0-20220811071828-388f114305dd
 	github.com/prometheus/client_model v0.6.3
 	github.com/prometheus/common v0.72.1
