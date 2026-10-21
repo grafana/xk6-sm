@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.17](https://github.com/grafana/xk6-sm/compare/v1.1.16...v1.1.17) (2026-10-21)
+
+
+### Miscellaneous Chores
+
+* Build with Go 1.26.10 (CVE-2026-111943) ([#566](https://github.com/grafana/xk6-sm/issues/566)) ([56a8d17](https://github.com/grafana/xk6-sm/commit/56a8d17e28780fd2bd749ac1f075a8eb859ec211))
+* Update module github.com/prometheus/common to v0.72.1 (v1) ([#550](https://github.com/grafana/xk6-sm/issues/550)) ([5b48a96](https://github.com/grafana/xk6-sm/commit/5b48a96e0703287f06b5a3ba47d9e9d2c24c5586))
+
 ## [1.1.16](https://github.com/grafana/xk6-sm/compare/v1.1.15...v1.1.16) (2026-10-01)
 
 
