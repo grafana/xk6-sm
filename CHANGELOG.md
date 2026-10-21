@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.0.11](https://github.com/grafana/xk6-sm/compare/v2.0.10...v2.0.11) (2026-10-21)
+
+
+### Miscellaneous Chores
+
+* Build with Go 1.26.10 (CVE-2026-111943) ([#567](https://github.com/grafana/xk6-sm/issues/567)) ([a8112f6](https://github.com/grafana/xk6-sm/commit/a8112f62db5c4b6dfb045372115c5b9f23fe82ae))
+* Update ghcr.io/grafana/grafana-build-tools Docker tag to v1.48.1 (main) ([#546](https://github.com/grafana/xk6-sm/issues/546)) ([d5ac508](https://github.com/grafana/xk6-sm/commit/d5ac50847f122407121a7d21fcc50279d014b9cb))
+
 ## [2.0.10](https://github.com/grafana/xk6-sm/compare/v2.0.9...v2.0.10) (2026-09-22)
 
 
