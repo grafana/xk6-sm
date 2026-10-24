@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.1.18](https://github.com/grafana/xk6-sm/compare/v1.1.17...v1.1.18) (2026-10-24)
+
+
+### Miscellaneous Chores
+
+* Update actions/download-artifact action to v8.0.2 ([#558](https://github.com/grafana/xk6-sm/issues/558)) ([43b302f](https://github.com/grafana/xk6-sm/commit/43b302f10d5d769c03fe59d9ace94769d7c4c23c))
+* Update actions/upload-artifact action to v7.0.2 ([#559](https://github.com/grafana/xk6-sm/issues/559)) ([da1135c](https://github.com/grafana/xk6-sm/commit/da1135c1fff654591c3a5657d9a1355e5684a322))
+* Update ghcr.io/grafana/grafana-build-tools Docker tag to v1.49.0 ([#581](https://github.com/grafana/xk6-sm/issues/581)) ([605f32d](https://github.com/grafana/xk6-sm/commit/605f32d80c3d8d001de1564fec7d1eae317b8d37))
+* Update module github.com/grafana/gsm-api-go-client to v0.3.6 ([#561](https://github.com/grafana/xk6-sm/issues/561)) ([e2817ea](https://github.com/grafana/xk6-sm/commit/e2817eaa8c6d511b713a34c6d4d92c1ffa4b61b7))
+* Update module go.k6.io/k6 to v1.8.2 ([#580](https://github.com/grafana/xk6-sm/issues/580)) ([cd30fb4](https://github.com/grafana/xk6-sm/commit/cd30fb40e66a5c9e1e8b44790715a903330268c1))
+
 ## [1.1.17](https://github.com/grafana/xk6-sm/compare/v1.1.16...v1.1.17) (2026-10-21)
 
 
