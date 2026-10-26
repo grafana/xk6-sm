@@ -1,5 +1,23 @@
 # Changelog
 
+## [2.0.12](https://github.com/grafana/xk6-sm/compare/v2.0.11...v2.0.12) (2026-10-26)
+
+
+### Miscellaneous Chores
+
+* Update actions/download-artifact action to v8.0.2 ([#556](https://github.com/grafana/xk6-sm/issues/556)) ([2610771](https://github.com/grafana/xk6-sm/commit/2610771c806ab86685894b3a99bc7db1c78f92e0))
+* Update actions/upload-artifact action to v7.0.2 ([#557](https://github.com/grafana/xk6-sm/issues/557)) ([3680ddd](https://github.com/grafana/xk6-sm/commit/3680ddd478f4a0d48402902934443b4e4c987f29))
+* Update ghcr.io/grafana/grafana-build-tools Docker tag to v1.49.0 ([#570](https://github.com/grafana/xk6-sm/issues/570)) ([a29f6ed](https://github.com/grafana/xk6-sm/commit/a29f6ed69ddb8ece69c8bfd9c9495e07fff5934f))
+* Update google.golang.org/genproto/googleapis/api digest to ce908d2 ([#590](https://github.com/grafana/xk6-sm/issues/590)) ([db1eec1](https://github.com/grafana/xk6-sm/commit/db1eec182e83df4facdf1fd1ac71b721a38495bf))
+* Update module github.com/cenkalti/backoff/v5 to v7 ([#575](https://github.com/grafana/xk6-sm/issues/575)) ([3c94ec8](https://github.com/grafana/xk6-sm/commit/3c94ec83836965e7ab428bc900e6a026fa42c7e5))
+* Update module github.com/cenkalti/backoff/v7 to v7.0.1 ([#551](https://github.com/grafana/xk6-sm/issues/551)) ([43918e2](https://github.com/grafana/xk6-sm/commit/43918e23c7f6609854c0489f34f6844ed6ce5f38))
+* Update module github.com/grafana/gsm-api-go-client to v0.3.6 ([#560](https://github.com/grafana/xk6-sm/issues/560)) ([2d77a16](https://github.com/grafana/xk6-sm/commit/2d77a16095922be74d38c21693e6ecc5803721a4))
+* Update module github.com/grpc-ecosystem/grpc-gateway/v2 to v2.32.0 ([#565](https://github.com/grafana/xk6-sm/issues/565)) ([23ebce5](https://github.com/grafana/xk6-sm/commit/23ebce5336714c849dfc36fa3a9d97dd65ada2da))
+* Update module github.com/mattn/go-colorable to v0.1.16 ([#563](https://github.com/grafana/xk6-sm/issues/563)) ([d0556e5](https://github.com/grafana/xk6-sm/commit/d0556e5957ca15218b447ef238a933014cb4d8a6))
+* Update module github.com/prometheus/common to v0.72.1 ([#549](https://github.com/grafana/xk6-sm/issues/549)) ([ae25ed3](https://github.com/grafana/xk6-sm/commit/ae25ed38b6fd250887d46004a8767cebe0ea78d6))
+* Update module golang.org/x/net to v0.60.0 [SECURITY] ([#553](https://github.com/grafana/xk6-sm/issues/553)) ([f123dd9](https://github.com/grafana/xk6-sm/commit/f123dd90c200f2116b2699a1804ba1a8730da902))
+* Update module golang.org/x/net to v0.61.0 ([#571](https://github.com/grafana/xk6-sm/issues/571)) ([3277027](https://github.com/grafana/xk6-sm/commit/3277027fda6ecf5d62d7e12e29eab580006f2a02))
+
 ## [2.0.11](https://github.com/grafana/xk6-sm/compare/v2.0.10...v2.0.11) (2026-10-21)
 
 
