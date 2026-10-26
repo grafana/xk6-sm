@@ -1,5 +1,25 @@
 # Changelog
 
+## [1.1.18](https://github.com/grafana/xk6-sm/compare/v1.1.17...v1.1.18) (2026-10-26)
+
+
+### Miscellaneous Chores
+
+* **deps:** update grafana/shared-workflows/create-github-app-token action to v1.0 ([#589](https://github.com/grafana/xk6-sm/issues/589)) ([825e743](https://github.com/grafana/xk6-sm/commit/825e743a8a4cf324df02e3c6fe225a7106c16a38))
+* Update actions/checkout action to v7 ([#585](https://github.com/grafana/xk6-sm/issues/585)) ([cd364f5](https://github.com/grafana/xk6-sm/commit/cd364f50fd869f9022ce68c8443568c2733c309d))
+* Update actions/download-artifact action to v8.0.2 ([#558](https://github.com/grafana/xk6-sm/issues/558)) ([43b302f](https://github.com/grafana/xk6-sm/commit/43b302f10d5d769c03fe59d9ace94769d7c4c23c))
+* Update actions/upload-artifact action to v7.0.2 ([#559](https://github.com/grafana/xk6-sm/issues/559)) ([da1135c](https://github.com/grafana/xk6-sm/commit/da1135c1fff654591c3a5657d9a1355e5684a322))
+* Update ghcr.io/grafana/grafana-build-tools Docker tag to v1.49.0 ([#581](https://github.com/grafana/xk6-sm/issues/581)) ([605f32d](https://github.com/grafana/xk6-sm/commit/605f32d80c3d8d001de1564fec7d1eae317b8d37))
+* Update google.golang.org/genproto/googleapis/api digest to ce908d2 ([#592](https://github.com/grafana/xk6-sm/issues/592)) ([ae4e91e](https://github.com/grafana/xk6-sm/commit/ae4e91e720e2139f58d2a1bbfb3b47b6b899b26d))
+* Update module github.com/fatih/color to v1.19.0 ([#582](https://github.com/grafana/xk6-sm/issues/582)) ([57d7e4a](https://github.com/grafana/xk6-sm/commit/57d7e4a48640031972dd4a6894c3dfd551407188))
+* Update module github.com/grafana/gsm-api-go-client to v0.3.6 ([#561](https://github.com/grafana/xk6-sm/issues/561)) ([e2817ea](https://github.com/grafana/xk6-sm/commit/e2817eaa8c6d511b713a34c6d4d92c1ffa4b61b7))
+* Update module github.com/grpc-ecosystem/grpc-gateway/v2 to v2.32.0 ([#583](https://github.com/grafana/xk6-sm/issues/583)) ([5628e84](https://github.com/grafana/xk6-sm/commit/5628e8488ce845f44bf21518289fed5fc423656f))
+* Update module github.com/mailru/easyjson to v0.9.2 ([#577](https://github.com/grafana/xk6-sm/issues/577)) ([58655c6](https://github.com/grafana/xk6-sm/commit/58655c6fc9a0e1f37c308265fcf5660a716664db))
+* Update module github.com/mattn/go-colorable to v0.1.16 ([#578](https://github.com/grafana/xk6-sm/issues/578)) ([59ad889](https://github.com/grafana/xk6-sm/commit/59ad8891268bf6c71e94458047f5b8de64851195))
+* Update module github.com/mattn/go-isatty to v0.0.24 ([#579](https://github.com/grafana/xk6-sm/issues/579)) ([aefc668](https://github.com/grafana/xk6-sm/commit/aefc66860c77a6e6322ba67d62c1aa2e00020e17))
+* Update module go.k6.io/k6 to v1.8.2 ([#580](https://github.com/grafana/xk6-sm/issues/580)) ([cd30fb4](https://github.com/grafana/xk6-sm/commit/cd30fb40e66a5c9e1e8b44790715a903330268c1))
+* Update otel-go ([#584](https://github.com/grafana/xk6-sm/issues/584)) ([edfafcc](https://github.com/grafana/xk6-sm/commit/edfafcc48a0b965bb609a7d522bedbdb57574173))
+
 ## [1.1.17](https://github.com/grafana/xk6-sm/compare/v1.1.16...v1.1.17) (2026-10-21)
 
 
