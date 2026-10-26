@@ -5,7 +5,7 @@ package sm
 
 import (
 	"github.com/grafana/xk6-sm/internal/secrets"
-	"go.k6.io/k6/secretsource"
+	"go.k6.io/k6/v2/secretsource"
 )
 
 func init() { //nolint:gochecknoinits // This is how k6 extensions work.
