@@ -47,5 +47,5 @@ require (
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20261019180522-ce908d29299b // indirect
 	google.golang.org/grpc v1.84.0 // indirect
 	google.golang.org/protobuf v1.36.12 // indirect
-	gopkg.in/guregu/null.v3 v3.5.0 // indirect
+	gopkg.in/guregu/null.v6 v6.0.0 // indirect
 )
