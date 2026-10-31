@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.19](https://github.com/grafana/xk6-sm/compare/v1.1.18...v1.1.19) (2026-10-31)
+
+
+### Miscellaneous Chores
+
+* Update module golang.org/x/net to v0.62.0 [SECURITY] (v1) ([#597](https://github.com/grafana/xk6-sm/issues/597)) ([d6c01df](https://github.com/grafana/xk6-sm/commit/d6c01dfe5ef52b0e272a821885f3d77610fdb426))
+
 ## [1.1.18](https://github.com/grafana/xk6-sm/compare/v1.1.17...v1.1.18) (2026-10-26)
 
 
