@@ -1,5 +1,21 @@
 # Changelog
 
+## [2.0.13](https://github.com/grafana/xk6-sm/compare/v2.0.12...v2.0.13) (2026-11-03)
+
+
+### Miscellaneous Chores
+
+* Update ghcr.io/grafana/grafana-build-tools Docker tag to v2 ([#608](https://github.com/grafana/xk6-sm/issues/608)) ([aae9d12](https://github.com/grafana/xk6-sm/commit/aae9d12b8d26d13275612140587db6534ac72d60))
+* Update google.golang.org/genproto/googleapis/rpc digest to 2ffab32 ([#591](https://github.com/grafana/xk6-sm/issues/591)) ([2420083](https://github.com/grafana/xk6-sm/commit/242008384701cc5f5e73d6b711388eeaeb385fe5))
+* Update module github.com/cenkalti/backoff/v5 to v7 ([#594](https://github.com/grafana/xk6-sm/issues/594)) ([bf09012](https://github.com/grafana/xk6-sm/commit/bf09012f645fcd1f22a6129a0f2e6827bfb2d413))
+* Update module github.com/cenkalti/backoff/v5 to v7 ([#603](https://github.com/grafana/xk6-sm/issues/603)) ([6a572c5](https://github.com/grafana/xk6-sm/commit/6a572c5980109453bc4724c814bf21b9ef0f4dbf))
+* Update module github.com/grpc-ecosystem/grpc-gateway/v2 to v2.33.0 ([#600](https://github.com/grafana/xk6-sm/issues/600)) ([fc4218a](https://github.com/grafana/xk6-sm/commit/fc4218a7d2fc9f3e536e6c992b62c41405be54ee))
+* Update module github.com/oapi-codegen/runtime to v1.8.0 ([#593](https://github.com/grafana/xk6-sm/issues/593)) ([0053146](https://github.com/grafana/xk6-sm/commit/0053146d98f98f98c1cbcec8d58ec1d3e77cc1cc))
+* Update module github.com/prometheus/common to v0.73.1 ([#602](https://github.com/grafana/xk6-sm/issues/602)) ([4ad118f](https://github.com/grafana/xk6-sm/commit/4ad118f8733a7cf1433ec56d635003c7ad0fac7c))
+* Update module golang.org/x/net to v0.62.0 [SECURITY] ([#596](https://github.com/grafana/xk6-sm/issues/596)) ([6db3d5f](https://github.com/grafana/xk6-sm/commit/6db3d5fd208273b4428b02d865cb13a6846f3708))
+* Update module google.golang.org/grpc to v1.85.0 ([#598](https://github.com/grafana/xk6-sm/issues/598)) ([6bdcce9](https://github.com/grafana/xk6-sm/commit/6bdcce9a9793f641a7a945997acfb2416cfe9127))
+* Update otel-go ([#574](https://github.com/grafana/xk6-sm/issues/574)) ([bc4e10b](https://github.com/grafana/xk6-sm/commit/bc4e10bae66b5b645a31736ca79c9661b1a8faab))
+
 ## [2.0.12](https://github.com/grafana/xk6-sm/compare/v2.0.11...v2.0.12) (2026-10-26)
 
 
