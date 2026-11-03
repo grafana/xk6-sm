@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.1.19](https://github.com/grafana/xk6-sm/compare/v1.1.18...v1.1.19) (2026-11-03)
+
+
+### Miscellaneous Chores
+
+* Update module github.com/grpc-ecosystem/grpc-gateway/v2 to v2.33.0 ([#604](https://github.com/grafana/xk6-sm/issues/604)) ([8df783c](https://github.com/grafana/xk6-sm/commit/8df783c7e22de0a49ff91bb64b431c96104b2fac))
+* Update module github.com/prometheus/common to v0.73.1 ([#605](https://github.com/grafana/xk6-sm/issues/605)) ([53f012c](https://github.com/grafana/xk6-sm/commit/53f012c1b1e7a57bee8121cc749acfbadc25acb2))
+* Update module golang.org/x/net to v0.62.0 [SECURITY] (v1) ([#597](https://github.com/grafana/xk6-sm/issues/597)) ([d6c01df](https://github.com/grafana/xk6-sm/commit/d6c01dfe5ef52b0e272a821885f3d77610fdb426))
+* Update module google.golang.org/grpc to v1.85.0 ([#607](https://github.com/grafana/xk6-sm/issues/607)) ([e5b4e16](https://github.com/grafana/xk6-sm/commit/e5b4e16f34dafdb783c3dc032f116e6b99634ee5))
+
 ## [1.1.18](https://github.com/grafana/xk6-sm/compare/v1.1.17...v1.1.18) (2026-10-26)
 
 
