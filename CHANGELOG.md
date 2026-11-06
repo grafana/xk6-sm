@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.14](https://github.com/grafana/xk6-sm/compare/v2.0.13...v2.0.14) (2026-11-06)
+
+
+### Miscellaneous Chores
+
+* Update module github.com/cenkalti/backoff/v7 to v7.0.3 ([#614](https://github.com/grafana/xk6-sm/issues/614)) ([87ae667](https://github.com/grafana/xk6-sm/commit/87ae6674a6aadac9aa056fa8970b53497b07a3f8))
+
 ## [2.0.13](https://github.com/grafana/xk6-sm/compare/v2.0.12...v2.0.13) (2026-11-03)
 
 
