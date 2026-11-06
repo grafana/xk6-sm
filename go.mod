@@ -4,7 +4,7 @@ go 1.26.10
 
 require (
 	github.com/cenkalti/backoff/v5 v5.0.3
-	github.com/grafana/gsm-api-go-client v0.3.6
+	github.com/grafana/gsm-api-go-client v0.3.7
 	github.com/mstoykov/atlas v0.0.0-20220811071828-388f114305dd
 	github.com/prometheus/client_model v0.6.3
 	github.com/prometheus/common v0.73.1
@@ -41,7 +41,7 @@ require (
 	go.opentelemetry.io/otel/sdk v1.47.0 // indirect
 	go.opentelemetry.io/otel/trace v1.47.0 // indirect
 	go.opentelemetry.io/proto/otlp v1.11.1 // indirect
-	go.yaml.in/yaml/v3 v3.0.5 // indirect
+	go.yaml.in/yaml/v3 v3.0.6 // indirect
 	golang.org/x/net v0.62.0 // indirect
 	golang.org/x/sys v0.49.0 // indirect
 	golang.org/x/text v0.43.0 // indirect
