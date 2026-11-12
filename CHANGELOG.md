@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.20](https://github.com/grafana/xk6-sm/compare/v1.1.19...v1.1.20) (2026-11-12)
+
+
+### Miscellaneous Chores
+
+* Update module github.com/grafana/gsm-api-go-client to v0.3.7 ([#617](https://github.com/grafana/xk6-sm/issues/617)) ([9f9e401](https://github.com/grafana/xk6-sm/commit/9f9e40131fc8b2711c37ef4fbf4f76128f16f410))
+
 ## [1.1.19](https://github.com/grafana/xk6-sm/compare/v1.1.18...v1.1.19) (2026-11-03)
 
 
