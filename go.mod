@@ -12,7 +12,7 @@ require (
 	github.com/sirupsen/logrus v1.10.2
 	github.com/spf13/afero v1.15.0
 	github.com/stretchr/testify v1.12.1
-	go.k6.io/k6/v2 v2.3.0
+	go.k6.io/k6/v2 v2.4.0
 	golang.org/x/time v0.16.0
 )
 
