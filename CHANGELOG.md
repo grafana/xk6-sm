@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.0.15](https://github.com/grafana/xk6-sm/compare/v2.0.14...v2.0.15) (2026-11-12)
+
+
+### Miscellaneous Chores
+
+* **deps:** update go.k6.io/k6/v2 to v2.4.0 ([#620](https://github.com/grafana/xk6-sm/issues/620)) ([53ec5ab](https://github.com/grafana/xk6-sm/commit/53ec5abd043e0f4da48f69f4bd4fb771ddaf1393))
+* Update module github.com/grafana/gsm-api-go-client to v0.3.7 ([#616](https://github.com/grafana/xk6-sm/issues/616)) ([bcc9ecd](https://github.com/grafana/xk6-sm/commit/bcc9ecd4a69110b0ac0a0a0388e26c276977b296))
+
 ## [2.0.14](https://github.com/grafana/xk6-sm/compare/v2.0.13...v2.0.14) (2026-11-06)
 
 
