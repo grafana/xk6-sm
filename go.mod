@@ -1,10 +1,10 @@
 module github.com/grafana/xk6-sm/v2
 
-go 1.26.10
+go 1.27.3
 
 require (
 	github.com/cenkalti/backoff/v7 v7.0.3
-	github.com/grafana/gsm-api-go-client v0.3.7
+	github.com/grafana/gsm-api-go-client v0.3.8
 	github.com/mstoykov/atlas v0.0.0-20220811071828-388f114305dd
 	github.com/prometheus/client_model v0.6.3
 	github.com/prometheus/common v0.73.1
