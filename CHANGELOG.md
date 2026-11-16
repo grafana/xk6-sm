@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.0.16](https://github.com/grafana/xk6-sm/compare/v2.0.15...v2.0.16) (2026-11-16)
+
+
+### Miscellaneous Chores
+
+* Update ghcr.io/grafana/grafana-build-tools Docker tag to v2.0.1 ([#621](https://github.com/grafana/xk6-sm/issues/621)) ([633497f](https://github.com/grafana/xk6-sm/commit/633497f3a57969176dd93a4043e3ad61a084c2de))
+* Update module github.com/prometheus/common to v0.74.0 ([#626](https://github.com/grafana/xk6-sm/issues/626)) ([d4a0817](https://github.com/grafana/xk6-sm/commit/d4a081760a2462d5b01809b5ee098f018895ff30))
+
 ## [2.0.15](https://github.com/grafana/xk6-sm/compare/v2.0.14...v2.0.15) (2026-11-12)
 
 
