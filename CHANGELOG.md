@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.1.20](https://github.com/grafana/xk6-sm/compare/v1.1.19...v1.1.20) (2026-11-16)
+
+
+### Miscellaneous Chores
+
+* **deps:** Update go.k6.io/k6/v1 to 1.8.3 ([#623](https://github.com/grafana/xk6-sm/issues/623)) ([3aaca2d](https://github.com/grafana/xk6-sm/commit/3aaca2dacbd8ff555a9df87f0c9c3d6c9e4160ab))
+* Update module github.com/grafana/gsm-api-go-client to v0.3.7 ([#617](https://github.com/grafana/xk6-sm/issues/617)) ([9f9e401](https://github.com/grafana/xk6-sm/commit/9f9e40131fc8b2711c37ef4fbf4f76128f16f410))
+* Update module github.com/prometheus/common to v0.74.0 ([#627](https://github.com/grafana/xk6-sm/issues/627)) ([639ebdb](https://github.com/grafana/xk6-sm/commit/639ebdb8949f76ca66bbbc16e97c96f321b8e478))
+
 ## [1.1.19](https://github.com/grafana/xk6-sm/compare/v1.1.18...v1.1.19) (2026-11-03)
 
 
