@@ -1,10 +1,10 @@
 module github.com/grafana/xk6-sm
 
-go 1.26.10
+go 1.27.3
 
 require (
 	github.com/cenkalti/backoff/v5 v5.0.3
-	github.com/grafana/gsm-api-go-client v0.3.7
+	github.com/grafana/gsm-api-go-client v0.3.9
 	github.com/mstoykov/atlas v0.0.0-20220811071828-388f114305dd
 	github.com/prometheus/client_model v0.6.3
 	github.com/prometheus/common v0.74.0
@@ -29,7 +29,7 @@ require (
 	github.com/mattn/go-colorable v0.1.16 // indirect
 	github.com/mattn/go-isatty v0.0.24 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
-	github.com/oapi-codegen/runtime v1.8.0 // indirect
+	github.com/oapi-codegen/runtime v1.9.0 // indirect
 	github.com/pandatix/go-abnf v0.5.5 // indirect
 	go.opentelemetry.io/auto/sdk v1.2.1 // indirect
 	go.opentelemetry.io/otel v1.47.0 // indirect
